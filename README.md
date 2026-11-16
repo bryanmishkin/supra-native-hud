@@ -64,3 +64,5 @@ Independent-surface lifecycle investigation: [SURFACE-INVESTIGATION.md](SURFACE-
 Concrete receiver and shape-dispatch trace: [DISPLAY-ROUTING.md](DISPLAY-ROUTING.md).
 
 Latest transport review and targeted binding capture: [RENDERER-TRANSPORT.md](RENDERER-TRANSPORT.md).
+
+DisplaySink wire layouts, guidance create trace and passive decoder validation: [DISPLAYSINK-REVIEW.md](DISPLAYSINK-REVIEW.md).

@@ -27,4 +27,24 @@ bool decodeObservedModel(uint16_t service,uint16_t method,const uint8_t *b,size_
     value.tag=u32(b+13);value.payload=b+17;value.payloadBytes=n-17;
     out=value;return true;
 }
+
+DisplaySinkMessage::DisplaySinkMessage():layout(Unknown),firstFieldHigh(0),firstFieldLow(0),finalField(0) {
+    pair[0]=pair[1]=0;completion[0]=completion[1]=0;
+}
+bool decodeDisplaySink(uint16_t service,uint16_t method,uint8_t version,
+                       uint8_t kind,uint8_t rc,const uint8_t *b,size_t n,DisplaySinkMessage &out) {
+    out=DisplaySinkMessage();
+    if(service!=0xb009 || version!=1 || rc!=0 || !b) return false;
+    DisplaySinkMessage value;
+    if(method==0x8001 && kind==2 && n==13) {
+        value.layout=DisplaySinkMessage::SwitchRequested;
+        value.firstFieldHigh=u32(b);value.firstFieldLow=u32(b+4);
+        value.pair[0]=(uint16_t(b[8])<<8)|b[9];
+        value.pair[1]=(uint16_t(b[10])<<8)|b[11];value.finalField=b[12];
+    } else if(method==1 && kind==1 && n==2) {
+        value.layout=DisplaySinkMessage::SwitchCompleted;
+        value.completion[0]=b[0];value.completion[1]=b[1];
+    } else return false;
+    out=value;return true;
+}
 }
