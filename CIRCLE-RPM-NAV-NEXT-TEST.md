@@ -1,3 +1,5 @@
+Live outcome: RPM passed 40/40 reads; neither circle candidate removed the circle. Cleanup and factory-function checks passed. See [CIRCLE-RPM-LIVE-RESULT.md](CIRCLE-RPM-LIVE-RESULT.md). The procedure below is retained as the executed test record.
+
 # Circle isolation, live RPM input and navigation — 16 November 2026
 
 ## Video evidence
