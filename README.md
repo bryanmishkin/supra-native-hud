@@ -80,3 +80,5 @@ Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDA
 Consolidated runner, continuous recorder, validation and startup procedure: [STARTUP-AND-CONSOLIDATED-RUNBOOK.md](STARTUP-AND-CONSOLIDATED-RUNBOOK.md).
 
 See [RIC-GUIDING-BINDING.md](RIC-GUIDING-BINDING.md) for the traced method-11 picture reference, factory session roles, and resource-release selection.
+
+See [RIC-VISIBLE-GRAPH.md](RIC-VISIBLE-GRAPH.md) for capture-validated active maneuver/description messages, cancellation, and the passive graph analyzer.
