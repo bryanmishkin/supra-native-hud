@@ -1,3 +1,5 @@
+> Superseded readiness note: the lifecycle core now has a TCP transport and executable candidate drawing runner. See [LIVE-DRAWING-TEST.md](LIVE-DRAWING-TEST.md). The core alone still does not establish visual success.
+
 # Distinct-session lifecycle component
 
 16 November 2026. This is an executable, transport-injected lifecycle library,

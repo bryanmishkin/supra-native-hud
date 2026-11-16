@@ -1,3 +1,5 @@
+> Current live experiment: see [LIVE-DRAWING-TEST.md](LIVE-DRAWING-TEST.md). The executable own-session PNG test is prepared and tested offline; windshield visibility and removal still require the live trial.
+
 # Supra native HUD
 
 Personal research project for the **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, with NBT Evo firmware **NBTevo_T24081I**. The intended display is the factory windshield HUD: an upper curved tachometer and progressive shift cues while preserving factory speed, speed limit, navigation and radio overlays.
