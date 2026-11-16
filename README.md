@@ -1,4 +1,4 @@
-> Current live experiment: see [LIVE-DRAWING-TEST.md](LIVE-DRAWING-TEST.md). The executable own-session PNG test is prepared and tested offline; windshield visibility and removal still require the live trial.
+> Current live experiment: see [LIVE-DRAWING-TEST.md](LIVE-DRAWING-TEST.md). Live retry returned the factory handle and RLE32-only bitmap support. The PNG candidate cannot proceed unchanged; see the runbook for the measured results.
 
 # Supra native HUD
 

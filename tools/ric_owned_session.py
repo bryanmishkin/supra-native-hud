@@ -7,7 +7,7 @@ This component prepares resource lifecycle testing, not visual proof.
 import hashlib
 import struct
 from ric_lifecycle import MAX_BODY, decode_body
-from ric_resource_check import encode_distinct_create_body, encode_check_body
+from ric_resource_check import encode_distinct_create_body, encode_check_body, encode_profile_create_body
 from ric_resource import encode_bitmap_body
 
 
@@ -17,14 +17,15 @@ class RicFailure(RuntimeError):
 
 class OwnedSession:
     def __init__(self, exchange, identity, versions, client_id, timeout=1.0,
-                 forbidden_handles=(200,)):
+                 forbidden_handles=(200,), service_profile=False):
         if not callable(exchange):
             raise ValueError('Expected a bounded exchange transport')
         if type(client_id) is not int or not 1 <= client_id <= 65535:
             raise ValueError('Expected nonzero u16 client ID')
         if type(timeout) not in (int, float) or not 0 < timeout <= 5:
             raise ValueError('Timeout must be in (0, 5] seconds')
-        self.create_body = encode_distinct_create_body(identity, versions)
+        self.create_body = (encode_profile_create_body(*identity, versions) if service_profile
+                            else encode_distinct_create_body(identity, versions))
         self.exchange, self.client, self.timeout = exchange, client_id, timeout
         self.forbidden_handles = frozenset(forbidden_handles) | {0, 0xffffffff}
         self.handle, self.configuration_body = None, None

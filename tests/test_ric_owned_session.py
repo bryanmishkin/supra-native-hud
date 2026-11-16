@@ -76,3 +76,24 @@ class OwnedSessionTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'original'):
             with s:raise RuntimeError('original')
         self.assertEqual(t.methods,[1,7])
+
+class ServiceProfileTests(unittest.TestCase):
+    def test_profile_preserves_distinct_application(self):
+        from ric_resource_check import encode_profile_create_body
+        from ric_lifecycle import decode_body
+        b=encode_profile_create_body('BMW.IC.Guidance','SupraHUD.OwnSession','bryanmishkin',(3,3,1))
+        self.assertEqual(decode_body(1,0,0,b)['identity_strings'],['BMW.IC.Guidance','SupraHUD.OwnSession','bryanmishkin'])
+    def test_factory_application_and_vendor_rejected(self):
+        from ric_resource_check import encode_profile_create_body
+        for app,vendor in [('ICGuidanceControl','own'),('RICController','own'),('own','BMW'),('own','Harman')]:
+            with self.assertRaises(ValueError):encode_profile_create_body('BMW.IC.Guidance',app,vendor,(3,3,1))
+    def test_profile_still_refuses_factory_handle(self):
+        t=ScriptedTransport([(1,create(200))])
+        s=OwnedSession(t,('BMW.IC.Guidance','SupraHUD.OwnSession','bryanmishkin'),(3,3,1),7,service_profile=True)
+        with self.assertRaisesRegex(RicFailure,'factory handle'):s.open()
+        self.assertEqual(t.methods,[1])
+    def test_actual_configuration_png_not_supported(self):
+        from ric_lifecycle import decode_bitmap_config
+        d=decode_bitmap_config(bytes.fromhex('21010000000a010000000096002400010000'))
+        self.assertEqual(d['resolution_pair'],[150,36])
+        self.assertTrue(d['formats']['rle32']);self.assertFalse(d['formats']['png'])

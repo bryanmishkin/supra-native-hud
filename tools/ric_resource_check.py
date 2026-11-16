@@ -71,3 +71,20 @@ def encode_distinct_create_body(identity_strings, version_words):
         if type(v) is not int or not 0 <= v <= 0xffffffff:
             raise ValueError('Expected u32 version word')
     return b''.join(parts)+struct.pack('>III',*version_words)
+
+
+def encode_profile_create_body(profile, application, vendor, version_words):
+    """Explicit service-profile hypothesis; preserve distinct application identity.
+
+    The observed first string matches the guidance service name. Its role is
+    not server-verified. Never allow the factory application/vendor tuple.
+    """
+    if profile not in ('BMW.IC.Guidance', 'BMW.HMI.Roadbook'):
+        raise ValueError('Expected an observed service profile')
+    if application in ('ICGuidanceControl', 'RICController') or vendor in ('BMW', 'Harman'):
+        raise ValueError('Factory application or vendor cannot be impersonated')
+    # Existing strict text and version checks still apply to every field.
+    body = encode_distinct_create_body(('profile.placeholder',application,vendor),version_words)
+    first_size = struct.unpack_from('>I',body)[0]
+    raw = b'\xfe\xff'+profile.encode('utf-16-be')+b'\0\0'
+    return struct.pack('>I',len(raw))+raw+body[4+first_size:]

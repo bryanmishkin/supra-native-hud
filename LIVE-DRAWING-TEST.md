@@ -1,6 +1,18 @@
 # Own-session live drawing experiment
 
-**Ready to run as an experimental live test; not yet verified on the car.**
+**Live result: the PNG drawing candidate is incompatible with the returned configuration.**
+On the car, replacing the first string with the observed `BMW.IC.Guidance`
+profile while preserving our distinct app/vendor changed the create response
+from error to success. It returned handle **200**, the factory value. Read-only
+checks through that handle saw four factory text resources become present when
+the driver enabled navigation. This is evidence of shared factory resource
+visibility, not an isolated app session. Its bitmap configuration advertises
+**150×36, 10 slots, RLE32 only; PNG is false**. No bitmap upload, drawing or
+disposal was attempted. The driver confirmed factory behavior remained normal.
+
+The procedure below records the original candidate, not a recommendation to
+repeat it unchanged. A supported RLE32 encoder and an appropriate session or
+shared-resource design are needed before another visible marker attempt.
 This replaces the previous transport-injected lifecycle component with an
 executable Mac runner. It attempts a new session, a real PNG-backed drawing
 model, withdrawal, resource disposal/check and instance disposal in one run.
