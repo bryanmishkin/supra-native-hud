@@ -1,3 +1,5 @@
+Latest next test: [circle isolation, measured RPM input and factory-navigation handling](CIRCLE-RPM-NAV-NEXT-TEST.md). Includes review of the supplied windshield video.
+
 Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.
 
 > **Live custom-pixel proof:** a generated RLE32 rectangle/cross was displayed in the windshield and gauge cluster, then removed with resource absence and factory operation confirmed. See [RLE32-LIVE-PROOF.md](RLE32-LIVE-PROOF.md). This uses the shared factory road-icon path, not an independent overlay.

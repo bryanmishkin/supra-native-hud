@@ -7,6 +7,7 @@ from ric_live_trial import TcpExchange
 from ric_graph import decode_graph_body,encode_description_body
 parser=argparse.ArgumentParser(description='Live-verified shared road-icon marker test; requires stopped factory guidance.')
 parser.add_argument('--execute',action='store_true')
+parser.add_argument('--graph-variant',choices=['control','no-detail','road-only'],default='control',help='Experimental circle-isolation variants; control is live verified')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
 parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
 parser.add_argument('--window-seconds',type=int,choices=range(1,16),default=15)
@@ -19,7 +20,7 @@ args=parser.parse_args()
 if not args.execute:
  print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, 15 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
 if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,args.output)):parser.error('All file/connection/output arguments required')
-if args.bitmap_bgra and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
+if (args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
 import ipaddress
@@ -53,10 +54,13 @@ class Trial(SharedDrawingTrial):
  def send(self,m,body):
   if m==11 and struct.unpack_from('>I',body,4)[0]==a['models'][10]:
    super().send(10,supports[34]);super().send(10,supports[29])
+   if args.graph_variant!='control':return
   if m==10 and body[8]==15:
    super().send(14,road)
    d=decode_graph_body(m,body)['description'];d.pop('outer_identity_matches');d.pop('model_id');d.pop('model_type')
    d['coming_road_id']=a['models'][40];d['current_state_id']=a['models'][34];d['distance_id']=a['models'][29];d['maneuver_direction']=14
+   if args.graph_variant!='control':d['detailed_maneuver_id']=0xffffffff
+   if args.graph_variant=='road-only':d['maneuver_direction']=8
    body=encode_description_body(200,a['models'][15],15,**d)
   super().send(m,body)
   if m==9 and body[8]==33 and decode_graph_body(m,body)['list_state']['guidance_state']==2:super().send(9,position)
