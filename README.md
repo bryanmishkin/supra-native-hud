@@ -78,3 +78,5 @@ DisplaySink wire layouts, guidance create trace and passive decoder validation: 
 Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDATED-CAPTURE-PLAN.md); the startup limitations remain explicit.
 
 Consolidated runner, continuous recorder, validation and startup procedure: [STARTUP-AND-CONSOLIDATED-RUNBOOK.md](STARTUP-AND-CONSOLIDATED-RUNBOOK.md).
+
+See [RIC-GUIDING-BINDING.md](RIC-GUIDING-BINDING.md) for the traced method-11 picture reference, factory session roles, and resource-release selection.
