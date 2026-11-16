@@ -67,4 +67,6 @@ Latest transport review and targeted binding capture: [RENDERER-TRANSPORT.md](RE
 
 DisplaySink wire layouts, guidance create trace and passive decoder validation: [DISPLAYSINK-REVIEW.md](DISPLAYSINK-REVIEW.md).
 
-Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDATED-CAPTURE-PLAN.md); the broader session is not yet ready.
+Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDATED-CAPTURE-PLAN.md); the startup limitations remain explicit.
+
+Consolidated runner, continuous recorder, validation and startup procedure: [STARTUP-AND-CONSOLIDATED-RUNBOOK.md](STARTUP-AND-CONSOLIDATED-RUNBOOK.md).

@@ -8,8 +8,9 @@ from pathlib import Path
 from inspect_someip_stream import inspect
 MAX_BYTES=8*1024*1024
 
-def extract(data):
-    if len(data)>MAX_BYTES or len(data)<24: raise ValueError('invalid capture size')
+def extract(data, max_bytes=MAX_BYTES, max_packets=4096):
+    if not 24<=max_bytes<=64*1024*1024 or not 1<=max_packets<=65536:raise ValueError("invalid extraction limits")
+    if len(data)>max_bytes or len(data)<24: raise ValueError('invalid capture size')
     magic=data[:4]
     endian={b'\xd4\xc3\xb2\xa1':'<',b'\xa1\xb2\xc3\xd4':'>'}.get(magic)
     if not endian: raise ValueError('only classic microsecond PCAP supported')
@@ -21,7 +22,7 @@ def extract(data):
         sec,usec,cap,wire=struct.unpack_from(endian+'IIII',data,pos);pos+=16
         if cap!=wire or cap>snap or usec>=1000000 or pos+cap>len(data):raise ValueError('truncated/invalid packet')
         packet=data[pos:pos+cap];pos+=cap;packets+=1
-        if packets>4096:raise ValueError('packet count limit')
+        if packets>max_packets:raise ValueError('packet count limit')
         if len(packet)<14:raise ValueError('short Ethernet frame')
         proto=struct.unpack_from('>H',packet,12)[0];off=14
         for _ in range(2):
@@ -46,26 +47,28 @@ def extract(data):
             if key in syns and syns[key]!=seq:raise ValueError('reused TCP tuple: split connections first')
             syns[key]=seq;seq=(seq+1)&0xffffffff
         body=tcp[hlen:]
-        if body:groups.setdefault(key,[]).append((seq,body))
+        if body:groups.setdefault(key,[]).append((seq,body,sec*1000000+usec,packets))
         if len(groups)>128:raise ValueError('flow limit')
     streams=[]
     for key,parts in sorted(groups.items()):
         anchor=parts[0][0]
-        relative=[(((seq-anchor+0x80000000)&0xffffffff)-0x80000000,body) for seq,body in parts]
+        relative=[(((seq-anchor+0x80000000)&0xffffffff)-0x80000000,body,ts,packet) for seq,body,ts,packet in parts]
         relative.sort(key=lambda p:p[0]);base=relative[0][0];output=bytearray()
-        for seq,body in relative:
+        spans=[]
+        for seq,body,ts,packet in relative:
+            spans.append(dict(offset=seq-base,bytes=len(body),timestamp_us=ts,packet=packet))
             start=seq-base
             if start>len(output):raise ValueError('TCP gap in %r'%(key,))
             overlap=min(len(body),len(output)-start)
             if output[start:start+overlap]!=body[:overlap]:raise ValueError('conflicting TCP retransmission')
             output.extend(body[overlap:])
-            if len(output)>MAX_BYTES:raise ValueError('stream size limit')
+            if len(output)>max_bytes:raise ValueError('stream size limit')
         raw=bytes(output)
         try: inventory=inspect(raw);error=None
         except ValueError as e: inventory=None;error=str(e)
         streams.append(dict(flow=list(key),sha256=hashlib.sha256(raw).hexdigest(),data=raw,
                             inventory=inventory,parse_error=error,
-                            boundary_proven=False))
+                            boundary_proven=False,byte_spans=spans))
     return dict(packets=packets,udp_packets=udp,streams=streams,
                 limitation='TCP continuity checked only inside captured interval; no checksum validation, initial message-boundary proof, ECU identity or drawing permission.')
 

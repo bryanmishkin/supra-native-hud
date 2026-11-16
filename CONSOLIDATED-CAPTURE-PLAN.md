@@ -1,4 +1,4 @@
-# Consolidated capture plan — not yet ready to request a car session
+# Consolidated capture evidence plan
 
 The previous sessions completed individual capture lists but did not close the full project's evidence gaps. Do not describe list completion as project-wide capture completeness. Minimize user trips by completing the offline work and instrument validation below before proposing another session.
 
@@ -27,4 +27,4 @@ NavigationBasic and NavigationFully are not captured in those roots, although bo
 ## Meaning of session completion
 Before saying the session is complete: verify hashes, parse every required stream, check packet loss/truncation, evaluate each matrix row, preserve raw evidence, confirm cleanup and factory behavior, and clearly state any missing evidence while the user is still connected. Save a local verified copy before release; cloud upload can finish without the car. Report “all available files captured” separately from “allocation question answered.” No promise of a final trip is justified until the remaining lifecycle evidence can actually be obtained.
 
-Current status: no new car session requested. DisplaySink passive decoder is built and tested. The broader runner and the method of observing RIC initialization still require offline preparation.
+Current status: the consolidated runner and continuous recorder are implemented, tested and QNX-built. See STARTUP-AND-CONSOLIDATED-RUNBOOK.md for the static connection trigger, retained-HU capture candidate, automatic evidence gates and the unresolved full cold-boot limitation. The historical offline gates above describe the original plan; the runbook records their current status. No car session was performed in this update.

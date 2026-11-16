@@ -37,3 +37,7 @@ printf '%s\n' 'Built bounded passive capture candidate; target BPF availability 
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
   -Isrc -c src/someip_model.cpp -o build/someip_model.o
 printf '%s\n' 'Built observed-model decoder object; no live transport or ownership granted.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  tools/hud_continuous_capture.c -lpcap -lsocket -o build/supra-continuous-capture-qnx
+printf '%s\n' 'Built 120-second all-port cluster and service-discovery recorder; no deployment.'
