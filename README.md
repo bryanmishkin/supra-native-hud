@@ -58,3 +58,5 @@ Runtime captures, SDKs, license utilities/material, credentials, generated binar
 Latest transport investigation and capture prerequisites: [HUD-PATH-REVIEW.md](HUD-PATH-REVIEW.md).
 
 Actual-car payload decoding and current ownership limits: [PROTOCOL-DECODE.md](PROTOCOL-DECODE.md).
+
+Independent-surface lifecycle investigation: [SURFACE-INVESTIGATION.md](SURFACE-INVESTIGATION.md).
