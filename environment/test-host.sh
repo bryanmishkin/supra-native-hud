@@ -3,6 +3,8 @@ set -eu
 cd /workspace
 mkdir -p /tmp/supra-tests
 for bits in 64 32; do
+  g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Isrc src/hud_core.cpp src/tach_bitmap.cpp tests/test_tach_bitmap.cpp -o /tmp/supra-tests/tach-bitmap-$bits
+  /tmp/supra-tests/tach-bitmap-$bits
   g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Ivendor/nbt/src -Isrc src/hud_core.cpp src/native_backend.cpp src/native_session.cpp src/hud_app.cpp tests/test_hud_app.cpp -o /tmp/supra-tests/hud-app-$bits
   /tmp/supra-tests/hud-app-$bits
   g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Ivendor/nbt/src -Isrc src/hud_core.cpp src/native_backend.cpp src/native_session.cpp src/hud_app.cpp tools/hud_selftest.cpp -o /tmp/supra-tests/selftest-$bits

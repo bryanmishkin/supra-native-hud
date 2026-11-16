@@ -1,3 +1,5 @@
+Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.
+
 > Latest offline status, 16 Nov 2026: do not repeat the capture sessions below. Engine-start, radio/navigation network recordings and three drawing-buffer states are saved. No live drawing test is ready. See [WINDSHIELD-RENDERER-TRACE.md](WINDSHIELD-RENDERER-TRACE.md) for the concrete test specification and unresolved entry criteria. Continue offline before requesting car time.
 
 > On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.

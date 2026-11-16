@@ -41,3 +41,7 @@ printf '%s\n' 'Built observed-model decoder object; no live transport or ownersh
 "$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
   tools/hud_continuous_capture.c -lpcap -lsocket -o build/supra-continuous-capture-qnx
 printf '%s\n' 'Built 120-second all-port cluster and service-discovery recorder; no deployment.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+  -Isrc src/hud_core.cpp src/tach_bitmap.cpp tools/tach_bitmap_demo.cpp -o build/supra-tach-bitmap-demo-qnx
+printf '%s\n' 'Built synthetic tachometer bitmap generator; no vehicle I/O.'

@@ -7,6 +7,9 @@ from ric_live_trial import TcpExchange
 from ric_graph import decode_graph_body,encode_description_body
 parser=argparse.ArgumentParser(description='Live-verified shared road-icon marker test; requires stopped factory guidance.')
 parser.add_argument('--execute',action='store_true')
+parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
+parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
+parser.add_argument('--window-seconds',type=int,choices=range(1,16),default=15)
 parser.add_argument('--create-response',type=Path)
 parser.add_argument('--support-stream',type=Path)
 parser.add_argument('--ssh-socket',type=Path)
@@ -16,6 +19,9 @@ args=parser.parse_args()
 if not args.execute:
  print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, 15 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
 if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,args.output)):parser.error('All file/connection/output arguments required')
+if args.bitmap_bgra and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
+custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
+if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
 import ipaddress
 ipaddress.IPv4Address(args.head)
 root=args.output;root.mkdir(parents=True,exist_ok=False)
@@ -74,12 +80,24 @@ r=subprocess.run(base+['-O','forward','-L',f,destination],capture_output=True);a
 report={}
 def record(r):
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
-def observe(phase,seconds):print('MARKER WINDOW ACTIVE: 15 seconds',flush=True);time.sleep(seconds);return None
+def observe(phase,seconds):
+ print('TEST WINDOW ACTIVE: %d seconds; keep factory guidance stopped. Ctrl-C withdraws the test.'%args.window_seconds,flush=True)
+ time.sleep(args.window_seconds);return None
+class BitmapSession(SharedSession):
+ def upload_marker(self):
+  if custom is None:return super().upload_marker()
+  from ric_rle32 import encode_bgra
+  a=self.allocation
+  self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(custom))
 def cleanup():signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)
 def stop(sig,frame):raise KeyboardInterrupt()
 signal.signal(signal.SIGTERM,stop)
 try:
- with socket.create_connection(('127.0.0.1',port),2) as sock:report=Trial(SharedSession(TcpExchange(sock,root),a),record,observe,cleanup).run()
+ with socket.create_connection(('127.0.0.1',port),2) as sock:report=Trial(BitmapSession(TcpExchange(sock,root),a),record,observe,cleanup).run()
 finally:
  r=subprocess.run(base+['-O','cancel','-L',f,destination],capture_output=True);report['forward_cancelled']=r.returncode==0
  record(report);print(json.dumps({k:report.get(k) for k in ['status','error','cleanup','cleanup_steps','forward_cancelled']},indent=2))
+
+# A missing cleanup acknowledgement or absence result blocks any next frame.
+cleanup_ok=(report.get('status')=='awaiting_visual_verification' and report.get('forward_cancelled') is True and bool(report.get('cleanup_steps')) and all(x.get('acknowledged') is True for x in report['cleanup_steps']) and bool(report.get('cleanup',{}).get('resources')) and all(x.get('dispose_acknowledged') is True and x.get('post_dispose_check') is False for x in report['cleanup']['resources']))
+sys.exit(0 if cleanup_ok else 2)
