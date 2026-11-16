@@ -8,6 +8,8 @@ The QNX 6.5 ARMv7 build works. The repository contains the HUD core, native comm
 
 Production defaults suppress drawing. The active frame's own RPM sample must remain fresh; new input cannot extend an old queued frame. The present conservative 40-call sequence takes at least 1.95 seconds, which exceeds the default 300 ms freshness budget. The replay explicitly uses a 2000 ms synthetic test budget. That is not a production configuration or proven car bandwidth.
 
+See [the latest windshield renderer trace](WINDSHIELD-RENDERER-TRACE.md) for the recovered buffer producer/consumer paths, reusable-buffer inspector and drawing-test entry criteria.
+
 ## Build and test
 
 Run commands from the repository root.
