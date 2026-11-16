@@ -11,7 +11,7 @@ parser.add_argument('--double-buffer',action='store_true',help='Experimental two
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
 parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
 parser.add_argument('--renderer',type=Path,help='Locally built native bitmap renderer')
-parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail'],default='control',help='Experimental circle-isolation variants; control is live verified')
+parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail','empty-direction-zero'],default='control',help='Control and empty-direction-zero live verified on this Supra; other variants experimental')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
 parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
 parser.add_argument('--window-seconds',type=int,choices=range(1,16),default=15)
@@ -27,9 +27,9 @@ if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,a
 if (args.live_rpm_local or args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
-if args.live_rpm_local and args.graph_variant=='empty-detail' and not args.double_buffer:parser.error('Empty-detail live test requires two-slot updates')
+if args.live_rpm_local and args.graph_variant in ('empty-detail','empty-direction-zero') and not args.double_buffer:parser.error('Empty-detail live test requires two-slot updates')
 if args.double_buffer and not args.live_rpm_local:parser.error('Double buffer requires live RPM')
-if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant not in ('control','empty-detail')):parser.error('Live RPM requires renderer, control/empty-detail graph and no static bitmap')
+if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant not in ('control','empty-detail','empty-direction-zero')):parser.error('Live RPM requires renderer, supported graph and no static bitmap')
 import ipaddress
 ipaddress.IPv4Address(args.head)
 if args.live_rpm_local and not ipaddress.IPv4Address(args.live_rpm_local).is_link_local:parser.error('Expected local ENET address')
@@ -62,7 +62,7 @@ class Trial(SharedDrawingTrial):
  def send(self,m,body):
   if m==11 and struct.unpack_from('>I',body,4)[0]==a['models'][10]:
    super().send(10,supports[34]);super().send(10,supports[29])
-   if args.graph_variant=='empty-detail':
+   if args.graph_variant in ('empty-detail','empty-direction-zero'):
     from ric_guiding import encode_empty_guiding_body
     super().send(11,encode_empty_guiding_body(200,a['models'][10],10));return
    if args.graph_variant!='control':return
@@ -72,6 +72,7 @@ class Trial(SharedDrawingTrial):
    d['coming_road_id']=a['models'][40];d['current_state_id']=a['models'][34];d['distance_id']=a['models'][29];d['maneuver_direction']=14
    if args.graph_variant in ('no-detail','road-only'):d['detailed_maneuver_id']=0xffffffff
    if args.graph_variant in ('road-only','empty-detail'):d['maneuver_direction']=8
+   if args.graph_variant=='empty-direction-zero':d['maneuver_direction']=0
    body=encode_description_body(200,a['models'][15],15,**d)
   super().send(m,body)
   if m==9 and body[8]==33 and decode_graph_body(m,body)['list_state']['guidance_state']==2:super().send(9,position)
@@ -157,7 +158,7 @@ def live_updates():
     raw=measured_frame()
     session.upload_bitmap(new_id,typ,a['dimensions'],encode_bgra(raw));fresh()
     nextroad=bytearray(road);nextroad[32:36]=struct.pack('>I',new_id)
-    if args.graph_variant!='empty-detail':session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,new_id))
+    if args.graph_variant not in ('empty-detail','empty-direction-zero'):session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,new_id))
     fresh()
     session._empty(14,bytes(nextroad));fresh()
     session._empty(8,struct.pack('>II',200,rid))
@@ -171,7 +172,7 @@ def live_updates():
     del session.resources[rid]
     raw=measured_frame()
     session.upload_bitmap(rid,typ,a['dimensions'],encode_bgra(raw));fresh()
-    if args.graph_variant!='empty-detail':session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,rid))
+    if args.graph_variant not in ('empty-detail','empty-direction-zero'):session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,rid))
     fresh();session._empty(14,road);fresh()
    # Keep polling at <=4Hz. Remove references before acquiring the next sample.
    remaining=.25-(time.monotonic()*1000-latest_sample['sampled_at_ms'])/1000
