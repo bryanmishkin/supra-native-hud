@@ -62,3 +62,5 @@ Actual-car payload decoding and current ownership limits: [PROTOCOL-DECODE.md](P
 Independent-surface lifecycle investigation: [SURFACE-INVESTIGATION.md](SURFACE-INVESTIGATION.md).
 
 Concrete receiver and shape-dispatch trace: [DISPLAY-ROUTING.md](DISPLAY-ROUTING.md).
+
+Latest transport review and targeted binding capture: [RENDERER-TRANSPORT.md](RENDERER-TRANSPORT.md).
