@@ -1,3 +1,5 @@
+> Follow-up: [SESSION-CONTRACT.md](SESSION-CONTRACT.md) now identifies create/initialize/dispose formats and factory sink selection. It does not establish independent ownership or remote expiry.
+
 # Windshield renderer investigation — 16 November 2026
 
 Status: **live drawing test blocked; no car session requested.** The new evidence identifies the producer and two consumer families of the saved drawing buffers. It does not establish an independently owned windshield surface.

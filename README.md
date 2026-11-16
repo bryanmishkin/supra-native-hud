@@ -10,6 +10,8 @@ Production defaults suppress drawing. The active frame's own RPM sample must rem
 
 See [the latest windshield renderer trace](WINDSHIELD-RENDERER-TRACE.md) for the recovered buffer producer/consumer paths, reusable-buffer inspector and drawing-test entry criteria.
 
+See [the session contract](SESSION-CONTRACT.md) for statically decoded allocation, routing and disposal, and the exact remaining server-side evidence gap.
+
 ## Build and test
 
 Run commands from the repository root.

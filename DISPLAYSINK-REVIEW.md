@@ -1,3 +1,5 @@
+> Later trace, 16 Nov 2026: [SESSION-CONTRACT.md](SESSION-CONTRACT.md) resolves the factory sink state machine (selection 0 = HUD, 1 = Kombi), create structure/configuration response, initialize method 4, dispose method 7 and resource-dispose method 8. The earlier uncertainties below are historical; independent surface ownership and remote lifetime remain unproven.
+
 # DisplaySink and guidance creation — offline review
 
 16 November 2026. Car disconnected. No vehicle/network commands were issued.
