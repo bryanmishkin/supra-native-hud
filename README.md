@@ -66,3 +66,5 @@ Concrete receiver and shape-dispatch trace: [DISPLAY-ROUTING.md](DISPLAY-ROUTING
 Latest transport review and targeted binding capture: [RENDERER-TRANSPORT.md](RENDERER-TRANSPORT.md).
 
 DisplaySink wire layouts, guidance create trace and passive decoder validation: [DISPLAYSINK-REVIEW.md](DISPLAYSINK-REVIEW.md).
+
+Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDATED-CAPTURE-PLAN.md); the broader session is not yet ready.
