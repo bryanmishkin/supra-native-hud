@@ -12,6 +12,8 @@ See [the latest windshield renderer trace](WINDSHIELD-RENDERER-TRACE.md) for the
 
 See [the session contract](SESSION-CONTRACT.md) for statically decoded allocation, routing and disposal, and the exact remaining server-side evidence gap.
 
+See [the cluster source review](CLUSTER-SOURCE-REVIEW.md) for public implementations checked and the local server-stub forwarding trace.
+
 ## Build and test
 
 Run commands from the repository root.
