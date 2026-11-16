@@ -1,3 +1,5 @@
+> On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.
+
 # Native drawing backend candidate
 
 The new C++98 adapter `src/native_backend.*` encodes the HUD core into native MOST HUDTerminal calls using the published related project's `hudterm.hpp` payload builders. It is a command encoder with acknowledgement-controlled buffer selection, not yet a connected drawing application. It has no socket or device-control registration and cannot send a command to the car by itself.

@@ -22,6 +22,9 @@ class KitTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             r=Path(d);b,a=self.make(r);m.prepare(b,a,r/'out')
             self.assertNotIn('observer',(r/'out/run-selftest.sh').read_text())
+            self.assertIn('uname -p',(r/'out/run-selftest.sh').read_text())
+            self.assertNotIn('dirname',(r/'out/run-selftest.sh').read_text())
+            self.assertIn('LD_LIBRARY_PATH=/opt/sys/lib:/boot/lib:/lib',(r/'out/run-observer.sh').read_text())
             self.assertFalse(json.loads((r/'out/manifest.json').read_text())['car_tested'])
             with self.assertRaises(FileExistsError):m.prepare(b,a,r/'out')
 if __name__=='__main__':unittest.main()

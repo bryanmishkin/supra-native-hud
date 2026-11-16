@@ -22,5 +22,9 @@ int main() {
     for(unsigned i=0;i<300;++i)RegistryObserver::message(v,kNormal,&o);
     assert(o.headerCount==256&&o.droppedHeaders==44&&o.headers[0].at==123);
     v.fblock=0x99;RegistryObserver::message(v,kNormal,&o);assert(o.droppedHeaders==44);
+    RegistryObserver wide(true);v.fblock=0x99;
+    for(unsigned i=0;i<300;++i){v.rxMs=i;RegistryObserver::message(v,kNormal,&wide);}
+    assert(wide.headerCount==1&&wide.droppedHeaders==0&&wide.headers[0].count==300&&wide.headers[0].lastAt==299);
+    v.fkt++;RegistryObserver::message(v,kNormal,&wide);assert(wide.headerCount==2);
     assert(c.stats().sent==0);puts("PASS: registry decode, malformed rejection, bounded capture, reconnect, no device registration or HUD send");
 }

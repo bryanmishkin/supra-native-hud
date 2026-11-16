@@ -1,3 +1,5 @@
+> On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.
+
 # Compatibility review — current state
 
 Target: QNX 6.5 ARM little-endian on the Supra NBT Evo OMAP head unit, firmware NBTevo_T24081I. The exact runtime captures and ELF reports are maintained in the private Drive bundle, outside this source repository.

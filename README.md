@@ -37,7 +37,7 @@ The target build produces:
 | `supra-hud-offline-replay-qnx --simulate` | Forty synthetic commands emitted as JSON | None; commands remain in memory |
 | `supra-registry-observer-qnx --observe-registry` | 15-second registry and bounded HUD-header observation | Temporary DSI client and subscriptions; no drawing/device-control registration |
 
-A successful build is not a target execution result. The upcoming car session must first verify the loader and self-test, then the private DSI adapter. [NEXT-CAR-SESSION.md](NEXT-CAR-SESSION.md) gives the exact order and stop conditions.
+The 16 November car session passed all ten target self-tests and verified DSI registration/observation. However, no expected 0x82/0 HUD service was advertised. See [CAR-VALIDATION.md](CAR-VALIDATION.md); actual Supra transport discovery remains open. [NEXT-CAR-SESSION.md](NEXT-CAR-SESSION.md) gives the exact order and stop conditions.
 
 ## Source map
 

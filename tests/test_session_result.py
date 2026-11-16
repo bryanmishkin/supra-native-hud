@@ -10,6 +10,10 @@ class ResultsTest(unittest.TestCase):
     def check(self,r,code=0):return m.analyze('[DSI] diagnostic log\n'+json.dumps(r),'registry',code)
     def test_valid_registry(self):
         r=self.check(self.registry());self.assertTrue(r['evidence_usable']);self.assertFalse(r['drawing_authorized'])
+    def test_discovery_preserves_negative_service_evidence(self):
+        r=self.registry();r['snapshots']=[[]]
+        result=m.analyze(json.dumps(r),'discovery',0)
+        self.assertTrue(result['evidence_usable']);self.assertFalse(result['evidence']['expected_hud_service_present']);self.assertFalse(result['drawing_authorized'])
     def test_missing_and_conflicting_hosts(self):
         for snapshots in [[[]],[[dict(key=0x8200,address=0x101),dict(key=0x8200,address=0x102)]],[[dict(key=0x8200,address=0x101)],[dict(key=0x8200,address=0x102)]]]:
             r=self.registry();r['snapshots']=snapshots;self.assertFalse(self.check(r)['evidence_usable'])

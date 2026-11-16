@@ -36,7 +36,7 @@ def analyze(text, kind, exit_code):
         if len(tests) != len(EXPECTED_TESTS) or any(not isinstance(t.get('name'), str) for t in tests) or {t.get('name') for t in tests} != EXPECTED_TESTS or any(t.get('pass') is not True for t in tests):
             issues.append('missing_duplicate_or_failed_tests')
         evidence['passed_tests'] = sum(t.get('pass') is True for t in tests)
-    elif kind == 'registry':
+    elif kind in ('registry', 'discovery'):
         if r.get('schema') != 2 or r.get('hud_commands_sent') != 0 or r.get('payloads_captured') is not False:
             issues.append('unexpected_schema_or_transmission')
         for key in ('dropped_snapshots', 'dropped_headers', 'bad_messages'):
@@ -64,12 +64,12 @@ def analyze(text, kind, exit_code):
                     raise ValueError('Invalid registry entry')
                 if entry['key'] == 0x8200:
                     matches.append(entry['address'])
-            if len(matches) != 1 or not 0x100 <= matches[0] <= 0xfff:
+            if kind == 'registry' and (len(matches) != 1 or not 0x100 <= matches[0] <= 0xfff):
                 issues.append('HUD_82_00_host_missing_or_ambiguous')
             hosts.update(matches)
-        if len(hosts) != 1:
+        if kind == 'registry' and len(hosts) != 1:
             issues.append('HUD_host_not_unique_across_snapshots')
-        evidence = {'hud_hosts': sorted(hosts), 'snapshot_count': len(snapshots),
+        evidence = {'hud_hosts': sorted(hosts), 'expected_hud_service_present': len(hosts) == 1, 'snapshot_count': len(snapshots),
                     'hud_header_count': len(headers),
                     'observed_functions': sorted({h.get('function') for h in headers if type(h.get('function')) is int})}
     else:
@@ -81,7 +81,7 @@ def analyze(text, kind, exit_code):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('log', type=Path)
-    p.add_argument('--kind', choices=['selftest', 'registry'], required=True)
+    p.add_argument('--kind', choices=['selftest', 'registry', 'discovery'], required=True)
     p.add_argument('--exit-code', type=int, required=True)
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()

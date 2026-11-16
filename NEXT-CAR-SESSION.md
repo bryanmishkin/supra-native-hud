@@ -1,3 +1,5 @@
+> On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.
+
 # Next car session: exact test order
 
 Vehicle: 2026 GR Supra 3.0 Premium, six-speed manual, NBTevo_T24081I. The first stage needs the car parked, ignition on and iDrive/HUD awake. Engine operation is unnecessary for loader/registry checks. The assistant performs the computer work; the driver only operates the factory menus when requested.
@@ -17,7 +19,7 @@ The prior runtime captures are saved and static dependencies resolve. The SDK no
 | 5 | Optionally run `sh run-replay.sh` to compare emitted serialization | Exit 0; valid JSON; 40 synthetic calls; final function 0x20E. No messages are transmitted. This does not test HUD visibility |
 | 6 | Run `sh run-observer.sh` for a 15-second normal-HUD baseline | Exit 0, complete schema-2 summary, temporary client connected, registry snapshots, zero HUD commands sent. Twenty-second hard deadline. Confirm a unique ring-node host of key 0x8200 if present |
 | 7 | Repeat observer while opening/closing the radio selector; separately during a factory-navigation overlay if available while parked | Label each window and transitions; save snapshots and bounded header metadata. Header differences are clues, not validated overlay semantics. Missing traffic is not proof that no service exists |
-| 8 | Check process exit, factory display and cleanup | No observer remains; factory HUD/navigation/radio still work. Retrieve all outputs, verify completeness, remove only this session's temporary directory after evidence is saved, close SSH sessions, and record whether SSH remains enabled |
+| 8 | Check process exit, factory display and cleanup | No observer remains; factory HUD/navigation/radio still work. Retrieve all outputs, verify completeness, remove only this session's temporary files and directory after evidence is saved (the target lacks `rmdir`; verify the directory is empty before using `rm -r` on that exact session path), close SSH sessions, and record whether SSH remains enabled |
 
 The kit contains three separate scripts. Running the self-test never starts the observer. The observer creates temporary DSI client registration/subscriptions but does not register device-control keys, allocate HUD objects, send drawing messages or change coding/firmware. Its private ABI is partly derived from captured binaries; its first execution remains an experiment, not a previously verified runtime.
 

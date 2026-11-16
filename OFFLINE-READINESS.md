@@ -1,3 +1,5 @@
+> On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.
+
 # Offline readiness
 
 Completed: source implementation, 32/64-bit host tests, QNX ARM builds, static candidate dependency/import checks, DSI required-symbol/table-size check, bounded target self-test, header-only registry observer, local result validator and a hash-checked car-kit packager.

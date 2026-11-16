@@ -27,11 +27,11 @@ def prepare(build, audits, output):
                                   ('run-replay.sh', CANDIDATES[1], '--simulate'),
                                   ('run-observer.sh', CANDIDATES[2], '--observe-registry')]:
         script = output / file
-        script.write_text('#!/bin/sh\nset -eu\ncd "$(dirname "$0")"\n'
-            'case "$(uname -s):$(uname -n):$(uname -m)" in\n'
+        script.write_text('#!/bin/sh\nset -eu\ncase "$0" in */*) cd "${0%/*}" ;; esac\n'
+            'case "$(uname -s):$(uname -n):$(uname -p)" in\n'
             '  QNX:hu-omap:armle*) ;;\n'
             '  *) echo "Stopped: expected direct QNX hu-omap ARM target" >&2; exit 65 ;;\n'
-            'esac\nexec ./' + binary + ' ' + option + '\n')
+            'esac\n' + ('export LD_LIBRARY_PATH=/opt/sys/lib:/boot/lib:/lib\n' if binary == CANDIDATES[2] else '') + 'exec ./' + binary + ' ' + option + '\n')
         script.chmod(0o755)
     (output / 'RESULTS.json').write_text(json.dumps({'schema': 1, 'vehicle': '2026 GR Supra manual / NBTevo_T24081I',
         'tests': {name: {'status': 'not_run', 'exit_code': None, 'log': None}

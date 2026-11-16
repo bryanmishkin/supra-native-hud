@@ -9,17 +9,24 @@ struct RegistryObserver {
     enum { kMaxEntries=1024, kMaxSnapshots=8, kMaxHeaders=256 };
     pthread_mutex_t mutex;
     unsigned snapshots, dropped, headerCount, droppedHeaders;
-    struct Header {uint32_t at,tag,len;uint16_t src,dst,fkt;uint8_t op;unsigned classification;};
+    bool allHeaders;
+    struct Header {uint32_t at,tag,len,lastAt,count;uint16_t src,dst,fkt;uint8_t op,fblock,inst;unsigned classification;};
     Header headers[kMaxHeaders];
     size_t counts[kMaxSnapshots];
     nbt::most::RegistryEntry entries[kMaxSnapshots][kMaxEntries];
-    RegistryObserver():snapshots(0),dropped(0),headerCount(0),droppedHeaders(0) { pthread_mutex_init(&mutex,0); memset(counts,0,sizeof counts); }
+    RegistryObserver(bool all=false):snapshots(0),dropped(0),headerCount(0),droppedHeaders(0),allHeaders(all) { pthread_mutex_init(&mutex,0); memset(counts,0,sizeof counts); }
     static void message(const nbt::most::View& m, nbt::most::MsgClass c, void* p) {
-        if(m.fblock!=0x82 || m.inst!=0)return;
         RegistryObserver& o=*static_cast<RegistryObserver*>(p);
+        if(!o.allHeaders && (m.fblock!=0x82 || m.inst!=0))return;
         pthread_mutex_lock(&o.mutex);
+        if(o.allHeaders)for(unsigned n=0;n<o.headerCount;++n) {
+            Header& h=o.headers[n];
+            if(h.src==m.src&&h.dst==m.dst&&h.fblock==m.fblock&&h.inst==m.inst&&h.fkt==m.fkt&&h.op==m.op&&h.classification==(unsigned)c) {
+                ++h.count;h.lastAt=m.rxMs;pthread_mutex_unlock(&o.mutex);return;
+            }
+        }
         if(o.headerCount>=kMaxHeaders)++o.droppedHeaders;
-        else {Header& h=o.headers[o.headerCount++];h.at=m.rxMs;h.tag=m.hdrTag;h.len=m.len;h.src=m.src;h.dst=m.dst;h.fkt=m.fkt;h.op=m.op;h.classification=c;}
+        else {Header& h=o.headers[o.headerCount++];h.at=h.lastAt=m.rxMs;h.count=1;h.fblock=m.fblock;h.inst=m.inst;h.tag=m.hdrTag;h.len=m.len;h.src=m.src;h.dst=m.dst;h.fkt=m.fkt;h.op=m.op;h.classification=c;}
         pthread_mutex_unlock(&o.mutex);
     }
     static void registry(const std::vector<nbt::most::RegistryEntry>& r,void* p) {
