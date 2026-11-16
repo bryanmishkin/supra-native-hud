@@ -74,7 +74,7 @@ def decode_graph_body(method, body):
         model['next_joined'] = bool(_enum(p.take(1)[0], 1))
         model['next_maneuver_id'] = p.u32()
         model['maneuver_direction'] = _enum(p.take(1)[0], 58)
-        for name in ('current_state_id', 'coming_road_id', 'detailed_maneuver_id', 'distance_id'):
+        for name in ('coming_road_id', 'current_state_id', 'detailed_maneuver_id', 'distance_id'):
             model[name] = p.u32()
         for name in ('navigation_event_ids', 'lane_guiding_ids', 'point_of_interest_ids'):
             model[name] = _ids(p)
@@ -126,8 +126,8 @@ def encode_description_body(handle, model_id, model_type, *, is_passive,
             raise ValueError('Expected boolean')
     payload = struct.pack('>IBBBIBIBIIII', _uint(model_id), _enum(model_type, 50),
         is_passive, previous_joined, _uint(previous_maneuver_id), next_joined,
-        _uint(next_maneuver_id), _enum(maneuver_direction, 58), _uint(current_state_id),
-        _uint(coming_road_id), _uint(detailed_maneuver_id), _uint(distance_id))
+        _uint(next_maneuver_id), _enum(maneuver_direction, 58), _uint(coming_road_id),
+        _uint(current_state_id), _uint(detailed_maneuver_id), _uint(distance_id))
     for ids in (navigation_event_ids, lane_guiding_ids, point_of_interest_ids):
         if not isinstance(ids, (tuple, list)) or len(ids) > (MAX_BODY - 62) // 4:
             raise ValueError('Expected bounded ID list')

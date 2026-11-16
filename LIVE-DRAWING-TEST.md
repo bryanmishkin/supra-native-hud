@@ -1,3 +1,5 @@
+> **Later same-session result:** RLE32 encoding and the shared road-icon path were implemented and tested successfully. See [RLE32-LIVE-PROOF.md](RLE32-LIVE-PROOF.md). The PNG/own-session procedure below is historical.
+
 # Own-session live drawing experiment
 
 **Live result: the PNG drawing candidate is incompatible with the returned configuration.**

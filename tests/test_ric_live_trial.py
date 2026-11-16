@@ -11,7 +11,7 @@ import unittest
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from ric_live_trial import (DrawingTrial, TcpExchange, choose_allocation, marker_png,
-                            list_body, SERVER_COOKIE)
+                            list_body, SERVER_COOKIE, SERVER_COOKIE_NOTIFICATION)
 from ric_owned_session import OwnedSession, RicFailure
 from ric_graph import decode_graph_body
 from ric_guiding import decode_guiding_body
@@ -129,12 +129,12 @@ class TcpTests(unittest.TestCase):
             response=struct.pack('>HHIHHBBBB',0xb006,7,8,7,1,1,1,0x80,0)
             def serve():
                 s.recv(100)
-                for b in SERVER_COOKIE+response:s.sendall(bytes([b]))
+                for b in SERVER_COOKIE+SERVER_COOKIE_NOTIFICATION+response:s.sendall(bytes([b]))
                 s.close()
             t=threading.Thread(target=serve);t.start()
             try:self.assertEqual(TcpExchange(c,d)(request,1),response)
             finally:c.close();t.join()
-            self.assertEqual(len(list(Path(d).glob('*'))),3)
+            self.assertEqual(len(list(Path(d).glob('*'))),4)
     def test_timeout_poisoning_prevents_more_sends(self):
         c,s=socket.socketpair()
         with tempfile.TemporaryDirectory() as d:

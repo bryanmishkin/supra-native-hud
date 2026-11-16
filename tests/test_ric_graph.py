@@ -12,7 +12,7 @@ class GraphTests(unittest.TestCase):
         r=decode_graph_body(9,STATE)['list_state']
         self.assertEqual((r['active_maneuver_id'],r['route_length'],r['guidance_state']),(0x21222324,1.5,2))
     def test_fixed_description(self):
-        self.assertEqual(encode_description_body(0x01020304,0x21222324,15,is_passive=False,previous_joined=True,previous_maneuver_id=0x31323334,next_joined=False,next_maneuver_id=0xffffffff,maneuver_direction=8,current_state_id=0x41424344,coming_road_id=0x51525354,detailed_maneuver_id=0x61626364,distance_id=0x71727374,navigation_event_ids=[0x81828384],lane_guiding_ids=[],point_of_interest_ids=[]),DESC)
+        self.assertEqual(encode_description_body(0x01020304,0x21222324,15,is_passive=False,previous_joined=True,previous_maneuver_id=0x31323334,next_joined=False,next_maneuver_id=0xffffffff,maneuver_direction=8,current_state_id=0x51525354,coming_road_id=0x41424344,detailed_maneuver_id=0x61626364,distance_id=0x71727374,navigation_event_ids=[0x81828384],lane_guiding_ids=[],point_of_interest_ids=[]),DESC)
         r=decode_graph_body(10,DESC)['description']
         self.assertEqual(r['detailed_maneuver_id'],0x61626364)
         self.assertEqual(r['navigation_event_ids'],[0x81828384])

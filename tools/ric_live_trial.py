@@ -29,6 +29,8 @@ ABSENT = 0xffffffff
 IDENTITY = ('SupraHUD.MarkerTrial', 'SupraHUD.OwnSession', 'bryanmishkin')
 VERSIONS = (3, 3, 1)
 SERVER_COOKIE = bytes.fromhex('ffff800000000008deadbeef01018000')
+# Actual cluster idle cookie observed on the car uses notification kind 0x02.
+SERVER_COOKIE_NOTIFICATION = bytes.fromhex('ffff800000000008deadbeef01010200')
 
 
 def choose_allocation(body):
@@ -133,7 +135,7 @@ class TcpExchange:
             remaining(); self.sock.sendall(packet)
             for cookie in range(5):
                 header = read(16)
-                if header == SERVER_COOKIE:
+                if header in (SERVER_COOKIE, SERVER_COOKIE_NOTIFICATION):
                     self._save(stem+'-cookie-%d.bin' % cookie, header)
                     continue
                 n = struct.unpack_from('>I',header,4)[0]
