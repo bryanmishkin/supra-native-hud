@@ -51,7 +51,7 @@ class Deployment(unittest.TestCase):
  def test_factory_wrapper_preserves_args_and_defaults(self):
   with tempfile.TemporaryDirectory() as d:
    p=Path(d);root=p/'app';state=p/'ram';root.mkdir();state.mkdir();factory=p/'factory';factory.write_text('#!/bin/sh\nprintf "%s\\n" "$PWD" "$*" "${LD_PRELOAD:-none}" "${SUPRA_HUD_HANDOFF:-none}"\n');factory.chmod(0o700)
-   wrapper=p/'wrapper';wrapper.write_text((ROOT/'deployment/factory-controller-wrapper.sh').read_text().replace('/var/opt/supra-hud',str(root)).replace('/dev/shmem/supra-hud',str(state)).replace('/opt/nav/eceusa/bin/NavNBTEvoController',str(factory)));wrapper.chmod(0o700)
+   wrapper=p/'wrapper';wrapper.write_text((ROOT/'deployment/factory-controller-wrapper.sh').read_text().replace('/var/opt/supra-hud',str(root)).replace('/tmp/supra-hud',str(state)).replace('/opt/nav/eceusa/bin/NavNBTEvoController',str(factory)));wrapper.chmod(0o700)
    env=os.environ.copy();env.pop('LD_PRELOAD',None);env.pop('SUPRA_HUD_HANDOFF',None)
    def run():return subprocess.check_output([str(wrapper),'--config=original.ini','argument with spaces'],cwd=p,env=env,text=True).splitlines()
    self.assertEqual(run()[:3],[str(p.resolve()),'--config=original.ini argument with spaces','none'])

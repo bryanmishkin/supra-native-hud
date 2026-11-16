@@ -24,7 +24,9 @@ def plan(target,before,after,out):
   script=f'''#!/bin/sh
 set -eu
 umask 077
-cd "$(dirname "$0")"
+command -v cmp >/dev/null 2>&1 || exit 2
+command -v sync >/dev/null 2>&1 || exit 2
+cd "${{0%/*}}"
 TARGET={quoted}
 [ ! -L "$TARGET" ] && [ -f "$TARGET" ] || exit 2
 cmp "$TARGET" ./{expect} >/dev/null || {{ echo 'Target differs; refusing overwrite' >&2; exit 2; }}
@@ -39,7 +41,7 @@ cmp "$TARGET" ./{expect} >/dev/null || {{ echo 'Concurrent edit; refusing overwr
 mv "$TMP" "$TARGET"
 sync
 cmp "$TARGET" ./{replacement} >/dev/null || exit 2
-printf '%s\\n' '{action.upper()}_VERIFIED'
+echo '{action.upper()}_VERIFIED'
 '''
   p=out/(action+'.sh');p.write_text(script);p.chmod(0o700)
  (out/'transaction.json').write_text(json.dumps({'target':target,'before_sha256':digest(old),'after_sha256':digest(new),'installed':False,'requires_current_target_read':True,'restart_performed':False},indent=2))

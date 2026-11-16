@@ -1,3 +1,5 @@
+> Live validation supersedes earlier readiness claims: [results and failed startup integration](docs/v1-native-validation-2026-11-16.md). Native drawing/cleanup passed; controller replacement caused restarts. No unattended installation is accepted. Do not repeat the restart trial.
+
 > Latest startup/rollback and acceptance status (2026-11-16): see [STARTUP-ROLLBACK.md](STARTUP-ROLLBACK.md) and [ONE-CAR-SESSION-V1.md](ONE-CAR-SESSION-V1.md). The executable RAM kit is ready; unattended boot drawing is not accepted.
 
 # Standalone and navigation handoff candidate — 16 November 2026

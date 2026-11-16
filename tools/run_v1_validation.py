@@ -59,7 +59,7 @@ def execute(a):
    first=result.splitlines()[0]
    if b'QNX hu-omap 6.5.0' not in first or b'armle' not in first:raise ValueError('Unexpected target identity')
   elif a.phase=='stage':
-   require('preflight');d='/dev/shmem/supra-v1-'+s['session'];s['remote_dir']=d;save();run('umask 077; mkdir '+q(d),label='mkdir')
+   require('preflight');d='/tmp/supra-v1-'+s['session'];s['remote_dir']=d;save();run('umask 077; mkdir '+q(d),label='mkdir')
    for name in files:
     body=(kit/name).read_bytes();run('set -C; umask 077; cat > '+q(d+'/'+name),data=body,label='upload-'+name)
     returned=run('cat '+q(d+'/'+name),label='readback-'+name)

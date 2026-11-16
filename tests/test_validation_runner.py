@@ -25,7 +25,7 @@ esac
     def __init__(self,*args):pass
     def run(self,command,data=None,timeout=50):
      if command=='sh':return subprocess.CompletedProcess([],0,b'QNX hu-omap 6.5.0 ARM armle\n',b'')
-     command=command.replace('/dev/shmem',str(remote_root))
+     command=command.replace('/tmp',str(remote_root))
      return subprocess.run(['sh','-c',command],input=data,capture_output=True,timeout=timeout)
    args=SimpleNamespace(kit=kit,output=output,phase='preflight',ssh_socket=root/'none',head='169.254.199.119',guidance_stopped=True,visual_cleanup_confirmed=True)
    with patch.object(runner,'Remote',FakeRemote):

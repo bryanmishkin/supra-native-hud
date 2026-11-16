@@ -2,6 +2,7 @@
 # Switch only project-owned release pointers. Factory startup rollback is separate.
 set -eu
 umask 077
+command -v sync >/dev/null 2>&1 || { echo 'Required sync utility unavailable; no changes' >&2; exit 2; }
 [ "$#" -ge 3 ] || exit 64
 ROOT=$1
 STATE=$2
@@ -21,13 +22,13 @@ case "$target" in ''|*[!0-9a-f]*) exit 64;; esac
 [ ! -L "$ROOT/releases/$target" ] && [ -d "$ROOT/releases/$target" ] || exit 2
 [ "$(cat "$ROOT/releases/$target/release.ok")" = "$target" ] || exit 2
 # Always stop before changing the selected executable. Uncertain stop aborts switch.
-"$(dirname "$0")/hud-service.sh" "$ROOT" "$STATE" disable
+"${0%/*}/hud-service.sh" "$ROOT" "$STATE" disable
 old=''
 if [ -f "$ROOT/current" ]; then old=$(cat "$ROOT/current"); fi
 case "$old" in *[!0-9a-f]*) exit 2;; esac
-printf '%s\n' "$target" > "$TMP"
-if [ -n "$old" ]; then printf '%s\n' "$old" > "$ROOT/previous"; fi
+echo "$target" > "$TMP"
+if [ -n "$old" ]; then echo "$old" > "$ROOT/previous"; fi
 mv "$TMP" "$ROOT/current"
 sync
 [ "$(cat "$ROOT/current")" = "$target" ] || exit 2
-printf '%s\n' 'RELEASE_SELECTED_DISABLED'
+echo 'RELEASE_SELECTED_DISABLED'

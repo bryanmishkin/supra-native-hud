@@ -2,7 +2,7 @@
 # Candidate launch adapter only. Factory executable and argv are preserved.
 # Registering this in the factory starter requires current-target review/testing.
 ROOT=/var/opt/supra-hud
-STATE=/dev/shmem/supra-hud
+STATE=/tmp/supra-hud
 FACTORY=/opt/nav/eceusa/bin/NavNBTEvoController
 release=''
 if [ -f "$ROOT/current" ]; then release=$(cat "$ROOT/current"); fi

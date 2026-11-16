@@ -1,8 +1,10 @@
+> Live validation supersedes earlier readiness claims: [results and failed startup integration](docs/v1-native-validation-2026-11-16.md). Native drawing/cleanup passed; controller replacement caused restarts. No unattended installation is accepted. Do not repeat the restart trial.
+
 # Startup and rollback contract
 
 Offline-tested management candidate; not an installed unattended service.
 
-Project root proposed: /var/opt/supra-hud. RAM state: /dev/shmem/supra-hud. Confirm the persistent destination, filesystem and startup invocation on the actual unit before use. No installer mounts filesystems, guesses a factory restart, or registers a startup entry.
+Project root proposed: /var/opt/supra-hud. RAM state: /tmp/supra-hud. Confirm the persistent destination, filesystem and startup invocation on the actual unit before use. No installer mounts filesystems, guesses a factory restart, or registers a startup entry.
 
 `deployment/hud-service.sh ROOT STATE startup` enters standby only. `start-parked --guidance-stopped-and-parked` requires enabled state, matching release.ok and a fresh operator assertion. It runs the bounded worker. Duplicate/stale state is refused. `stop` uses the CLEAN handshake rather than killing a PID; uncertain cleanup retains evidence and disables future starts. `disable` attempts cleanup and leaves the disable file even if cleanup fails.
 

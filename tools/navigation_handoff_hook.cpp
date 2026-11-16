@@ -55,6 +55,7 @@ if(fcntl(fd,F_SETFL,O_NONBLOCK)<0){close(fd);return;}
  // Factory priority: do not indefinitely block navigation on a failed HUD worker.
  // An uncertain handoff is NOT reported as successful cleanup.
  if(!clean)fprintf(stderr,"supra-handoff: cleanup uncertain; factory priority after bounded wait\n");
+ else if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: CLEAN at %lld\n",ms());
 }
 extern "C" int supraAdapter(void*,const void*,void*) __asm__("_ZN6SomeIP22CSomeIPProtocolAdapter13doSendMessageERK8TWeakPtrI21CSocketSenderReceiverI11CDispatcherS0_EERNS_14CSomeIPMessageE");
 extern "C" int supraAdapter(void* self,const void* socketRef,void* message){
@@ -72,7 +73,7 @@ extern "C" int supraAdapter(void* self,const void* socketRef,void* message){
   // requests then revoke conservatively. A supplied other destination is ignored.
   bool relevant=!dest;
   if(dest&&dest->sa_family==AF_INET){sockaddr_in* ip=(sockaddr_in*)dest;relevant=ntohl(ip->sin_addr.s_addr)==0xa030c760&&ntohs(ip->sin_port)==30502;}
-  if(relevant){pthread_mutex_lock(&mutex);handoff(path);pthread_mutex_unlock(&mutex);return original(self,socketRef,message);}
+  if(relevant){pthread_mutex_lock(&mutex);handoff(path);pthread_mutex_unlock(&mutex);if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: factory send at %lld\n",ms());return original(self,socketRef,message);}
  }
  return original(self,socketRef,message);
 }

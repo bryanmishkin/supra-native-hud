@@ -1,3 +1,5 @@
+> Live validation supersedes earlier readiness claims: [results and failed startup integration](docs/v1-native-validation-2026-11-16.md). Native drawing/cleanup passed; controller replacement caused restarts. No unattended installation is accepted. Do not repeat the restart trial.
+
 # One-session v1 acceptance — 2026-11-16
 
 Status: executable RAM acceptance kit ready; unattended installation is NOT yet accepted. Previously proven sport UI/color correction is retained. No vehicle changes were made during this offline preparation.

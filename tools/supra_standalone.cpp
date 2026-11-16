@@ -66,13 +66,13 @@ struct Monitor {
   const char* loss=getenv("SUPRA_TEST_MONITOR_LOSS");if(loss&&access(loss,F_OK)==0)unhealthy=true;
 #endif
   if(!capture)return;
-  for(unsigned i=0;i<256;++i){pcap_pkthdr* h;const u_char* b;int r=pcap_next_ex(capture,&h,&b);if(r==0)break;if(r<0){unhealthy=true;break;}++packets;
+  for(unsigned i=0;i<256;++i){pcap_pkthdr* h;const u_char* b;int r=pcap_next_ex(capture,&h,&b);if(r==0)break;if(r<0){fprintf(stderr,"monitor read: %s\n",pcap_geterr(capture));unhealthy=true;break;}++packets;
    Traffic t=classifyTraffic(b,h->caplen,h->len,ownAddress,port,clusterAddress);
-   if(t==UnknownTraffic){unhealthy=true;break;}
+   if(t==UnknownTraffic){fprintf(stderr,"monitor unknown packet cap=%u wire=%u\n",(unsigned)h->caplen,(unsigned)h->len);unhealthy=true;break;}
    if(t==FactoryTraffic)foreign=true;
    if(i==255)unhealthy=true;
   }
-  pcap_stat stats;if(pcap_stats(capture,&stats)<0||stats.ps_drop||stats.ps_ifdrop)unhealthy=true;
+  pcap_stat stats;memset(&stats,0,sizeof(stats));int status=pcap_stats(capture,&stats);if(status<0||stats.ps_drop||stats.ps_ifdrop){fprintf(stderr,"monitor stats status=%d drop=%u ifdrop=%u error=%s\n",status,stats.ps_drop,stats.ps_ifdrop,pcap_geterr(capture));unhealthy=true;}
  }
  void guard(){pump();if(foreign)fail("factory_activity_quiesced");if(unhealthy)fail("monitor_unknown_quiesced");}
 };

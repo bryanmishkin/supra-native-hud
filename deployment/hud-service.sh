@@ -26,7 +26,7 @@ case "$ACTION" in
 startup)
     # A boot is never evidence that factory guidance is stopped.
     # Start management in standby; only explicit fresh parked confirmation draws.
-    printf '%s\n' 'standby: fresh guidance/ownership confirmation required' > "$STATE/startup-state"
+    echo 'standby: fresh guidance/ownership confirmation required' > "$STATE/startup-state"
     if [ ! -f "$ROOT/enabled" ]; then : > "$ROOT/disabled"; fi
     ;;
 status)
