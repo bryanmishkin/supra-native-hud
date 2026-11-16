@@ -29,3 +29,7 @@ printf '%s\n' 'Built offline replay executable; no live vehicle sender or instal
   -Ivendor/nbt/src -Isrc src/hud_core.cpp src/native_backend.cpp src/native_session.cpp src/hud_app.cpp \
   tools/hud_selftest.cpp -o build/supra-hud-selftest-qnx
 printf '%s\n' 'Built bounded no-vehicle-I/O target self-test.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  tools/hud_passive_capture.c -lpcap -lsocket -o build/supra-passive-capture-qnx
+printf '%s\n' 'Built bounded passive capture candidate; target BPF availability must be checked.'

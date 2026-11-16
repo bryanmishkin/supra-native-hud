@@ -25,3 +25,10 @@ Added tools/inspect_someip_stream.py: local-only, bounded 16 MiB inventory of a 
 5. Only after that evidence supports a separate surface, implement the transport adapter and review a parked minimal draw/erase test with verified cleanup. No live drawing test is prepared yet.
 
 No extra car session is needed to establish that the QNX build executes: all 10 target self-tests and the synthetic 40-call replay already passed. The missing evidence concerns transport, display ownership, latency and real telemetry semantics.
+
+## Code-level follow-up
+The captured binary now has 43 indexed ARM PC-relative loads to selected string literals. In this exact binary, selector routine 0x33a3b4 calls 0x33f228 at 0x33a3f0; the callee logs getKOMBI_CIC, passes literal 0x48800818 into a coding lookup, and logs EXBOX.KOMBI_CIC. Selector comparison at 0x33a554 selects value 3; its branch logs “create ethernet kombi” and calls 0x33ed30, whose constructor records CEthernetKombi. This establishes a static coding-to-Ethernet branch, not this car's runtime coding value. The literal is an internal lookup argument, not a verified diagnostic identifier and not a request to send.
+
+A HUD-only initialization branch compares an object field at +0x10c to 6 at 0x6ddec0; its alternate path logs the FPK_PLUS_HUD rejection. This is an internal field comparison, not proof that coding value 6 should be written. Separate HUDTermConnection and ManeuverViewConnection handlers exist. At 0xa7cee8 a call to 0xa7ce50 is followed by a zero-result error path logging command-displayable session registration failure for guidanceviewer(ICHUD). These are specific reverse-engineering anchors; service IDs, display geometry and session ownership still require additional evidence.
+
+The exact passive capture kit is documented in [PASSIVE-CAPTURE-KIT.md](PASSIVE-CAPTURE-KIT.md). Available inventory contains ipgrabber and filesystem snoopy; neither has been substituted as a network recorder. The custom bounded recorder avoids depending on an installed tcpdump.
