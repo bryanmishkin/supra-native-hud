@@ -1,3 +1,5 @@
+Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
+
 Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
 
 Latest live result: [smooth RPM without circle or arrow, plus cooperative navigation yield](SYMBOL-FREE-LIVE-RESULT.md). Use the explicit empty-direction-zero profile; the old control is retained for comparison.

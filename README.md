@@ -1,3 +1,5 @@
+Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
+
 Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
 
 New optional [sport HUD layout](SPORT-UX.md): larger digits and orange/red shift cues; built offline, projection pending.

@@ -47,3 +47,18 @@ printf '%s\n' 'Built 120-second all-port cluster and service-discovery recorder;
 printf '%s\n' 'Built synthetic tachometer bitmap generator; no vehicle I/O.'
 
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 -Isrc -c src/rpm_input.cpp -o build/rpm_input.o
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+  -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp tools/supra_standalone.cpp \
+  -lpcap -lsocket -o build/supra-standalone-parked-qnx
+printf '%s\n' 'Built direct standalone parked candidate with passive factory-activity revocation; no autostart.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 -shared -fPIC \
+  tools/navigation_handoff_hook.cpp -lsocket -o build/libsupra-navigation-handoff-experimental.so
+printf '%s\n' 'Built experimental pre-send handoff hook. Not loaded into any factory process.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 -shared -fPIC \
+  tests/handoff_fake_factory.cpp -o build/libsupra-fake-factory-test.so
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+  tests/handoff_target_selftest.cpp -Lbuild -lsupra-fake-factory-test -lsocket -o build/supra-handoff-isolated-selftest-qnx
+printf '%s\n' 'Built fake-factory handoff self-test; never attaches to a factory process.'
