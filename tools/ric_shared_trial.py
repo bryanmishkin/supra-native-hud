@@ -33,10 +33,15 @@ def allocation_from_reply(reply):
 
 class SharedSession(OwnedSession):
     """Adopts explicitly confirmed shared handle; close removes only our upload."""
-    def __init__(self,exchange,allocation,client_id=0x5348):
+    def __init__(self,exchange,allocation,client_id=0x5348,double_buffer=False):
         super().__init__(exchange,('SupraHUD.ResourceTrial','SupraHUD.Test','bryanmishkin'),(3,3,1),client_id,timeout=2)
         if allocation['handle']!=200:raise RicFailure('Unexpected shared handle')
         self.handle=allocation['handle'];self.state='created';self.allocation=allocation
+        self.upload_ids={allocation.get('resource_id')}
+        if double_buffer:
+            ids=allocation.get('resource_ids',[])
+            if len(ids)<2 or ids[-1]!=allocation['resource_id']:raise RicFailure('Two confirmed slots required')
+            self.upload_ids=set(ids[-2:])
     def open(self):raise RicFailure('Shared trial must not create an instance')
     def _request(self,method,body):
         if method not in (2,3,4,8,9,10,11,12,14):raise RicFailure('Method forbidden in shared trial')
@@ -45,7 +50,7 @@ class SharedSession(OwnedSession):
             if len(body)<8:raise RicFailure('Missing resource ID')
             rid=struct.unpack_from('>I',body,4)[0]
             if rid not in self.allocation.get('resource_ids',[]):raise RicFailure('Resource outside confirmed bitmap range')
-            if method==3 and rid!=self.allocation['resource_id']:raise RicFailure('Upload outside selected slot')
+            if method==3 and rid not in self.upload_ids:raise RicFailure('Upload outside selected slot')
         if method in (9,10,11,12,14):
             if len(body)<9:raise RicFailure('Missing model identity')
             mid=struct.unpack_from('>I',body,4)[0];typ=body[8]

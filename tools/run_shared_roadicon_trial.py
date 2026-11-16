@@ -7,6 +7,10 @@ from ric_live_trial import TcpExchange
 from ric_graph import decode_graph_body,encode_description_body
 parser=argparse.ArgumentParser(description='Live-verified shared road-icon marker test; requires stopped factory guidance.')
 parser.add_argument('--execute',action='store_true')
+parser.add_argument('--double-buffer',action='store_true',help='Experimental two-slot switch, no deliberate blank between frames')
+parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
+parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
+parser.add_argument('--renderer',type=Path,help='Locally built native bitmap renderer')
 parser.add_argument('--graph-variant',choices=['control','no-detail','road-only'],default='control',help='Experimental circle-isolation variants; control is live verified')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
 parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
@@ -20,11 +24,14 @@ args=parser.parse_args()
 if not args.execute:
  print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, 15 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
 if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,args.output)):parser.error('All file/connection/output arguments required')
-if (args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
+if (args.live_rpm_local or args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
+if args.double_buffer and not args.live_rpm_local:parser.error('Double buffer requires live RPM')
+if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant!='control'):parser.error('Live RPM requires renderer, control graph and no static bitmap')
 import ipaddress
 ipaddress.IPv4Address(args.head)
+if args.live_rpm_local and not ipaddress.IPv4Address(args.live_rpm_local).is_link_local:parser.error('Expected local ENET address')
 root=args.output;root.mkdir(parents=True,exist_ok=False)
 a=allocation_from_reply(args.create_response.read_bytes()[16:])
 assert {17,29,34}.issubset(a['models'])
@@ -85,19 +92,90 @@ report={}
 def record(r):
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
 def observe(phase,seconds):
+ if args.live_rpm_local:return live_updates()
  print('TEST WINDOW ACTIVE: %d seconds; keep factory guidance stopped. Ctrl-C withdraws the test.'%args.window_seconds,flush=True)
  time.sleep(args.window_seconds);return None
 class BitmapSession(SharedSession):
+ def upload_bitmap(self,rid,typ,pair,image):
+  # Defer error cleanup until the graph has been withdrawn; another slot may
+  # still be visible when this upload fails or its acknowledgement is lost.
+  from ric_resource import encode_bitmap_body
+  self._active()
+  if rid in self.resources or self._check(rid,typ):raise RuntimeError('Bitmap slot not free')
+  self.resources[rid]=typ
+  self._empty(3,encode_bitmap_body(self.handle,rid,typ,pair,image))
+  if not self._check(rid,typ):raise RuntimeError('Uploaded bitmap not present')
  def upload_marker(self):
+  if args.live_rpm_local:
+   raw=measured_frame();a=self.allocation
+   from ric_rle32 import encode_bgra
+   self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(raw));return
   if custom is None:return super().upload_marker()
   from ric_rle32 import encode_bgra
   a=self.allocation
   self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(custom))
+latest_sample=None
+live_session=None
+live_rows=[]
+def fresh():
+ if latest_sample is None or time.monotonic()*1000-latest_sample['sampled_at_ms']>300:raise RuntimeError('RPM sample expired; withdrawing')
+def measured_frame():
+ global latest_sample
+ from rpm_feed import sample
+ latest_sample=sample(args.live_rpm_local,'169.254.106.96','en8',timeout=.1)
+ live_rows.append(latest_sample)
+ (root/'live-rpm.json').write_text(json.dumps(live_rows,indent=2))
+ if not latest_sample['valid']:raise RuntimeError('RPM invalid; withdrawing')
+ target=root/'current.bgra'
+ subprocess.run([str(args.renderer.resolve()),str(latest_sample['rpm']),str(target)],check=True,capture_output=True,timeout=.1)
+ raw=target.read_bytes()
+ if len(raw)!=21600:raise ValueError('Bad native frame')
+ fresh();return raw
+def live_updates():
+ from ric_guiding import encode_high_roundabout_body
+ from ric_rle32 import encode_bgra
+ from ric_resource import encode_bitmap_body
+ session=live_session;rid=a['resource_id'];typ=a['resource_type']
+ print('LIVE RPM WINDOW ACTIVE: %d seconds; idle only'%args.live_seconds,flush=True)
+ deadline=time.monotonic()+args.live_seconds
+ # Tight per-request timeout while displaying; cleanup restores normal timeout.
+ session.timeout=.1
+ try:
+  fresh()
+  while time.monotonic()<deadline:
+   if args.double_buffer:
+    new_id=next(x for x in session.upload_ids if x!=rid)
+    raw=measured_frame()
+    session.upload_bitmap(new_id,typ,a['dimensions'],encode_bgra(raw));fresh()
+    nextroad=bytearray(road);nextroad[32:36]=struct.pack('>I',new_id)
+    session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,new_id));fresh()
+    session._empty(14,bytes(nextroad));fresh()
+    session._empty(8,struct.pack('>II',200,rid))
+    if session._check(rid,typ):raise RuntimeError('Previous bitmap still present')
+    del session.resources[rid];rid=new_id
+   else:
+    session._empty(14,emptyroad)
+    session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,0xffffffff))
+    session._empty(8,struct.pack('>II',200,rid))
+    if session._check(rid,typ):raise RuntimeError('Old bitmap still present')
+    del session.resources[rid]
+    raw=measured_frame()
+    session.upload_bitmap(rid,typ,a['dimensions'],encode_bgra(raw));fresh()
+    session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,rid))
+    fresh();session._empty(14,road);fresh()
+   # Keep polling at <=4Hz. Remove references before acquiring the next sample.
+   remaining=.25-(time.monotonic()*1000-latest_sample['sampled_at_ms'])/1000
+   if remaining>0:time.sleep(min(remaining,max(0,deadline-time.monotonic())))
+  return None
+ finally:session.timeout=2
+
 def cleanup():signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)
 def stop(sig,frame):raise KeyboardInterrupt()
 signal.signal(signal.SIGTERM,stop)
 try:
- with socket.create_connection(('127.0.0.1',port),2) as sock:report=Trial(BitmapSession(TcpExchange(sock,root),a),record,observe,cleanup).run()
+ with socket.create_connection(('127.0.0.1',port),2) as sock:
+  live_session=BitmapSession(TcpExchange(sock,root),a,double_buffer=args.double_buffer)
+  report=Trial(live_session,record,observe,cleanup).run()
 finally:
  r=subprocess.run(base+['-O','cancel','-L',f,destination],capture_output=True);report['forward_cancelled']=r.returncode==0
  record(report);print(json.dumps({k:report.get(k) for k in ['status','error','cleanup','cleanup_steps','forward_cancelled']},indent=2))

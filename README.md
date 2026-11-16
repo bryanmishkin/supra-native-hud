@@ -1,3 +1,5 @@
+Latest result: [smooth 30-second live RPM drawing verified](LIVE-RPM-SMOOTH-RESULT.md), with complete cleanup and normal factory-function checks. Circle removal and automatic coexistence remain unresolved.
+
 Latest next test: [circle isolation, measured RPM input and factory-navigation handling](CIRCLE-RPM-NAV-NEXT-TEST.md). Includes review of the supplied windshield video.
 
 Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.

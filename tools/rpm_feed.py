@@ -17,16 +17,16 @@ def exact(sock,n,deadline,clock=time.monotonic):
         data+=part
     return data
 
-def sample(local,gateway,interface,clock=time.monotonic):
+def sample(local,gateway,interface,clock=time.monotonic,timeout=.75):
     start=clock();record=dict(request='010c',ecu='12',valid=False,requested_at_ms=int(start*1000))
     try:
         with socket.socket() as s:
-            s.settimeout(.5);s.bind((local,0))
+            s.settimeout(min(.5,timeout));s.bind((local,0))
             # Mac IP_BOUND_IF, matching the verified ENET probe. No route changes.
             s.setsockopt(socket.IPPROTO_IP,25,socket.if_nametoindex(interface))
             s.connect((gateway,6801))
             s.sendall(struct.pack('>IHBB',4,1,0xf4,0x12)+REQUEST)
-            deadline=start+.75
+            deadline=start+timeout
             for _ in range(24):
                 size,kind=struct.unpack('>IH',exact(s,6,deadline,clock))
                 if not 2<=size<=8192:raise ValueError('Invalid gateway frame length')

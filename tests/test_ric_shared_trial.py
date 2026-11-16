@@ -34,3 +34,16 @@ class SharedTests(unittest.TestCase):
   s=SharedSession(lambda p,t:None,{'handle':200})
   for m,b in [(1,b''),(7,struct.pack('>I',200)),(8,struct.pack('>II',200,99))]:
    with self.assertRaises(RicFailure):s._request(m,b)
+
+class DoubleBufferAllocationTests(unittest.TestCase):
+ def test_second_slot_requires_explicit_two_slot_mode(self):
+  a=dict(handle=200,models={},resource_id=0x01000009,resource_ids=list(range(0x01000000,0x0100000a)))
+  def tx(p,t):
+   h=bytearray(p[:16]);h[4:8]=struct.pack('>I',8);h[14]=128;return bytes(h)
+  normal=SharedSession(tx,a)
+  with self.assertRaises(RicFailure):normal._empty(3,struct.pack('>II',200,0x01000008))
+  buffered=SharedSession(tx,a,double_buffer=True)
+  buffered._empty(3,struct.pack('>II',200,0x01000008))
+  with self.assertRaises(RicFailure):buffered._empty(3,struct.pack('>II',200,0x01000007))
+ def test_missing_second_slot_rejected(self):
+  with self.assertRaises(RicFailure):SharedSession(lambda p,t:None,dict(handle=200,resource_id=5,resource_ids=[5]),double_buffer=True)
