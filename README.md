@@ -84,3 +84,5 @@ See [RIC-GUIDING-BINDING.md](RIC-GUIDING-BINDING.md) for the traced method-11 pi
 See [RIC-VISIBLE-GRAPH.md](RIC-VISIBLE-GRAPH.md) for capture-validated active maneuver/description messages, cancellation, and the passive graph analyzer.
 
 See [RIC-RESOURCE-REMOVAL.md](RIC-RESOURCE-REMOVAL.md) for correlated resource-check replies, distinct-client create-body preparation, and the remaining removal-test boundary.
+
+See [OWNED-SESSION-LIFECYCLE.md](OWNED-SESSION-LIFECYCLE.md) for the stateful, transport-injected resource lifecycle and failure-injection results. This is not a windshield drawing test.
