@@ -14,6 +14,8 @@ See [the session contract](SESSION-CONTRACT.md) for statically decoded allocatio
 
 See [the cluster source review](CLUSTER-SOURCE-REVIEW.md) for public implementations checked and the local server-stub forwarding trace.
 
+See [the bitmap resource trace](RIC-BITMAP-RESOURCE.md) for the recovered upload format, resource-reference path and tested offline codec.
+
 ## Build and test
 
 Run commands from the repository root.
