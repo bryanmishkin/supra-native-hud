@@ -1,3 +1,5 @@
+Live result: the windshield stepped tachometer, complete removal and subsequent factory navigation passed on 16 November 2026. Gauge-cluster tachometer visibility was not observed during this run. See [TACHOMETER-LIVE-RESULT.md](TACHOMETER-LIVE-RESULT.md).
+
 # Tachometer drawing test — prepared 16 November 2026
 
 The next test displays native-rendered synthetic RPM values 1000, 3500 and 6500 through the road-icon path proven in the car. Each value has a three-second observation window and a complete withdrawal/disposal/absence-check cycle before the next value. It is a staged drawing experiment, not a real-time tachometer or an independent overlay. No engine revving is needed.
