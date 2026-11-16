@@ -1,3 +1,5 @@
+Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
+
 New optional [sport HUD layout](SPORT-UX.md): larger digits and orange/red shift cues; built offline, projection pending.
 
 Latest live result: [smooth RPM without circle or arrow, plus cooperative navigation yield](SYMBOL-FREE-LIVE-RESULT.md). Use the explicit empty-direction-zero profile; the old control is retained for comparison.

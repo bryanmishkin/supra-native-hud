@@ -1,3 +1,5 @@
+Live update: the initial colored frames projected blue shift lights. A red/blue channel swap at the display boundary corrected them: Bryan confirmed one orange at 5500, three orange/one red at 6200 and five red at 6500. Select `--swap-red-blue` for this Supra road-icon path, including live frames; canonical renderer previews remain BGRA and the RLE algorithm is unchanged. See SPORT-LIVE-RESULT.md for complete live evidence and limitations.
+
 # Sport HUD layout — 16 November 2026
 
 Implemented an optional S2000-inspired sport layout in the native C++98 renderer: rising 24-segment sweep, 20-pixel-tall RPM digits (previously 10), and five enlarged progressive orange/red shift lights. All drawing remains inside the measured 150×36 bitmap. No flashing animation. Classic layout remains the default comparison.

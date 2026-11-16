@@ -60,3 +60,17 @@ def marker_bgra(width=150,height=36):
                  (abs(y-height//2)<=1 and width//3<=x<=2*width//3))
             out.extend(b'\xff\xff\xff\xff' if lit else b'\0\0\0\xff')
     return bytes(out)
+
+
+def swap_red_blue(raw):
+    """Measured Supra road-icon color correction; preserves alpha and geometry.
+
+    Keep canonical BGRA previews unchanged. Apply once at the display boundary,
+    before encoding; not a change to the reverse-engineered RLE algorithm.
+    """
+    if not isinstance(raw,bytes) or not raw or len(raw)%4 or len(raw)>512*512*4:
+        raise ValueError('Expected bounded nonempty BGRA pixels')
+    result=bytearray(raw)
+    for i in range(0,len(result),4):
+        result[i],result[i+2]=result[i+2],result[i]
+    return bytes(result)

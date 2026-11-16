@@ -10,6 +10,7 @@ parser.add_argument('--execute',action='store_true')
 parser.add_argument('--double-buffer',action='store_true',help='Experimental two-slot switch, no deliberate blank between frames')
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
 parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
+parser.add_argument('--swap-red-blue',action='store_true',help='Measured Supra road-icon color correction, applied once before RLE encoding')
 parser.add_argument('--renderer-style',choices=['classic','sport'],default='classic')
 parser.add_argument('--renderer',type=Path,help='Locally built native bitmap renderer')
 parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail','empty-direction-zero'],default='control',help='Control and empty-direction-zero live verified on this Supra; other variants experimental')
@@ -26,6 +27,8 @@ if not args.execute:
  print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, 15 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
 if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,args.output)):parser.error('All file/connection/output arguments required')
 if (args.live_rpm_local or args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
+from ric_rle32 import swap_red_blue
+def display_pixels(raw):return swap_red_blue(raw) if args.swap_red_blue else raw
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
 if args.live_rpm_local and args.graph_variant in ('empty-detail','empty-direction-zero') and not args.double_buffer:parser.error('Empty-detail live test requires two-slot updates')
@@ -96,6 +99,7 @@ f='127.0.0.1:%d:160.48.199.96:30502'%port
 r=subprocess.run(base+['-O','forward','-L',f,destination],capture_output=True);assert r.returncode==0,r.stderr
 report={}
 def record(r):
+ r['renderer_style']=args.renderer_style;r['swap_red_blue']=args.swap_red_blue
  r['live_rpm']=bool(args.live_rpm_local);r['double_buffer']=args.double_buffer;r['graph_variant']=args.graph_variant
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
 def observe(phase,seconds):
@@ -120,7 +124,7 @@ class BitmapSession(SharedSession):
   if custom is None:return super().upload_marker()
   from ric_rle32 import encode_bgra
   a=self.allocation
-  self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(custom))
+  self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(display_pixels(custom)))
 latest_sample=None
 live_session=None
 live_rows=[]
@@ -140,7 +144,7 @@ def measured_frame():
  subprocess.run([str(args.renderer.resolve()),str(latest_sample['rpm']),str(target)]+(['sport'] if args.renderer_style=='sport' else []),check=True,capture_output=True,timeout=.1)
  raw=target.read_bytes()
  if len(raw)!=21600:raise ValueError('Bad native frame')
- fresh();return raw
+ fresh();return display_pixels(raw)
 def live_updates():
  from ric_guiding import encode_high_roundabout_body
  from ric_rle32 import encode_bgra
