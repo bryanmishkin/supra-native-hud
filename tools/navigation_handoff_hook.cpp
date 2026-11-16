@@ -60,6 +60,7 @@ extern "C" int supraAdapter(void*,const void*,void*) __asm__("_ZN6SomeIP22CSomeI
 extern "C" int supraAdapter(void* self,const void* socketRef,void* message){
  Sender original=(Sender)dlsym(RTLD_NEXT,adapter);
  if(!original){errno=ENOSYS;return -1;}
+ const char* disable=getenv("SUPRA_HUD_DISABLE_FILE");if(disable&&*disable&&access(disable,F_OK)==0)return original(self,socketRef,message);
  const char* path=getenv("SUPRA_HUD_HANDOFF");if(!path||!*path)return original(self,socketRef,message);
  Length length=(Length)dlsym(RTLD_NEXT,"_ZN6SomeIP14CSomeIPMessage15getBytesWrittenEv");
  Data bytes=(Data)dlsym(RTLD_NEXT,"_ZN6SomeIP14CSomeIPMessage8getBytesEv");

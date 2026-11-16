@@ -1,3 +1,5 @@
+> Latest startup/rollback and acceptance status (2026-11-16): see [STARTUP-ROLLBACK.md](STARTUP-ROLLBACK.md) and [ONE-CAR-SESSION-V1.md](ONE-CAR-SESSION-V1.md). The executable RAM kit is ready; unattended boot drawing is not accepted.
+
 # Standalone and navigation handoff candidate — 16 November 2026
 
 The proven sport UI now has a direct C++98/QNX runtime candidate. It reads RPM from the gateway, renders and RLE32-encodes the color-corrected 150×36 image, talks directly to the cluster, alternates bitmap slots, and withdraws the same measured symbol-free graph. It requires no Mac, Python or SSH after launch. It has not yet run on the actual head unit; it is not an installed v1 release.

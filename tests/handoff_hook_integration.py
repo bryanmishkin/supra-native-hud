@@ -3,11 +3,13 @@
 import os,socket,subprocess,threading,tempfile,time,json,sys,select
 from pathlib import Path
 out=Path(sys.argv[1]);results=[]
-for case in ('clean','null-destination','uncertain','timeout','absent','non-hud','keepalive','other-destination'):
+for case in ('clean','null-destination','uncertain','timeout','absent','non-hud','keepalive','other-destination','disabled'):
  with tempfile.TemporaryDirectory() as temp:
   path=str(Path(temp)/'handoff');s=socket.socket(socket.AF_UNIX);s.bind(path);s.listen();s.settimeout(.25)
   env=os.environ.copy();env.update(LD_PRELOAD=str(out/'libhandoff.so'),SUPRA_HUD_HANDOFF=path)
   if case=='absent':s.close();os.unlink(path)
+  if case=='disabled':
+   disable=Path(temp)/'disabled';disable.touch();env['SUPRA_HUD_DISABLE_FILE']=str(disable)
   start=time.monotonic();p=subprocess.Popen([str(out/'hook-driver'),case],env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   if case in ('clean','null-destination','uncertain','timeout'):
    c,_=s.accept();c.settimeout(1);request=c.recv(32);assert request==b'YIELD1\n',request

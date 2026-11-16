@@ -113,27 +113,36 @@ static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Mo
  }fail("RPM frame limit");return 0;
 }
 static Bytes frame(double rpm,uint64_t stamp){Config c;c.maxRpm=7000;c.shiftRpm=6500;c.thresholdsValidated=true;Input in;in.connected=in.ownershipConfirmed=in.overlayStateKnown=true;in.rpm.valid=true;in.rpm.value=rpm;in.rpm.at=stamp;HudCore core(c);Update u=core.update(in,now());if(u.action!=Present)fail("invalid/stale RPM");return encodeRle(tachBitmapSport(u.frame),true);}
-static void checkpoint(Ric& r){r.monitor.guard();if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
+static bool disabled(){const char* p=getenv("SUPRA_HUD_DISABLE_FILE");return p&&*p&&access(p,F_OK)==0;}
+static void checkpoint(Ric& r){r.monitor.guard();if(disabled())fail("disabled");if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
 static void fresh(uint64_t stamp){if(now()<stamp||now()-stamp>300)fail("RPM stale");}
 int main(int argc,char** argv){
+ if(argc==2 && !strcmp(argv[1],"--self-check")){
+  try{Bytes raw(21600,0);for(unsigned i=3;i<raw.size();i+=4)raw[i]=255;Bytes image=encodeRle(raw,true);if(image.empty())return 2;puts("{\"self_check\":true,\"vehicle_io\":false}");return 0;}catch(...){return 2;}
+ }
+ if(argc==4 && !strcmp(argv[1],"--probe-rpm")){
+  signal(SIGPIPE,SIG_IGN);Monitor monitor;unsigned valid=0;
+  try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSample(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
+ }
+
  if(argc!=9 || strcmp(argv[1],"--parked-guidance-stopped")){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
  char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||seconds<1||seconds>30)return 64;
  signal(SIGINT,stop);signal(SIGTERM,stop);signal(SIGPIPE,SIG_IGN);Ric ric;Profile profile;bool graph=false,owned[2]={false,false},clean=true;unsigned visible=0x01000009,frames=0;std::string reason="duration_complete";
  try{
-  profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}
+  if(disabled())fail("disabled");profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}
   ric.monitor.listenControl(argv[8]);
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
   uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,100);}++frames;
   uint64_t deadline=now()+seconds*1000;
-  while(!stopped&&!ric.monitor.yield&&now()<deadline){
+  while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline){
    unsigned next=visible==0x01000009?0x01000008:0x01000009;rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp);fresh(stamp);checkpoint(ric);if(ric.check(next,100))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),100);if(!ric.check(next,100))fail("upload absent");fresh(stamp);checkpoint(ric);
    Bytes road=profile.setup[4].body;set32(road,32,next);ric.empty(14,road,100);fresh(stamp);ric.empty(8,removeBody(visible),100);if(ric.check(visible,100))fail("old image retained");owned[visible-0x01000008]=false;visible=next;++frames;
    if(ric.log){fprintf(ric.log,"{\"rpm\":%.2f,\"sample_ms\":%llu,\"frame\":%u}\n",rpm,(unsigned long long)stamp,frames);fflush(ric.log);}
-   while(!stopped&&!ric.monitor.yield&&now()<deadline&&now()<stamp+250){ric.monitor.guard();usleep(5000);}
+   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline&&now()<stamp+250){ric.monitor.guard();usleep(5000);}
   }
-  if(stopped)reason="signal";else if(ric.monitor.yield)reason="factory_navigation_request";
+  if(disabled())reason="disabled";else if(stopped)reason="signal";else if(ric.monitor.yield)reason="factory_navigation_request";
  }catch(const std::exception& e){reason=e.what();}
  // Passive detection is revocation, not permission to cancel shared factory models.
  // Never send state5/state0 after foreign activity, capture loss or uncertain I/O.
@@ -147,5 +156,5 @@ int main(int argc,char** argv){
  if(owned[0]||owned[1])clean=false;
  ric.monitor.finishControl(clean);
  fprintf(stdout,"{\"reason\":\"%s\",\"frames\":%u,\"cleanup_verified\":%s,\"factory_activity\":%s,\"monitor_unknown\":%s,\"automatic_resume\":false,\"shared_instance_preserved\":true}\n",reason.c_str(),frames,clean?"true":"false",ric.monitor.foreign?"true":"false",ric.monitor.unhealthy?"true":"false");
- return clean&&(reason=="duration_complete"||reason=="signal"||reason=="factory_navigation_request")?0:2;
+ return clean&&(reason=="duration_complete"||reason=="signal"||reason=="factory_navigation_request"||reason=="disabled")?0:2;
 }

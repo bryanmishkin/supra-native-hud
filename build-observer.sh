@@ -62,3 +62,7 @@ printf '%s\n' 'Built experimental pre-send handoff hook. Not loaded into any fac
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
   tests/handoff_target_selftest.cpp -Lbuild -lsupra-fake-factory-test -lsocket -o build/supra-handoff-isolated-selftest-qnx
 printf '%s\n' 'Built fake-factory handoff self-test; never attaches to a factory process.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+  tools/hud_control.cpp -lsocket -o build/supra-hud-control-qnx
+printf '%s\n' 'Built cooperative stop client; no PID-based kill or vehicle traffic.'

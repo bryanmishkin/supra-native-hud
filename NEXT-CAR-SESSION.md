@@ -1,3 +1,5 @@
+> Latest startup/rollback and acceptance status (2026-11-16): see [STARTUP-ROLLBACK.md](STARTUP-ROLLBACK.md) and [ONE-CAR-SESSION-V1.md](ONE-CAR-SESSION-V1.md). The executable RAM kit is ready; unattended boot drawing is not accepted.
+
 Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
 
 Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
