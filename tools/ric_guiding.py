@@ -67,3 +67,14 @@ def encode_high_roundabout_body(handle, model_id, model_type, maneuver_type,
     payload = struct.pack('>IBBBI', model_id, model_type, maneuver_type,
                           drive_direction, picture_resource_id)
     return struct.pack('>IIBII', handle, model_id, model_type, len(payload), 7) + payload
+
+
+def encode_empty_guiding_body(handle, model_id, model_type):
+    """Tag0 has no member payload (controller bc0fa4..bc0ff0).
+
+    This is an encoded empty union, not proof of server-side deletion or hiding.
+    """
+    for value in (handle,model_id):
+        if type(value) is not int or not 0<=value<=0xffffffff:raise ValueError('Expected u32 identifier')
+    if type(model_type) is not int or not 0<=model_type<=50:raise ValueError('Invalid model type')
+    return struct.pack('>IIBII',handle,model_id,model_type,0,0)

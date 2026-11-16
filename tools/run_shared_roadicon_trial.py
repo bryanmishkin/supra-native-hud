@@ -11,7 +11,7 @@ parser.add_argument('--double-buffer',action='store_true',help='Experimental two
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
 parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
 parser.add_argument('--renderer',type=Path,help='Locally built native bitmap renderer')
-parser.add_argument('--graph-variant',choices=['control','no-detail','road-only'],default='control',help='Experimental circle-isolation variants; control is live verified')
+parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail'],default='control',help='Experimental circle-isolation variants; control is live verified')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
 parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
 parser.add_argument('--window-seconds',type=int,choices=range(1,16),default=15)
@@ -27,8 +27,9 @@ if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,a
 if (args.live_rpm_local or args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
+if args.live_rpm_local and args.graph_variant=='empty-detail' and not args.double_buffer:parser.error('Empty-detail live test requires two-slot updates')
 if args.double_buffer and not args.live_rpm_local:parser.error('Double buffer requires live RPM')
-if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant!='control'):parser.error('Live RPM requires renderer, control graph and no static bitmap')
+if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant not in ('control','empty-detail')):parser.error('Live RPM requires renderer, control/empty-detail graph and no static bitmap')
 import ipaddress
 ipaddress.IPv4Address(args.head)
 if args.live_rpm_local and not ipaddress.IPv4Address(args.live_rpm_local).is_link_local:parser.error('Expected local ENET address')
@@ -61,13 +62,16 @@ class Trial(SharedDrawingTrial):
  def send(self,m,body):
   if m==11 and struct.unpack_from('>I',body,4)[0]==a['models'][10]:
    super().send(10,supports[34]);super().send(10,supports[29])
+   if args.graph_variant=='empty-detail':
+    from ric_guiding import encode_empty_guiding_body
+    super().send(11,encode_empty_guiding_body(200,a['models'][10],10));return
    if args.graph_variant!='control':return
   if m==10 and body[8]==15:
    super().send(14,road)
    d=decode_graph_body(m,body)['description'];d.pop('outer_identity_matches');d.pop('model_id');d.pop('model_type')
    d['coming_road_id']=a['models'][40];d['current_state_id']=a['models'][34];d['distance_id']=a['models'][29];d['maneuver_direction']=14
-   if args.graph_variant!='control':d['detailed_maneuver_id']=0xffffffff
-   if args.graph_variant=='road-only':d['maneuver_direction']=8
+   if args.graph_variant in ('no-detail','road-only'):d['detailed_maneuver_id']=0xffffffff
+   if args.graph_variant in ('road-only','empty-detail'):d['maneuver_direction']=8
    body=encode_description_body(200,a['models'][15],15,**d)
   super().send(m,body)
   if m==9 and body[8]==33 and decode_graph_body(m,body)['list_state']['guidance_state']==2:super().send(9,position)
@@ -90,6 +94,7 @@ f='127.0.0.1:%d:160.48.199.96:30502'%port
 r=subprocess.run(base+['-O','forward','-L',f,destination],capture_output=True);assert r.returncode==0,r.stderr
 report={}
 def record(r):
+ r['live_rpm']=bool(args.live_rpm_local);r['double_buffer']=args.double_buffer;r['graph_variant']=args.graph_variant
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
 def observe(phase,seconds):
  if args.live_rpm_local:return live_updates()
@@ -117,7 +122,10 @@ class BitmapSession(SharedSession):
 latest_sample=None
 live_session=None
 live_rows=[]
+stop_reason='duration_complete'
+from request_navigation_yield import check_yield,NavigationYield,handoff_ready
 def fresh():
+ check_yield(root)
  if latest_sample is None or time.monotonic()*1000-latest_sample['sampled_at_ms']>300:raise RuntimeError('RPM sample expired; withdrawing')
 def measured_frame():
  global latest_sample
@@ -135,6 +143,7 @@ def live_updates():
  from ric_guiding import encode_high_roundabout_body
  from ric_rle32 import encode_bgra
  from ric_resource import encode_bitmap_body
+ global stop_reason
  session=live_session;rid=a['resource_id'];typ=a['resource_type']
  print('LIVE RPM WINDOW ACTIVE: %d seconds; idle only'%args.live_seconds,flush=True)
  deadline=time.monotonic()+args.live_seconds
@@ -148,7 +157,8 @@ def live_updates():
     raw=measured_frame()
     session.upload_bitmap(new_id,typ,a['dimensions'],encode_bgra(raw));fresh()
     nextroad=bytearray(road);nextroad[32:36]=struct.pack('>I',new_id)
-    session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,new_id));fresh()
+    if args.graph_variant!='empty-detail':session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,new_id))
+    fresh()
     session._empty(14,bytes(nextroad));fresh()
     session._empty(8,struct.pack('>II',200,rid))
     if session._check(rid,typ):raise RuntimeError('Previous bitmap still present')
@@ -161,12 +171,14 @@ def live_updates():
     del session.resources[rid]
     raw=measured_frame()
     session.upload_bitmap(rid,typ,a['dimensions'],encode_bgra(raw));fresh()
-    session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,rid))
+    if args.graph_variant!='empty-detail':session._empty(11,encode_high_roundabout_body(200,a['models'][10],10,0,2,rid))
     fresh();session._empty(14,road);fresh()
    # Keep polling at <=4Hz. Remove references before acquiring the next sample.
    remaining=.25-(time.monotonic()*1000-latest_sample['sampled_at_ms'])/1000
    if remaining>0:time.sleep(min(remaining,max(0,deadline-time.monotonic())))
   return None
+ except NavigationYield:
+  stop_reason='factory_navigation_request';return None
  finally:session.timeout=2
 
 def cleanup():signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)
@@ -178,6 +190,8 @@ try:
   report=Trial(live_session,record,observe,cleanup).run()
 finally:
  r=subprocess.run(base+['-O','cancel','-L',f,destination],capture_output=True);report['forward_cancelled']=r.returncode==0
+ report['stop_reason']=stop_reason
+ (root/'navigation-handoff.json').write_text(json.dumps(dict(protocol_ready=handoff_ready(report),visual_confirmation_required=True,automatic_resume=False),indent=2)+'\n')
  record(report);print(json.dumps({k:report.get(k) for k in ['status','error','cleanup','cleanup_steps','forward_cancelled']},indent=2))
 
 # A missing cleanup acknowledgement or absence result blocks any next frame.

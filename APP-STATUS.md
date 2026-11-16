@@ -1,3 +1,5 @@
+Latest prepared test: [explicit empty guiding model and cooperative navigation yield](SMOOTH-NAV-NEXT-TEST.md). The smooth live-RPM control is preserved.
+
 Latest result: [smooth 30-second live RPM drawing verified](LIVE-RPM-SMOOTH-RESULT.md), with complete cleanup and normal factory-function checks. Circle removal and automatic coexistence remain unresolved.
 
 Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.
