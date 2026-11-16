@@ -56,3 +56,5 @@ The 16 November car session passed all ten target self-tests and verified DSI re
 Runtime captures, SDKs, license utilities/material, credentials, generated binaries and car-session logs are excluded from GitHub. They are not needed to run the host tests. Private evidence and audited candidates are kept separately in Drive. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for vendored source attribution.
 
 Latest transport investigation and capture prerequisites: [HUD-PATH-REVIEW.md](HUD-PATH-REVIEW.md).
+
+Actual-car payload decoding and current ownership limits: [PROTOCOL-DECODE.md](PROTOCOL-DECODE.md).

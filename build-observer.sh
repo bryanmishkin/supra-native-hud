@@ -33,3 +33,7 @@ printf '%s\n' 'Built bounded no-vehicle-I/O target self-test.'
 "$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
   tools/hud_passive_capture.c -lpcap -lsocket -o build/supra-passive-capture-qnx
 printf '%s\n' 'Built bounded passive capture candidate; target BPF availability must be checked.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+  -Isrc -c src/someip_model.cpp -o build/someip_model.o
+printf '%s\n' 'Built observed-model decoder object; no live transport or ownership granted.'
