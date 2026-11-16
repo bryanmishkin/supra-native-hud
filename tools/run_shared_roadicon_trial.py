@@ -10,6 +10,7 @@ parser.add_argument('--execute',action='store_true')
 parser.add_argument('--double-buffer',action='store_true',help='Experimental two-slot switch, no deliberate blank between frames')
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
 parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
+parser.add_argument('--renderer-style',choices=['classic','sport'],default='classic')
 parser.add_argument('--renderer',type=Path,help='Locally built native bitmap renderer')
 parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail','empty-direction-zero'],default='control',help='Control and empty-direction-zero live verified on this Supra; other variants experimental')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
@@ -136,7 +137,7 @@ def measured_frame():
  (root/'live-rpm.json').write_text(json.dumps(live_rows,indent=2))
  if not latest_sample['valid']:raise RuntimeError('RPM invalid; withdrawing')
  target=root/'current.bgra'
- subprocess.run([str(args.renderer.resolve()),str(latest_sample['rpm']),str(target)],check=True,capture_output=True,timeout=.1)
+ subprocess.run([str(args.renderer.resolve()),str(latest_sample['rpm']),str(target)]+(['sport'] if args.renderer_style=='sport' else []),check=True,capture_output=True,timeout=.1)
  raw=target.read_bytes()
  if len(raw)!=21600:raise ValueError('Bad native frame')
  fresh();return raw

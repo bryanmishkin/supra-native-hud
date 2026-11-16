@@ -1,3 +1,5 @@
+New optional [sport HUD layout](SPORT-UX.md): larger digits and orange/red shift cues; built offline, projection pending.
+
 Latest live result: [smooth RPM without circle or arrow, plus cooperative navigation yield](SYMBOL-FREE-LIVE-RESULT.md). Use the explicit empty-direction-zero profile; the old control is retained for comparison.
 
 Latest prepared test: [explicit empty guiding model and cooperative navigation yield](SMOOTH-NAV-NEXT-TEST.md). The smooth live-RPM control is preserved.
