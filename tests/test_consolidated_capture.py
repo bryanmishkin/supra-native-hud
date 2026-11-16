@@ -89,7 +89,10 @@ class RecordingTests(unittest.TestCase):
                     stderr.write((json.dumps({'ready':True})+'\n'+json.dumps(dict(packets=1,pcap_bytes=len(data),elapsed_s=120,drops=0,interface_drops=0,reason='duration'))+'\n').encode());stderr.flush()
                 def poll(self):return 0
             with patch.object(c.subprocess,'Popen',FakeProcess):r=c.Session(a,transport).record(binary,c.digest(binary.read_bytes()))
-            self.assertTrue(any(x.startswith('rm -f /fs/ram5/supra-continuous-') for x in calls))
+            self.assertTrue(any(x.startswith('rm -f /fs/ram5/shud-') for x in calls))
+            self.assertFalse(any('rmdir ' in x for x in calls))
+            created=next(x.split('mkdir ',1)[1] for x in calls if 'mkdir ' in x)
+            self.assertLessEqual(len(Path(created).name),27)
             return r
     def test_capture_and_cleanup_are_separate_from_allocation(self):
         r=self.run_fixture();self.assertTrue(r['capture_valid']);self.assertTrue(r['cleanup_verified']);self.assertFalse(r['creation_exchange_observed']);self.assertFalse(r['startup_covered'])

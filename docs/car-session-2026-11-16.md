@@ -1,0 +1,14 @@
+ENGINE-RUNNING CAPTURES AND DRAWING BUFFERS VERIFIED — 16 NOVEMBER 2026
+
+Completed parked outdoors with engine running and user-confirmed windshield HUD visibility. Engine-start/radio window: 120.008 s, 5,610 packets, 1,082,288 bytes, zero drops. Navigation start/stop window: 120.007 s, 5,128 packets, 1,059,691 bytes, zero drops. All extracted TCP streams parse. Both recorders exited and their temporary RAM directories were removed. Final process check found no recorder; SSH master closed. User confirmed normal HUD and iDrive response after all tests.
+
+New evidence: read-only GVCommand drawing-buffer snapshots in normal view (29 objects), navigation visible (35), and radio visible after guidance stopped (35). Each object was read twice; all pairs matched, all lengths matched, no failed reads. Nineteen existing buffers changed between normal and navigation snapshots. These are non-atomic reads, not proof of locking coherence or windshield ownership. Raw buffers, captures, timestamps, hashes, logs and manifests are retained in car-session-consolidated-2026-11-16.
+
+File verification: 67 captured files totaling 81,257,825 bytes, including six executables, graphics libraries and DSI configuration; declared DT_NEEDED dependencies resolved in the captured set. Runtime mapping labels bnav_ndsdynamic.so and libnav_ndslib.so remain unresolved. NavCtrl_DB.ini was absent. NavigationFully contains DNAVIManeuverView stub/interface strings; this is provider-code evidence, not proof of runtime binding.
+
+Not proven: neither engine-start nor navigation-cycle captured a matched B006 create exchange. Startup coverage and independent surface ownership remain false. Engine start is not equivalent to head-unit cold startup. Display selection and physical windshield surface assignment remain unverified. No factory-service restart, reboot, persistent hook, packet injection, custom drawing or coding change was performed.
+
+Offline next step: correlate drawing-buffer headers and command payloads with NavigationFully/NavNBTEvoController session creation and DisplaySink/guidance traffic. Identify allocation, destination, ownership and release before preparing a bounded drawing probe. Success requires our own marker appearing in the windshield, clean removal/release and continued factory speed/navigation/radio operation; observing factory buffers alone does not meet that standard. A future live test must have a specific supported hypothesis and pass/fail criteria, rather than another general capture request.
+
+Compatibility fixes: QNX-safe short temporary names, cleanup using available rm, explicit invalid date-epoch detection, graphics/DSI collection and separation of unresolved mapping candidates from declared dependencies. 72 tests passed; unchanged ARM recorder also completed both live windows successfully.
+

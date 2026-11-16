@@ -17,8 +17,8 @@ FILES=(
  '/opt/nav/eceusa/bin/navigation.ini','/mnt/share/nav/NavCtrl_DB.ini',
  '/etc/someip/services.conf','/etc/someip/someip.conf',
  '/opt/nav/eceusa/bin/Appstarter.ini','/opt/nav/eceusa/bin/NavigationEceUsa.cfg',
- '/opt/nav/eceusa/bin/Navigation.hbtc')
-DIRS=('/boot/lib','/lib','/opt/sys/lib','/opt/hmi/ID5/lib','/opt/car/lib','/usr/lib')
+ '/opt/nav/eceusa/bin/Navigation.hbtc','/etc/dsi/services.conf')
+DIRS=('/boot/lib','/lib','/opt/sys/lib','/opt/hmi/ID5/lib','/opt/car/lib','/usr/lib','/lib/graphics/omap5430')
 MAX_FILE=64*1024*1024
 MAX_TOTAL=512*1024*1024
 
@@ -106,13 +106,13 @@ class Session:
             p=self.file(path)
             if p:paths.append(p)
         # Read-only DT_NEEDED closure; each new basename searched once in fixed dirs.
-        seen=set();missing=[]
+        seen=set();missing=[];missing_mapped=[]
         # Mapped names can be truncated by pidin; unresolved candidates remain explicit.
         for name in sorted(mapped_names):
             for directory in DIRS:
                 found=self.file(directory+'/'+name)
                 if found:paths.append(found);seen.add(name);break
-            else:missing.append(name)
+            else:missing_mapped.append(name)
         for p in paths:
             if p.read_bytes()[:4]!=b'\x7fELF':continue
             with p.open('rb') as f:
@@ -129,6 +129,7 @@ class Session:
                     if found:paths.append(found);break
                 else:missing.append(name)
         self.report['missing_dependencies']=missing
+        self.report['unresolved_mapped_candidates']=missing_mapped
         self.report['files_complete']=all(self.report['files'].get(p,{}).get('status') in ('verified','reverified') for p in FILES if p!='/mnt/share/nav/NavCtrl_DB.ini') and not missing
         self.report['unavailable_extra_configs']=[p for p in sorted(extra_configs-set(FILES)) if self.report['files'].get(p,{}).get('status') not in ('verified','reverified')]
         self.report['local_hashes_verified']=all((self.root/r['file']).is_file() and digest((self.root/r['file']).read_bytes())==r['sha256'] for r in self.report['files'].values() if r['status'] in ('verified','reverified'))
@@ -143,7 +144,7 @@ class Session:
         if digest(raw)!=expected_hash or raw[:6]!=b'\x7fELF\x01\x01' or raw[18:20]!=b'\x28\x00':raise ValueError('Recorder hash or ARM ELF identity mismatch')
         r=self.call('ifconfig vlan73')
         if r.returncode or not re.search(rb'<[^>]*\bUP\b',r.stdout) or not re.search(rb'\binet\s+160\.48\.199\.119\b',r.stdout):raise ValueError('Internal vlan73 identity not verified')
-        remote='/fs/ram5/supra-continuous-'+uuid.uuid4().hex;made=False
+        remote='/fs/ram5/shud-'+uuid.uuid4().hex[:12];made=False
         folder=self.root/('recording-'+uuid.uuid4().hex[:8]);folder.mkdir()
         result={'capture_valid':False,'creation_exchange_observed':False,'startup_covered':False,'remote_directory':remote}
         try:
@@ -153,7 +154,7 @@ class Session:
             if self.call('cat '+remote+'/capture').stdout!=raw:raise ValueError('Upload readback differs')
             if self.call('chmod 700 '+remote+'/capture').returncode:raise ValueError('chmod failed')
             before=time.time();clock=self.call('date +%s');after=time.time()
-            result['clock_sample']={'host_before':before,'host_after':after,'remote_epoch_text':clock.stdout.decode(errors='replace').strip(),'resolution_seconds':1,'exit':clock.returncode}
+            result['clock_sample']={'host_before':before,'host_after':after,'remote_epoch_text':clock.stdout.decode(errors='replace').strip(),'resolution_seconds':1,'exit':clock.returncode,'valid_numeric_epoch':clock.returncode==0 and clock.stdout.strip().isdigit()}
             started=time.time();started_mono=time.monotonic();result['host_start_epoch']=started
             # Stream evidence to disk. READY is emitted by the remote recorder only after opening BPF.
             with (folder/'traffic.pcap').open('wb') as out,(folder/'stderr.txt').open('wb') as err:
@@ -191,7 +192,7 @@ class Session:
                     state=self.call('pidin ar',cleanup=True)
                     (folder/'post-processes.txt').write_bytes(state.stdout)
                     result['capture_process_absent']=state.returncode==0 and (remote+'/capture').encode() not in state.stdout
-                    clean=self.call('rm -f '+remote+'/capture && rmdir '+remote+' && test ! -e '+remote,cleanup=True)
+                    clean=self.call('rm -f '+remote+'/capture && rm -r '+remote+' && test ! -e '+remote,cleanup=True)
                     result['cleanup_verified']=clean.returncode==0 and result['capture_process_absent']
                 except (OSError,ValueError,ELFError,subprocess.TimeoutExpired) as e:result['cleanup_verified']=False;result['cleanup_error']=str(e)
             save(folder/'result.json',result)
