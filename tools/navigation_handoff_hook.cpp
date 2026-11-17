@@ -72,8 +72,8 @@ if(fcntl(fd,F_SETFL,O_NONBLOCK)<0){close(fd);return;}
  else {traceEvent("CLEAN");if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: CLEAN at %lld\n",ms());}
 }
 extern "C" int supraAdapter(void*,const void*,void*) __asm__("_ZN6SomeIP22CSomeIPProtocolAdapter13doSendMessageERK8TWeakPtrI21CSocketSenderReceiverI11CDispatcherS0_EERNS_14CSomeIPMessageE");
-extern "C" int supraAdapter(void* self,const void* socketRef,void* message){
- Sender original=(Sender)dlsym(RTLD_NEXT,adapter);
+static int sendWithHandoff(const char* symbol,void* self,const void* socketRef,void* message){
+ Sender original=(Sender)dlsym(RTLD_NEXT,symbol);
  if(!original){errno=ENOSYS;return -1;}
  const char* disable=getenv("SUPRA_HUD_DISABLE_FILE");if(disable&&*disable&&access(disable,F_OK)==0)return original(self,socketRef,message);
  const char* path=getenv("SUPRA_HUD_HANDOFF");if(!path||!*path)return original(self,socketRef,message);
@@ -91,3 +91,9 @@ extern "C" int supraAdapter(void* self,const void* socketRef,void* message){
  }
  return original(self,socketRef,message);
 }
+
+extern "C" int supraAdapter(void* self,const void* socketRef,void* message){return sendWithHandoff(adapter,self,socketRef,message);}
+// HmiMain3D imports the std::weak_ptr ABI; the reference stays opaque here.
+static const char* hmiAdapter="_ZN6SomeIP22CSomeIPProtocolAdapter13doSendMessageERKSt8weak_ptrI21CSocketSenderReceiverI11CDispatcherS0_EERNS_14CSomeIPMessageE";
+extern "C" int supraHmiAdapter(void*,const void*,void*) __asm__("_ZN6SomeIP22CSomeIPProtocolAdapter13doSendMessageERKSt8weak_ptrI21CSocketSenderReceiverI11CDispatcherS0_EERNS_14CSomeIPMessageE");
+extern "C" int supraHmiAdapter(void* self,const void* socketRef,void* message){return sendWithHandoff(hmiAdapter,self,socketRef,message);}

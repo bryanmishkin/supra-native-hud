@@ -1,4 +1,4 @@
-// Direct QNX parked candidate. No installation, persistence, SSH, shell or auto-resume.
+// Direct QNX parked runtime. Continuous mode requires explicit admission; no auto-resume.
 #include "standalone_wire.hpp"
 #include "tach_bitmap.hpp"
 #include "navigation_guard.hpp"
@@ -89,11 +89,15 @@ static void sendBytes(int fd,const Bytes& b,uint64_t deadline,Monitor* m){unsign
 static Bytes receive(int fd,unsigned count,uint64_t deadline,Monitor* m){if(count>65552)fail("read bound");Bytes b(count);unsigned at=0;while(at<count){ready(fd,false,deadline,m);ssize_t n=recv(fd,&b[at],count-at,0);if(n>0)at+=n;else if(n==0||(errno!=EINTR&&errno!=EAGAIN&&errno!=EWOULDBLOCK))fail("receive");}return b;}
 struct Ric {
  Fd connection;Monitor monitor;unsigned sequence;bool uncertain,cleaning;FILE* log;
- Ric():sequence(0),uncertain(false),cleaning(false),log(0){}
+ Ric():sequence(0),uncertain(false),cleaning(false),log(0){
+#ifdef SUPRA_TEST
+ const char* start=getenv("SUPRA_TEST_SEQUENCE_START");if(start)sequence=(unsigned)strtoul(start,0,10);
+#endif
+ }
  ~Ric(){if(log)fclose(log);}
  Bytes call(unsigned method,const Bytes& body,unsigned timeout){
-  if(uncertain)fail("transport uncertain; no reconnect");monitor.guard();if(sequence==65535)fail("request IDs exhausted");unsigned seq=++sequence;uint64_t deadline=now()+timeout;
-  try{Bytes tx=request(method,seq,body);if(log){fprintf(log,"{\"request\":%u,\"method\":%u,\"bytes\":%lu}\n",seq,method,(unsigned long)tx.size());fflush(log);}sendBytes(connection.fd,tx,deadline,&monitor);
+  if(uncertain)fail("transport uncertain; no reconnect");monitor.guard();if(sequence==65535)sequence=0;unsigned seq=++sequence;uint64_t deadline=now()+timeout;
+  try{Bytes tx=request(method,seq,body);if(log && ftell(log)>1048576){if(fflush(log)||ftruncate(fileno(log),0))fail("journal rotation");rewind(log);}if(log){fprintf(log,"{\"request\":%u,\"method\":%u,\"bytes\":%lu}\n",seq,method,(unsigned long)tx.size());fflush(log);}sendBytes(connection.fd,tx,deadline,&monitor);
    for(unsigned i=0;i<9;++i){Bytes h=receive(connection.fd,16,deadline,&monitor);unsigned n=read32(h,4);if(n<8||n>65544)fail("SOME/IP length");
     if(read32(h,0)==0xffff8000&&n==8&&read32(h,8)==0xdeadbeef&&h[12]==1&&h[13]==1&&(h[14]==2||h[14]==128)&&h[15]==0)continue;
     Bytes tail=receive(connection.fd,n-8,deadline,&monitor);h.insert(h.end(),tail.begin(),tail.end());Bytes result=response(method,seq,h);if(log){fprintf(log,"{\"ack\":%u}\n",seq);fflush(log);}return result;
@@ -125,8 +129,9 @@ int main(int argc,char** argv){
   try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSample(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
  }
 
- if(argc!=9 || strcmp(argv[1],"--parked-guidance-stopped")){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
- char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||seconds<1||seconds>30)return 64;
+ bool continuous=argc==9&&!strcmp(argv[1],"--continuous-parked-guidance-stopped");
+ if(argc!=9 || (!continuous && strcmp(argv[1],"--parked-guidance-stopped"))){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
+ char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||(continuous?seconds!=0:(seconds<1||seconds>30)))return 64;
  signal(SIGINT,stop);signal(SIGTERM,stop);signal(SIGPIPE,SIG_IGN);Ric ric;Profile profile;bool graph=false,owned[2]={false,false},clean=true;unsigned visible=0x01000009,frames=0;std::string reason="duration_complete";
  try{
   if(disabled())fail("disabled");profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}
@@ -135,7 +140,7 @@ int main(int argc,char** argv){
   for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
   uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,100);}++frames;
-  uint64_t deadline=now()+seconds*1000;
+  uint64_t deadline=continuous?~uint64_t(0):now()+seconds*1000;
   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline){
    unsigned next=visible==0x01000009?0x01000008:0x01000009;rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp);fresh(stamp);checkpoint(ric);if(ric.check(next,100))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),100);if(!ric.check(next,100))fail("upload absent");fresh(stamp);checkpoint(ric);
    Bytes road=profile.setup[4].body;set32(road,32,next);ric.empty(14,road,100);fresh(stamp);ric.empty(8,removeBody(visible),100);if(ric.check(visible,100))fail("old image retained");owned[visible-0x01000008]=false;visible=next;++frames;

@@ -15,7 +15,7 @@ def exact(s,n):
  return b
 class Servers:
  def __init__(self,mode,trigger):
-  self.mode=mode;self.trigger=trigger;self.resources={};self.requests=[];self.images=[];self.stop=False;self.errors=[];self.ready=threading.Event();self.sockets=[];self.threads=[];self.uploads=0
+  self.mode=mode;self.trigger=trigger;self.resources={};self.requests=[];self.images=[];self.stop=False;self.errors=[];self.ready=threading.Event();self.sockets=[];self.threads=[];self.uploads=0;self.sequences=[]
  def start(self):
   for port,fn in ((30502,self.ric),(6801,self.rpm)):
    s=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);s.bind(('127.0.0.1',port));s.listen();s.settimeout(.1);self.sockets.append(s)
@@ -32,7 +32,7 @@ class Servers:
    except Exception as e:self.errors.append(repr(e))
  def ric(self,c):
   while not self.stop:
-   h=exact(c,16);svc,m,n,client,seq,pv,iv,k,rc=struct.unpack('>HHIHHBBBB',h);b=exact(c,n-8);self.requests.append((m,b));assert (svc,client,pv,iv,k,rc)==(0xb006,0x5348,1,1,0,0);assert m not in (1,7)
+   h=exact(c,16);svc,m,n,client,seq,pv,iv,k,rc=struct.unpack('>HHIHHBBBB',h);b=exact(c,n-8);self.requests.append((m,b));self.sequences.append(seq);assert (svc,client,pv,iv,k,rc)==(0xb006,0x5348,1,1,0,0);assert m not in (1,7)
    result=b''
    if m==2:
     rid=struct.unpack_from('>I',b,4)[0];result=bytes([rid in self.resources or (self.mode=='busy' and rid==0x01000000)])
@@ -57,21 +57,25 @@ class Servers:
   for t in self.threads:t.join(4)
 def run(exe,profile,out):
  out.mkdir(parents=True,exist_ok=False);summary=[]
- for mode in ('normal','signal','busy','factory','lost-ack','bad-reply','rpm-timeout','monitor-loss','cooperative-yield'):
+ for mode in ('normal','signal','busy','factory','lost-ack','bad-reply','rpm-timeout','monitor-loss','cooperative-yield','continuous-stop','sequence-wrap'):
   with tempfile.TemporaryDirectory() as temp:
    root=Path(temp);trigger=root/'factory';server=Servers(mode,trigger);server.start();env=os.environ.copy();env['SUPRA_TEST_MONITOR_LOSS' if mode=='monitor-loss' else 'SUPRA_TEST_FACTORY_TRIGGER']=str(trigger)
+   if mode=='sequence-wrap':env['SUPRA_TEST_SEQUENCE_START']='65530'
    try:
-    proc=subprocess.Popen([str(exe.resolve()),'--parked-guidance-stopped',str(profile.resolve()),'127.0.0.1','127.0.0.1','127.0.0.1','test-only','1',str(root/'journal')],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,text=True)
-    if mode in ('signal','cooperative-yield'):
+    proc=subprocess.Popen([str(exe.resolve()),'--continuous-parked-guidance-stopped' if mode=='continuous-stop' else '--parked-guidance-stopped',str(profile.resolve()),'127.0.0.1','127.0.0.1','127.0.0.1','test-only','0' if mode=='continuous-stop' else '1',str(root/'journal')],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env,text=True)
+    if mode in ('signal','cooperative-yield','continuous-stop'):
      for _ in range(200):
       if server.uploads>=2:break
       time.sleep(.005)
-     if mode=='signal':proc.send_signal(signal.SIGTERM)
+     if mode in ('signal','continuous-stop'):
+      if mode=='continuous-stop':
+       time.sleep(1.3);assert proc.poll() is None
+      proc.send_signal(signal.SIGTERM)
      else:
       with socket.socket(socket.AF_UNIX) as control:
        control.settimeout(3);control.connect(str(root/'journal')+'.handoff');control.sendall(b'YIELD1\n');assert exact(control,6)==b'CLEAN\n'
     stdout,stderr=proc.communicate(timeout=8);report=json.loads(stdout);assert not server.errors,server.errors
-    if mode in ('normal','signal','cooperative-yield'):assert proc.returncode==0 and report['cleanup_verified'] and not server.resources
+    if mode in ('normal','signal','cooperative-yield','continuous-stop','sequence-wrap'):assert proc.returncode==0 and report['cleanup_verified'] and not server.resources
     elif mode=='busy':assert proc.returncode==2 and server.uploads==0
     elif mode=='rpm-timeout':assert proc.returncode==2 and report['cleanup_verified'] and not server.resources
     else:
@@ -79,6 +83,7 @@ def run(exe,profile,out):
      # On factory/uncertain transport, don't issue cancel/idle or delete images.
      assert not any(m==8 for m,b in server.requests)
      assert not any(m==9 and len(b)==59 and b[30] in (0,5) for m,b in server.requests)
+    if mode=='sequence-wrap':assert 65535 in server.sequences and 1 in server.sequences
     if mode=='factory':assert report['factory_activity']
     if mode=='monitor-loss':assert report['monitor_unknown']
     if server.images:
