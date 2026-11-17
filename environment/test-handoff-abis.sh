@@ -12,5 +12,5 @@ for abi in nav hmi; do
  g++ -std=c++98 -Wall -Wextra -Werror -fPIC -shared /source/tools/navigation_handoff_hook.cpp -ldl -lpthread -o "$out/libhandoff.so"
  g++ -std=c++98 -fPIC -shared "$out/fake.cpp" -o "$out/libfake.so"
  g++ -std=c++98 "$out/driver.cpp" -L"$out" -lfake -Wl,-rpath,"$out" -o "$out/hook-driver"
- python3 /source/tests/handoff_hook_integration.py "$out"
+ SUPRA_TEST_ROLE="$abi" python3 /source/tests/handoff_hook_integration.py "$out"
 done

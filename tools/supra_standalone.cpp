@@ -118,7 +118,24 @@ static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Mo
 }
 static Bytes frame(double rpm,uint64_t stamp){Config c;c.maxRpm=7000;c.shiftRpm=6500;c.thresholdsValidated=true;Input in;in.connected=in.ownershipConfirmed=in.overlayStateKnown=true;in.rpm.valid=true;in.rpm.value=rpm;in.rpm.at=stamp;HudCore core(c);Update u=core.update(in,now());if(u.action!=Present)fail("invalid/stale RPM");return encodeRle(tachBitmapSport(u.frame),true);}
 static bool disabled(){const char* p=getenv("SUPRA_HUD_DISABLE_FILE");return p&&*p&&access(p,F_OK)==0;}
-static void checkpoint(Ric& r){r.monitor.guard();if(disabled())fail("disabled");if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
+static void heartbeatCheck(){
+ const char* path=getenv("SUPRA_HUD_HEARTBEAT");if(!path||!*path)return;
+ FILE* f=fopen(path,"r");unsigned long long t=0;int n=f?fscanf(f,"%llu",&t):0;if(f)fclose(f);
+ uint64_t current=now();if(n!=1||current<t||current-t>1500)fail("supervisor heartbeat lost");
+}
+static void acquireAdmission(Monitor& monitor){
+ const char* path=getenv("SUPRA_HUD_BROKER_SOCKET");if(!path||!*path)return;
+ sockaddr_un a;memset(&a,0,sizeof(a));a.sun_family=AF_UNIX;if(strlen(path)>=sizeof(a.sun_path))fail("admission path");strcpy(a.sun_path,path);
+ Fd fd;fd.fd=socket(AF_UNIX,SOCK_STREAM,0);if(fd.fd<0||fcntl(fd.fd,F_SETFL,O_NONBLOCK))fail("admission unavailable");
+ int connected=connect(fd.fd,(sockaddr*)&a,sizeof(a));if(connected<0&&errno!=EINPROGRESS)fail("admission unavailable");
+ if(connected<0){uint64_t deadline=now()+1000;bool ready=false;while(now()<deadline){monitor.controlPump();if(monitor.yield)fail("factory_navigation_request");fd_set w;FD_ZERO(&w);FD_SET(fd.fd,&w);timeval t;t.tv_sec=0;t.tv_usec=1000;if(select(fd.fd+1,0,&w,0,&t)>0){int error=0;socklen_t len=sizeof(error);if(getsockopt(fd.fd,SOL_SOCKET,SO_ERROR,&error,&len)||error)fail("admission unavailable");ready=true;break;}}if(!ready)fail("admission unavailable");}
+ unsigned char request[14]={'A','C','Q','U','I','R','E','1',0,0,0,0,0,0};for(unsigned i=0;i<4;++i)request[8+i]=(monitor.ownAddress>>(24-8*i))&255;request[12]=monitor.port>>8;request[13]=monitor.port&255;
+ if(send(fd.fd,request,sizeof(request),0)!=(ssize_t)sizeof(request))fail("admission request");
+ char reply[8];unsigned at=0;uint64_t end=now()+1000;
+ while(now()<end&&at<sizeof(reply)){monitor.controlPump();if(monitor.yield)fail("factory_navigation_request");ssize_t n=recv(fd.fd,reply+at,sizeof(reply)-at,0);if(n>0){at+=n;if(at==3&&!memcmp(reply,"GO\n",3))return;if(at>=5)break;}else if(n==0)break;else if(errno!=EAGAIN&&errno!=EINTR)break;usleep(1000);}
+ fail("admission_denied");
+}
+static void checkpoint(Ric& r){heartbeatCheck();r.monitor.guard();if(disabled())fail("disabled");if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
 static void fresh(uint64_t stamp){if(now()<stamp||now()-stamp>300)fail("RPM stale");}
 int main(int argc,char** argv){
  if(argc==2 && !strcmp(argv[1],"--self-check")){
@@ -137,6 +154,7 @@ int main(int argc,char** argv){
   if(disabled())fail("disabled");profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}
   ric.monitor.listenControl(argv[8]);
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
+  acquireAdmission(ric.monitor);heartbeatCheck();
   for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
   uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,100);}++frames;

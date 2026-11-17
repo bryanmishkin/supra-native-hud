@@ -1,42 +1,14 @@
-> Current next attempt: [factory-managed one-use boot trial](FACTORY-BOOT-TRIAL.md). Native drawing/cleanup passed; live PID replacement failed and is retired. The new boot gate is built and rehearsed offline, not yet accepted on the car. Unattended v1 remains unapproved.
-
-Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
-
-Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
-
-New optional [sport HUD layout](SPORT-UX.md): larger digits and orange/red shift cues; built offline, projection pending.
-
-Latest live result: [smooth RPM without circle or arrow, plus cooperative navigation yield](SYMBOL-FREE-LIVE-RESULT.md). Use the explicit empty-direction-zero profile; the old control is retained for comparison.
-
-Latest prepared test: [explicit empty guiding model and cooperative navigation yield](SMOOTH-NAV-NEXT-TEST.md). The smooth live-RPM control is preserved.
-
-Latest result: [smooth 30-second live RPM drawing verified](LIVE-RPM-SMOOTH-RESULT.md), with complete cleanup and normal factory-function checks. Circle removal and automatic coexistence remain unresolved.
-
-Latest next test: [circle isolation, measured RPM input and factory-navigation handling](CIRCLE-RPM-NAV-NEXT-TEST.md). Includes review of the supplied windshield video.
-
-Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.
-
-> **Live custom-pixel proof:** a generated RLE32 rectangle/cross was displayed in the windshield and gauge cluster, then removed with resource absence and factory operation confirmed. See [RLE32-LIVE-PROOF.md](RLE32-LIVE-PROOF.md). This uses the shared factory road-icon path, not an independent overlay.
-
-> Current live experiment: see [LIVE-DRAWING-TEST.md](LIVE-DRAWING-TEST.md). Live retry returned the factory handle and RLE32-only bitmap support. The PNG candidate cannot proceed unchanged; see the runbook for the measured results.
-
 # Supra native HUD
+
+**Current release candidate:** [persistent tachometer installation](PERSISTENT-INSTALL.md). Continuous RPM, automatic navigation/radio cleanup and return, persistent startup and rollback are implemented and tested offline. Not yet installed or accepted on the car. The last car session ended with original startup restored and factory functions normal.
+
+Earlier research notes below are historical; their unresolved items are not the current release status.
 
 Personal research project for the **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, with NBT Evo firmware **NBTevo_T24081I**. The intended display is the factory windshield HUD: an upper curved tachometer and progressive shift cues while preserving factory speed, speed limit, navigation and radio overlays.
 
 ## Current state
 
-The QNX 6.5 ARMv7 build works. The repository contains the HUD core, native command encoder, acknowledgement sequencer, application controller, bounded registry observer and offline simulators. **There is no enabled live drawing sender, validated Supra drawing profile, or persistent startup installation.**
-
-Production defaults suppress drawing. The active frame's own RPM sample must remain fresh; new input cannot extend an old queued frame. The present conservative 40-call sequence takes at least 1.95 seconds, which exceeds the default 300 ms freshness budget. The replay explicitly uses a 2000 ms synthetic test budget. That is not a production configuration or proven car bandwidth.
-
-See [the latest windshield renderer trace](WINDSHIELD-RENDERER-TRACE.md) for the recovered buffer producer/consumer paths, reusable-buffer inspector and drawing-test entry criteria.
-
-See [the session contract](SESSION-CONTRACT.md) for statically decoded allocation, routing and disposal, and the exact remaining server-side evidence gap.
-
-See [the cluster source review](CLUSTER-SOURCE-REVIEW.md) for public implementations checked and the local server-stub forwarding trace.
-
-See [the bitmap resource trace](RIC-BITMAP-RESOURCE.md) for the recovered upload format, resource-reference path and tested offline codec.
+The QNX ARM build, smooth circle-free live RPM, larger sport layout, corrected orange/red shift lights and pre-send navigation handoff have been demonstrated on the Supra. The last radio takeover exposed incomplete cleanup, which prevented a persistent install. The new resident and HMI hook address that path and automatic return; see the linked install runbook for evidence and exact remaining acceptance checks.
 
 ## Build and test
 

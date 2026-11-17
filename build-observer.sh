@@ -83,3 +83,15 @@ printf '%s\n' 'Built one-use factory-started gate and inode-preserving transacti
 "$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
   tests/boot_gate_fake_factory.c -o build/fake-factory-qnx
 printf '%s\n' 'Built RAM-only boot-gate and transaction fixtures; cannot start the factory controller.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
+ -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp \
+ src/factory_lease.cpp src/factory_stream.cpp tools/supra_resident.cpp -lpcap -lsocket -o build/supra-resident-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 tools/persistent_boot_gate.c -o build/supra-nav-start-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+ '-DSUPRA_FACTORY="/opt/hmi/bin/zipped/HmiMain3D"' '-DSUPRA_ROLE="hmi"' \
+ tools/persistent_boot_gate.c -o build/supra-hmi-start-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+ '-DSUPRA_STARTUP_TARGET="/opt/sys/etc/starter.cfg"' tools/startup_file_transaction.c -o build/supra-system-transaction-qnx
+printf '%s\n' 'Built persistent resident and both same-PID factory gates; activation requires target acceptance.'
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 tools/persistent_state.c -o build/supra-persistent-state-qnx

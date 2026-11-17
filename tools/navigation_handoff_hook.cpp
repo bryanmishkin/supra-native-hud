@@ -71,6 +71,51 @@ if(fcntl(fd,F_SETFL,O_NONBLOCK)<0){close(fd);return;}
  if(!clean){traceEvent("UNCERTAIN");fprintf(stderr,"supra-handoff: cleanup uncertain; factory priority after bounded wait\n");}
  else {traceEvent("CLEAN");if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: CLEAN at %lld\n",ms());}
 }
+static bool sharedFactoryPacket(const unsigned char* p,unsigned n){
+ if(n<20)return false;
+ unsigned service=(unsigned(p[0])<<8)|p[1],method=(unsigned(p[2])<<8)|p[3];
+ if(service!=0xb006&&service!=0xb00e)return false;
+ unsigned value=(unsigned(p[16])<<24)|(unsigned(p[17])<<16)|(unsigned(p[18])<<8)|p[19];
+ if(method!=1)return value==(service==0xb006?200U:100U);
+ const char* expected=service==0xb006?"BMW.IC.Guidance":"BMW.IC.List";unsigned chars=strlen(expected);
+ if(value>512||n<20+value)return false;
+ if(value==chars+1)return !memcmp(p+20,expected,chars)&&p[20+chars]==0;
+ if(value==chars+4&&p[20]==239&&p[21]==187&&p[22]==191)return !memcmp(p+23,expected,chars)&&p[23+chars]==0;
+ if(value!=chars*2+4||p[20]!=254||p[21]!=255)return false;
+ for(unsigned i=0;i<chars;++i)if(p[22+2*i]||p[23+2*i]!=(unsigned char)expected[i])return false;
+ return p[22+2*chars]==0&&p[23+2*chars]==0;
+}
+// Persistent mode forwards the exact pre-send packet to the admission supervisor.
+// It replies only after the running worker has acknowledged removal.
+static int brokerHandoff(const unsigned char* data,unsigned size){
+ const char* path=getenv("SUPRA_HUD_BROKER_SOCKET");if(!path||!*path)return 0;
+ const char* role=getenv("SUPRA_HUD_FACTORY_ROLE");if(!role||(strcmp(role,"nav")&&strcmp(role,"hmi")))return -1;
+ sockaddr_un a;memset(&a,0,sizeof(a));a.sun_family=AF_UNIX;if(strlen(path)>=sizeof(a.sun_path))return -1;strcpy(a.sun_path,path);
+ int fd=socket(AF_UNIX,SOCK_STREAM,0);if(fd<0)return -1;
+#ifndef MSG_NOSIGNAL
+#ifdef SO_NOSIGPIPE
+ int noPipe=1;if(setsockopt(fd,SOL_SOCKET,SO_NOSIGPIPE,&noPipe,sizeof(noPipe))){close(fd);return -1;}
+#else
+ close(fd);return -1;
+#endif
+#endif
+ if(fcntl(fd,F_SETFL,O_NONBLOCK)<0){close(fd);return -1;}
+ long long start=ms();if(start<0){close(fd);return -1;}long long deadline=start+3000;
+ int rc=connect(fd,(sockaddr*)&a,sizeof(a));if(rc<0&&errno!=EINPROGRESS){close(fd);return 0;}
+ if(rc<0){int e=0;socklen_t len=sizeof(e);if(!waitFd(fd,true,deadline)||getsockopt(fd,SOL_SOCKET,SO_ERROR,&e,&len)||e){close(fd);return 0;}}
+ unsigned char header[12]={'P','R','E','1',0,0,0,0,0,0,0,0};header[4]=!strcmp(role,"hmi");for(unsigned i=0;i<4;++i)header[8+i]=(size>>(24-8*i))&255;
+ for(unsigned part=0;part<2;++part){const unsigned char* bytes=part?data:header;unsigned count=part?size:12,at=0;
+  while(at<count){if(!waitFd(fd,true,deadline)){close(fd);return -1;}ssize_t n=send(fd,bytes+at,count-at,
+#ifdef MSG_NOSIGNAL
+ MSG_NOSIGNAL
+#else
+ 0
+#endif
+ );if(n>0)at+=n;else if(n==0||(errno!=EINTR&&errno!=EAGAIN)){close(fd);return -1;}}
+ }
+ char response[10];unsigned at=0;while(at<sizeof(response)&&waitFd(fd,false,deadline)){ssize_t n=recv(fd,response+at,sizeof(response)-at,0);if(n>0){at+=n;if(at>=6)break;}else if(n==0||(errno!=EINTR&&errno!=EAGAIN))break;}
+ close(fd);bool clean=at==6&&!memcmp(response,"CLEAN\n",6);traceEvent(clean?"BROKER_CLEAN":"BROKER_UNCERTAIN");return clean?1:-1;
+}
 extern "C" int supraAdapter(void*,const void*,void*) __asm__("_ZN6SomeIP22CSomeIPProtocolAdapter13doSendMessageERK8TWeakPtrI21CSocketSenderReceiverI11CDispatcherS0_EERNS_14CSomeIPMessageE");
 static int sendWithHandoff(const char* symbol,void* self,const void* socketRef,void* message){
  Sender original=(Sender)dlsym(RTLD_NEXT,symbol);
@@ -82,12 +127,13 @@ static int sendWithHandoff(const char* symbol,void* self,const void* socketRef,v
  Address destination=(Address)dlsym(RTLD_NEXT,"_ZN6SomeIP14CSomeIPMessage21getDestinationAddressEv");
  if(!length||!bytes||!destination)return original(self,socketRef,message);
  sockaddr* dest=destination(message);unsigned n=length(message);unsigned char* data=bytes(message);
+ if(getenv("SUPRA_HUD_BROKER_SOCKET")&&data&&n<=65552&&!sharedFactoryPacket(data,n))return original(self,socketRef,message);
  if(n>=16&&n<=65552&&data&&data[0]==0xb0&&(data[14]==0||data[14]==1)){
   // TCP messages may have no per-message destination; shared B0xx controller
   // requests then revoke conservatively. A supplied other destination is ignored.
   bool relevant=!dest;
   if(dest&&dest->sa_family==AF_INET){sockaddr_in* ip=(sockaddr_in*)dest;relevant=ntohl(ip->sin_addr.s_addr)==0xa030c760&&ntohs(ip->sin_port)==30502;}
-  if(relevant){traceEvent("HANDOFF_CHECK");pthread_mutex_lock(&mutex);handoff(path);pthread_mutex_unlock(&mutex);traceEvent("FACTORY_SEND");if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: factory send at %lld\n",ms());return original(self,socketRef,message);}
+  if(relevant){traceEvent("HANDOFF_CHECK");pthread_mutex_lock(&mutex);int broker=brokerHandoff(data,n);if(broker==0)handoff(path);pthread_mutex_unlock(&mutex);traceEvent("FACTORY_SEND");if(getenv("SUPRA_HUD_TRACE"))fprintf(stderr,"supra-handoff: factory send at %lld\n",ms());return original(self,socketRef,message);}
  }
  return original(self,socketRef,message);
 }

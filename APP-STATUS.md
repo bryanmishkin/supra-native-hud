@@ -1,20 +1,8 @@
-> Current next attempt: [factory-managed one-use boot trial](FACTORY-BOOT-TRIAL.md). Native drawing/cleanup passed; live PID replacement failed and is retired. The new boot gate is built and rehearsed offline, not yet accepted on the car. Unattended v1 remains unapproved.
-
-Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
-
-Latest: [sport UI live verified, orange/red corrected; v1 deployment boundary](SPORT-LIVE-RESULT.md).
-
-Latest live result: [smooth RPM without circle or arrow, plus cooperative navigation yield](SYMBOL-FREE-LIVE-RESULT.md). Use the explicit empty-direction-zero profile; the old control is retained for comparison.
-
-Latest prepared test: [explicit empty guiding model and cooperative navigation yield](SMOOTH-NAV-NEXT-TEST.md). The smooth live-RPM control is preserved.
-
-Latest result: [smooth 30-second live RPM drawing verified](LIVE-RPM-SMOOTH-RESULT.md), with complete cleanup and normal factory-function checks. Circle removal and automatic coexistence remain unresolved.
-
-Latest offline update: native tachometer frames and the bounded next drawing test are prepared. See [TACHOMETER-NEXT-TEST.md](TACHOMETER-NEXT-TEST.md) for validated scope, factory-navigation handoff and exact pass criteria.
-
-> On-car update, 16 Nov 2026: the loader, ten self-tests, replay and registry/overlay observations now pass. The expected 0x82/0 HUD service was absent in every window. See CAR-VALIDATION.md for measured results and cleanup. Earlier planned checks below are retained as procedure/history, not outstanding execution tasks. Live drawing remains blocked on actual Supra transport discovery.
-
 # HUD application status — 16 November 2026
+
+**Current release candidate:** [persistent tachometer installation](PERSISTENT-INSTALL.md). Continuous RPM, automatic navigation/radio cleanup and return, persistent startup and rollback are implemented and tested offline. Not yet installed or accepted on the car. The last car session ended with original startup restored and factory functions normal.
+
+Earlier research notes below are historical; their unresolved items are not the current release status.
 
 ## Implemented and tested offline
 
