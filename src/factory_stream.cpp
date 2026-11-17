@@ -20,11 +20,16 @@ void FactoryStream::ethernet(const unsigned char* p,unsigned n,unsigned wire){
  if((outgoing?u16(p+tcp+2):u16(p+tcp))!=30502)return;
  unsigned length=total-ihl-thl,seq=u32(p+tcp+4),flags=p[tcp+13];
  std::string key((const char*)p+off+12,8);key.append((const char*)p+tcp,4);
+ // A warm head-unit restart can leave a cluster keepalive on an older TCP
+ // connection. An exact standalone cookie carries no model state and cannot
+ // establish sequence tracking or grant admission. Tracked streams still consume it.
+ const unsigned char* payload=p+tcp+thl;
+ if(!flows_.count(key)&&incoming&&length==16&&u32(payload)==0xffff8000&&u32(payload+4)==8&&u32(payload+8)==0xdeadbeef&&payload[12]==1&&payload[13]==1&&(payload[14]==2||payload[14]==128)&&payload[15]==0)return;
  if(!flows_.count(key)&&!(flags&2)&&(!length||(flags&5)))return;
  if(!flows_.count(key)&&flows_.size()>=16){lease_.fault("flow limit");return;}
  Flow& f=flows_[key];
- if(flags&2){f.established=true;f.next=seq+1;f.bytes.clear();seq++;}
- if(flags&5){if(!f.own)lease_.fault("factory transport closed");flows_.erase(key);return;}
+ if(flags&2){if(f.shared){lease_.fault("active factory connection replaced");return;}f.established=true;f.next=seq+1;f.bytes.clear();seq++;}
+ if(flags&5){if(!f.own&&(f.shared||!f.bytes.empty()))lease_.fault("factory transport closed");flows_.erase(key);return;}
  if(f.own)return;
  if(!length)return;
  if(!f.established){lease_.fault("capture began midstream");return;}
@@ -38,6 +43,7 @@ void FactoryStream::ethernet(const unsigned char* p,unsigned n,unsigned wire){
   FactoryLease::Packet msg(f.bytes.begin(),f.bytes.begin()+size);f.bytes.erase(f.bytes.begin(),f.bytes.begin()+size);
   if(u16(&msg[0])==65535&&size==16&&u32(&msg[8])==0xdeadbeef)continue;
   if(u16(&msg[8])==0x5348){f.own=true;f.bytes.clear();std::string reverse((const char*)p+off+16,4);reverse.append((const char*)p+off+12,4);reverse.append((const char*)p+tcp+2,2);reverse.append((const char*)p+tcp,2);flows_[reverse].own=true;return;}
+  f.shared=true;std::string other((const char*)p+off+16,4);other.append((const char*)p+off+12,4);other.append((const char*)p+tcp+2,2);other.append((const char*)p+tcp,2);flows_[other].shared=true;
   if(outgoing)lease_.outgoing(msg);else lease_.reply(msg);
  }
 }

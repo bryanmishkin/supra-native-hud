@@ -107,14 +107,22 @@ struct Ric {
  void empty(unsigned m,const Bytes& b,unsigned timeout){if(!call(m,b,timeout).empty()){uncertain=true;fail("nonempty ack");}}
  bool check(unsigned id,unsigned timeout){Bytes b=call(2,checkBody(id),timeout);if(b.size()!=1||b[0]>1){uncertain=true;fail("invalid presence");}return b[0]!=0;}
 };
-static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
- stamp=now();uint64_t deadline=stamp+100;Fd socket;connectTo(socket,gateway,6801,local,deadline);Bytes q;put32(q,4);q.push_back(0);q.push_back(1);q.push_back(0xf4);q.push_back(0x12);q.push_back(1);q.push_back(0x0c);sendBytes(socket.fd,q,deadline,&monitor);
+static double rpmSampleRaw(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
+ stamp=now();uint64_t deadline=stamp+200;Fd socket;connectTo(socket,gateway,6801,local,deadline);Bytes q;put32(q,4);q.push_back(0);q.push_back(1);q.push_back(0xf4);q.push_back(0x12);q.push_back(1);q.push_back(0x0c);sendBytes(socket.fd,q,deadline,&monitor);
  for(unsigned i=0;i<24;++i){Bytes h=receive(socket.fd,6,deadline,&monitor);unsigned n=read32(h,0),kind=(h[4]<<8)|h[5];if(n<2||n>8192)fail("RPM frame length");Bytes b=receive(socket.fd,n,deadline,&monitor);
   if(kind==0x12){Bytes ack;put32(ack,2);ack.push_back(0);ack.push_back(0x13);ack.push_back(0);ack.push_back(0xf4);sendBytes(socket.fd,ack,deadline,&monitor);}
   if(kind!=1||b[0]!=0x12||b[1]!=0xf4)continue;
   if(n==5&&b[2]==0x7f&&b[3]==1&&b[4]==0x78)continue;
   if(n!=6||b[2]!=0x41||b[3]!=0x0c)fail("RPM reply");return ((b[4]<<8)|b[5])/4.0;
  }fail("RPM frame limit");return 0;
+}
+static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
+ try{return rpmSampleRaw(local,gateway,stamp,monitor);}catch(const std::exception& e){
+  if(!strcmp(e.what(),"I/O deadline")||!strcmp(e.what(),"send")||!strcmp(e.what(),"receive")||!strcmp(e.what(),"connect")||!strcmp(e.what(),"connect completion")||!strcmp(e.what(),"local bind")){
+   int saved=errno;fprintf(stderr,"RPM transport: %s errno=%d (%s) elapsed_ms=%llu\n",e.what(),saved,strerror(saved),(unsigned long long)(now()-stamp));
+   throw std::runtime_error(std::string("rpm_transport:")+e.what());
+  }throw;
+ }
 }
 static Bytes frame(double rpm,uint64_t stamp){Config c;c.maxRpm=7000;c.shiftRpm=6500;c.thresholdsValidated=true;Input in;in.connected=in.ownershipConfirmed=in.overlayStateKnown=true;in.rpm.valid=true;in.rpm.value=rpm;in.rpm.at=stamp;HudCore core(c);Update u=core.update(in,now());if(u.action!=Present)fail("invalid/stale RPM");return encodeRle(tachBitmapSport(u.frame),true);}
 static bool disabled(){const char* p=getenv("SUPRA_HUD_DISABLE_FILE");return p&&*p&&access(p,F_OK)==0;}
@@ -152,6 +160,9 @@ int main(int argc,char** argv){
  signal(SIGINT,stop);signal(SIGTERM,stop);signal(SIGPIPE,SIG_IGN);Ric ric;Profile profile;bool graph=false,owned[2]={false,false},clean=true;unsigned visible=0x01000009,frames=0;std::string reason="duration_complete";
  try{
   if(disabled())fail("disabled");profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}
+  #ifdef SUPRA_TEST
+  const char* beforeControl=getenv("SUPRA_TEST_BEFORE_CONTROL_US");if(beforeControl)usleep((unsigned)strtoul(beforeControl,0,10));
+#endif
   ric.monitor.listenControl(argv[8]);
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   acquireAdmission(ric.monitor);heartbeatCheck();
@@ -178,6 +189,9 @@ int main(int argc,char** argv){
  }
  if(owned[0]||owned[1])clean=false;
  ric.monitor.finishControl(clean);
+#ifdef SUPRA_TEST
+ const char* exitDelay=getenv("SUPRA_TEST_EXIT_DELAY_US");if(exitDelay&&clean){unlink(ric.monitor.controlPath.c_str());usleep((unsigned)strtoul(exitDelay,0,10));}
+#endif
  fprintf(stdout,"{\"reason\":\"%s\",\"frames\":%u,\"cleanup_verified\":%s,\"factory_activity\":%s,\"monitor_unknown\":%s,\"automatic_resume\":false,\"shared_instance_preserved\":true}\n",reason.c_str(),frames,clean?"true":"false",ric.monitor.foreign?"true":"false",ric.monitor.unhealthy?"true":"false");
  return clean&&(reason=="duration_complete"||reason=="signal"||reason=="factory_navigation_request"||reason=="disabled")?0:2;
 }

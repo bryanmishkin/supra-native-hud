@@ -20,7 +20,7 @@ def packet(role,method,seq,idle):
 with tempfile.TemporaryDirectory() as tmp:
  root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
  shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
- server=Servers('normal',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ server=Servers('normal',Path(tmp)/'trigger');server.start();env=os.environ.copy();env['SUPRA_TEST_EXIT_DELAY_US']='150000';proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
  def command(header,payload=b''):
   with socket.socket(socket.AF_UNIX) as s:
    s.settimeout(4);s.connect(str(state/'factory.sock'));s.sendall(header+payload);return s.recv(64)
@@ -38,7 +38,7 @@ with tempfile.TemporaryDirectory() as tmp:
  try:
   wait(lambda:(state/'ready').exists());time.sleep(.1);assert not server.uploads
   state_event(0,True);assert not server.uploads
-  state_event(1,True);wait(lambda:server.uploads>=4)
+  state_event(1,True);wait(lambda:server.uploads>=4);time.sleep(3.2)
   state_event(0,False);wait(lambda:not server.resources);before=server.uploads;time.sleep(.15);assert server.uploads==before
   state_event(0,True);wait(lambda:server.uploads>before+2)
   state_event(1,False);wait(lambda:not server.resources);before=server.uploads;time.sleep(.15);assert server.uploads==before
@@ -66,3 +66,39 @@ with tempfile.TemporaryDirectory() as tmp:
   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
   server.close()
 print('Uncertain cleanup quarantines without automatic retry')
+
+# Clean RPM timeout may retry, but uncertain drawing transport above may not.
+for recovery in [True,False]:
+ with tempfile.TemporaryDirectory() as tmp:
+  root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+  shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+  server=Servers('rpm-timeout',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  try:
+   wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
+   wait(lambda:(state/'last-result').exists());assert not server.resources
+   assert json.loads((state/'last-result').read_text())['cleanup_verified']
+   if recovery:
+    server.mode='normal';before=server.uploads;wait(lambda:server.uploads>before+2,5)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+   else:
+    proc.communicate(timeout=13);assert proc.returncode==2;assert int((state/'worker.starts').read_text())==4;assert not server.resources
+    assert 'retry budget exhausted' in (state/'resident.status').read_text()
+  finally:
+   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+   server.close()
+print('Clean RPM timeout recovery and bounded retry exhaustion passed')
+
+# A factory event may arrive after fork but before the child can draw or listen.
+with tempfile.TemporaryDirectory() as tmp:
+ root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+ shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+ server=Servers('normal',Path(tmp)/'trigger');server.start();env=os.environ.copy();env['SUPRA_TEST_BEFORE_CONTROL_US']='400000'
+ proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE,env=env)
+ try:
+  wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True);wait(lambda:(state/'worker.starts').exists())
+  state_event(0,False);time.sleep(.6);assert not server.uploads;assert proc.poll() is None
+  state_event(0,True);wait(lambda:server.uploads>=3,5);assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+ finally:
+  if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+  server.close()
+print('Pre-admission factory takeover blocks all drawing and resumes cleanly')

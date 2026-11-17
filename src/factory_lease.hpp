@@ -17,7 +17,7 @@ public:
  bool outgoing(const Packet&);
  bool reply(const Packet&);
  bool available() const {return !fault_&&pending_.empty()&&lanes_[0].committed==Idle&&lanes_[1].committed==Idle;}
- void fault(const char* why){fault_=true;reason_=why;++generation_;}
+ void fault(const char* why){if(!fault_){fault_=true;reason_=why;++generation_;}}
  bool failed()const{return fault_;}const std::string& reason()const{return reason_;}
  unsigned generation()const{return generation_;}
  Visibility state(unsigned lane)const{return lane<2?lanes_[lane].committed:Unknown;}

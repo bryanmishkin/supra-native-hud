@@ -4,7 +4,7 @@
 #include <map>
 namespace supra {
 class FactoryStream {
- struct Flow {unsigned next;bool established,own;FactoryLease::Packet bytes;Flow():next(0),established(false),own(false){}};
+ struct Flow {unsigned next;bool established,own,shared;FactoryLease::Packet bytes;Flow():next(0),established(false),own(false),shared(false){}};
  std::map<std::string,Flow> flows_;FactoryLease& lease_;
 public:
  explicit FactoryStream(FactoryLease& l):lease_(l){}

@@ -49,7 +49,7 @@ class Servers:
    for part in (reply[:7],reply[7:]):c.sendall(part)
  def rpm(self,c):
   q=exact(c,10);assert q==bytes.fromhex('000000040001f412010c')
-  if self.mode=='rpm-timeout' and self.uploads:time.sleep(.2);return
+  if self.mode=='rpm-timeout' and self.uploads:time.sleep(.35);return
   c.sendall(bytes.fromhex('00000006000112f4410c6590')) # 6500 RPM
  def close(self):
   self.stop=True

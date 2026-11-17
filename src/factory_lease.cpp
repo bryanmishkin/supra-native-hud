@@ -5,7 +5,11 @@ static unsigned u16(const FactoryLease::Packet& p,unsigned o){return unsigned(p[
 static unsigned u32(const FactoryLease::Packet& p,unsigned o){return (unsigned(p[o])<<24)|(unsigned(p[o+1])<<16)|(unsigned(p[o+2])<<8)|p[o+3];}
 bool FactoryLease::valid(const Packet& p){return p.size()>=16&&p.size()<=65552&&u32(p,4)==p.size()-8&&p[12]==1&&p[13]==1;}
 std::string FactoryLease::key(const Packet& p){std::string k; k.append((const char*)&p[0],4);k.append((const char*)&p[8],4);return k;}
-bool FactoryLease::before(const Packet& p,unsigned role){
+bool FactoryLease::before(const Packet& raw,unsigned role){
+ // The factory adapter fills the SOME/IP length after its pre-send callback.
+ // getBytesWritten supplies the bounded actual size; never modify factory bytes.
+ if(raw.size()<16||raw.size()>65552){fault("invalid pre-send size");return false;}
+ Packet p=raw;unsigned wireLength=p.size()-8;for(unsigned i=0;i<4;++i)p[4+i]=(wireLength>>(24-8*i))&255;
  if(!valid(p)||p[14]!=0||p[15]!=0||role>1){fault("invalid pre-send event");return false;}
  unsigned svc=u16(p,0),method=u16(p,2);unsigned lane=svc==0xb006?0:svc==0xb00e?1:2;
  if(lane>1||lane!=role||u16(p,8)==0x5348){fault("uncovered factory service or role");return false;}

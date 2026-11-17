@@ -17,5 +17,8 @@ int main(){
  FactoryLease gap;FactoryStream gs(gap);feed(gs,frame(true,100,2,empty));feed(gs,frame(true,105,16,p));assert(gap.failed());
  FactoryLease repeated;FactoryStream rs(repeated);
  for(unsigned port=41000;port<41040;++port){feed(rs,frame(true,1,2,empty,port));feed(rs,frame(false,1,18,empty,port));rs.registerOwn(0xa030c777,port);feed(rs,frame(true,2,17,empty,port));feed(rs,frame(false,2,16,empty,port));feed(rs,frame(false,2,17,empty,port));feed(rs,frame(true,3,16,empty,port));assert(!repeated.failed());}
+ FactoryLease idleCookie;FactoryStream cs(idleCookie);FactoryLease::Packet cookie(16,0);be(cookie,0,0xffff8000,4);be(cookie,4,8,4);be(cookie,8,0xdeadbeef,4);cookie[12]=cookie[13]=1;cookie[14]=2;feed(cs,frame(false,900,24,cookie));assert(!idleCookie.failed());assert(!idleCookie.available());cookie[8]=0;feed(cs,frame(false,916,24,cookie));assert(idleCookie.failed());
+ FactoryLease unused;FactoryStream us(unused);feed(us,frame(true,1,2,empty));feed(us,frame(true,1,4,empty));assert(!unused.failed());assert(!unused.available());
+ FactoryLease used;FactoryStream usedStream(used);FactoryLease::Packet usedRequest=msg(0xb006,4,99,1);assert(used.before(usedRequest,0));feed(usedStream,frame(true,1,2,empty));feed(usedStream,frame(true,2,16,usedRequest));feed(usedStream,frame(false,5,4,empty));assert(used.failed());
  puts("factory stream tests passed");
 }

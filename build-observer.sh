@@ -95,3 +95,5 @@ printf '%s\n' 'Built RAM-only boot-gate and transaction fixtures; cannot start t
  '-DSUPRA_STARTUP_TARGET="/opt/sys/etc/starter.cfg"' tools/startup_file_transaction.c -o build/supra-system-transaction-qnx
 printf '%s\n' 'Built persistent resident and both same-PID factory gates; activation requires target acceptance.'
 "$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 tools/persistent_state.c -o build/supra-persistent-state-qnx
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 tools/inspect_factory_presend.c -lsocket -o build/supra-inspect-presend-qnx

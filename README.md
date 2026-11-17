@@ -1,5 +1,7 @@
 # Supra native HUD
 
+**17 November live update:** [automatic startup, navigation/radio cleanup and return verified; final persistence acceptance in progress](PERSISTENT-LIVE-VALIDATION.md).
+
 **Current release candidate:** [persistent tachometer installation](PERSISTENT-INSTALL.md). Continuous RPM, automatic navigation/radio cleanup and return, persistent startup and rollback are implemented and tested offline. Not yet installed or accepted on the car. The last car session ended with original startup restored and factory functions normal.
 
 Earlier research notes below are historical; their unresolved items are not the current release status.

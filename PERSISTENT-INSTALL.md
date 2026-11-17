@@ -1,5 +1,7 @@
 # Persistent tachometer install candidate — 16 November 2026
 
+See [17 November live validation](PERSISTENT-LIVE-VALIDATION.md) for target-specific corrections and current evidence.
+
 The application now has a resident supervisor, continuous live RPM, automatic navigation/radio handoff and return, two factory-managed startup gates, a persistent enable token, and exact-image rollback. This is the install path; it has no 30-second run limit. It is built and tested offline, **not installed or accepted on the Supra yet**.
 
 ## Why the last run could not stay installed
@@ -14,7 +16,7 @@ The supervisor starts before the hooked factory processes. It correlates pre-sen
 
 The worker removes its model references and both alternating bitmap resources before acknowledging a handoff. The supervisor remains running while navigation or radio owns the display. After both acknowledged idle states, it launches another continuous worker. A 200 ms coalescing delay reduces churn after message bursts; silence alone never authorizes drawing.
 
-Missing acknowledgements, uncovered writers, capture loss, unexpected worker exits or uncertain removal disable automatic retries. A heartbeat makes the worker stop if its supervisor disappears. Logs are bounded. Neither hook disposes the shared factory session.
+Missing drawing acknowledgements, uncovered writers, capture loss or uncertain removal disable automatic retries. Verified-clean RPM transport failures use bounded 1/2/4-second retries, with at most three consecutive unstable attempts. A heartbeat makes the worker stop if its supervisor disappears. Logs are bounded. Neither hook disposes the shared factory session.
 
 ## Offline evidence
 
