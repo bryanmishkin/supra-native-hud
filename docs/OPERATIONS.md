@@ -1,8 +1,8 @@
 # Operation, evidence and recovery
 
-**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the original persistent fault was `factory transport closed`. A subsequent cold test exposed early RPM retry exhaustion. The latest installed candidate uses the verified internal gateway and rate-limited input readiness retries; cold-start acceptance is still pending. See [failure, evidence and exact repair plan](V1-COLD-START.md).
+**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](V1-COLD-START-ACCEPTANCE.md).
 
-The installed app needs no Mac, cable or SSH session to display RPM. The owner verified startup after an unplugged iDrive reset. Navigation and radio temporarily take priority; the tachometer should return after their acknowledged idle states. A full cold sleep/wake cycle is not yet established.
+The installed app needs no Mac, cable or SSH session to display RPM. The owner verified startup after an unplugged iDrive reset. Navigation and radio temporarily take priority; the tachometer should return after their acknowledged idle states. The accepted repair also passed one locked vehicle shutdown and normal cable-free start with a fresh head-unit startup.
 
 ## What to save before unplugging
 
@@ -25,7 +25,7 @@ Keep `installer.json`, kit manifest and exact original/after configuration image
 | `available:false`, not quarantined | One/both lanes unknown/active or requests pending. Inspect captured commits; silence is not idle. |
 | `available:true`, no child briefly | Coalescing/readiness/retry delay may apply; inspect timings and result. |
 | `disabled` exists / `quarantined:true` | Automatic operation stopped. Read the first fault and worker cleanup result; do not remove the token as a fix. |
-| `rpm_transport:...`, cleanup true | Classified input transport failure; bounded retries may occur. Persistent outages can exhaust the retry budget and disable the app. |
+| `rpm_transport:...`, cleanup true | Classified input transport failure; bounded retries may occur. After initial 1/2/4-second backoff, clean input failures wait 30 seconds between attempts; they do not disable an otherwise healthy supervisor. |
 | `cleanup_verified:false` or uncertain drawing ACK | Removal is not established. Preserve evidence and use known normal restart/recovery; never claim stopping the process cleared the display. |
 | Factory normal after restart but no hook | Gate may have fallen back (activation, preload, readiness or private-file checks). Inspect actual startup state before changing it. |
 | Warm iDrive restart did not visibly blank HUD | The cluster drives the HUD; its visible continuity alone does not prove the head unit failed to restart. Use boot/process evidence. |

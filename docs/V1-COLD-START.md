@@ -1,5 +1,8 @@
 # V1 cold-start failure: repair candidate and single-session plan
 
+**Current outcome:** the repaired cable-free shutdown/start and subsequent navigation/radio checks passed. Read [final acceptance and exact installed build](V1-COLD-START-ACCEPTANCE.md) first. The dated progression below preserves earlier failures and pending states as history.
+
+
 17 November 2026. Owner reports no tachometer after a cold vehicle start. The earlier unplugged iDrive reset passed; it was a warm restart, not proof of cold-wake reliability. The first-failure capture and reviewed recovery are recorded below. V1 Gold Master and V2 remain unchanged; this branch is a V1 repair candidate, installed for validation but not yet accepted for cold sleep/wake.
 
 ## Live first-failure finding
