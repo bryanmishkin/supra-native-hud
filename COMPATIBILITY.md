@@ -1,5 +1,7 @@
 # Compatibility and installing on another vehicle
 
+**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
+
 **Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
 
 **Verified target:** one 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBT Evo NBTevo_T24081I, QNX 6.5 ARM little-endian. The owner confirmed the installed tachometer starts after an unplugged iDrive reset. The accepted repair additionally passed one locked shutdown and cable-free normal start. This does not establish universal compatibility or repeated cold-wake endurance.

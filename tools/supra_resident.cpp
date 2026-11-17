@@ -86,8 +86,10 @@ struct Resident {
  void loop(){
   while(!stopped&&!quit){heartbeat();pump();acceptOne();reap();status();if(lastGeneration!=lease.generation()){lastGeneration=lease.generation();lastFactory=now();}if(!access((root+"/disabled").c_str(),F_OK))quit=true;
    if(lease.failed()){stop();quit=true;}else spawn();
-   // A child must reach the admission socket promptly; no blind restart loop.
-   if(child&&!cleanAck&&now()-started>3000&&access((state+"/active.jsonl.handoff").c_str(),F_OK))lease.fault("worker startup deadline");
+   // Startup deadline applies only before admission. An admitted worker may
+   // unlink its socket during clean RPM-failure teardown before waitpid sees exit.
+   // Reap/result verification, not the startup watchdog, governs that interval.
+   if(child&&!admitted&&!cleanAck&&now()-started>3000&&access((state+"/active.jsonl.handoff").c_str(),F_OK))lease.fault("worker startup deadline");
    usleep(10000);
   }
   stop();uint64_t deadline=now()+3000;while(child&&now()<deadline){reap();usleep(10000);}
