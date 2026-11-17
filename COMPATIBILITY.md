@@ -1,5 +1,7 @@
 # Compatibility and installing on another vehicle
 
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual vehicle fault is not yet confirmed and the repair is not installed. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
+
 **Verified target:** one 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBT Evo NBTevo_T24081I, QNX 6.5 ARM little-endian. The owner confirmed the installed tachometer starts after an unplugged iDrive reset. This establishes independence from the Mac, not universal compatibility or cold-wake reliability.
 
 The repository is sufficient to understand and build the source with an appropriate SDK. It is **not a self-contained generic installation kit**: factory captures, runtime libraries and the measured drawing profile are private inputs. The current installer pins exact images; it does not discover or adapt another firmware.

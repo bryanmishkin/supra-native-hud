@@ -18,8 +18,8 @@ static void replyText(int fd,const char* s){ssize_t n=send(fd,s,strlen(s),0);(vo
 static bool privateDir(const std::string& p){struct stat s;return !lstat(p.c_str(),&s)&&S_ISDIR(s.st_mode)&&s.st_uid==geteuid()&&!(s.st_mode&0022);}
 static void saveText(const std::string& path,const std::string& body){std::string temp=path+".new";int fd=open(temp.c_str(),O_WRONLY|O_CREAT|O_TRUNC,0600);if(fd<0)fail("state write");bool ok=write(fd,body.data(),body.size())==(ssize_t)body.size();close(fd);if(!ok||rename(temp.c_str(),path.c_str()))fail("state replace");}
 struct Resident {
- FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath;bool quit,cleanAck,admitted;unsigned starts,cleanStops,lastGeneration,ioRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter;
- Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0){}
+ FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath;bool quit,cleanAck,admitted,cleanupProven;unsigned starts,cleanStops,lastGeneration,ioRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter;
+ Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),cleanupProven(true),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0){}
  ~Resident(){if(bootTrace)fclose(bootTrace);if(cap)pcap_close(cap);if(server>=0)close(server);if(!socketPath.empty())unlink(socketPath.c_str());}
  void capture(const char* iface){
  bootTrace=fopen((state+"/startup.pcap").c_str(),"wb");if(!bootTrace)fail("startup trace");
@@ -33,6 +33,7 @@ struct Resident {
  void heartbeat(){char b[64];snprintf(b,sizeof(b),"%llu\n",(unsigned long long)now());saveText(state+"/heartbeat",b);}
  void reap(){if(!child)return;int status=0;pid_t got=waitpid(child,&status,WNOHANG);if(got<=0)return;child=0;std::ifstream f((state+"/worker.result").c_str());std::string text((std::istreambuf_iterator<char>(f)),std::istreambuf_iterator<char>());
   bool clean=text.find("\"cleanup_verified\":true")!=std::string::npos;
+  cleanupProven=WIFEXITED(status)&&clean;
   bool expected=text.find("\"reason\":\"factory_navigation_request\"")!=std::string::npos||text.find("\"reason\":\"admission_denied\"")!=std::string::npos||text.find("\"reason\":\"disabled\"")!=std::string::npos;
   bool retryable=WIFEXITED(status)&&clean&&text.find("\"reason\":\"rpm_transport:")!=std::string::npos;
   if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else lease.fault("clean I/O retry budget exhausted");}
@@ -60,7 +61,7 @@ struct Resident {
 #endif
    execl(exe.c_str(),exe.c_str(),"--continuous-parked-guidance-stopped",profile.c_str(),local,gateway,cluster,iface,"0",journal.c_str(),(char*)0);_exit(127);
   }
-  child=p;cleanAck=false;admitted=false;started=now();++starts;char count[32];snprintf(count,sizeof(count),"%u\n",starts);saveText(state+"/worker.starts",count);
+  child=p;cleanAck=false;admitted=false;cleanupProven=false;started=now();++starts;char count[32];snprintf(count,sizeof(count),"%u\n",starts);saveText(state+"/worker.starts",count);
  }
  void acceptOne(){int fd=accept(server,0,0);if(fd<0)return;timeval timeout;timeout.tv_sec=0;timeout.tv_usec=50000;setsockopt(fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));setsockopt(fd,SOL_SOCKET,SO_SNDTIMEO,&timeout,sizeof(timeout));unsigned char h[8];
   if(!readAll(fd,h,8)){close(fd);return;}
@@ -79,7 +80,7 @@ struct Resident {
   bool tracked=lease.before(packet,h[4]);bool clean=stop();replyText(fd,tracked&&clean?"CLEAN\n":"UNCERTAIN\n");close(fd);
  }
  void status(){
-  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);
+  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[160];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false");saveText(state+"/admission.json",admission);
  }
  void loop(){
   while(!stopped&&!quit){heartbeat();pump();acceptOne();reap();status();if(lastGeneration!=lease.generation()){lastGeneration=lease.generation();lastFactory=now();}if(!access((root+"/disabled").c_str(),F_OK))quit=true;
@@ -91,8 +92,14 @@ struct Resident {
   stop();uint64_t deadline=now()+3000;while(child&&now()<deadline){reap();usleep(10000);}
   if(child)lease.fault("worker did not exit");
   lastStatus=0;status();
-  if(lease.failed())saveText(root+"/disabled",lease.reason()+"\n");
-  saveText(state+"/resident.status",lease.failed()?std::string("QUARANTINED: ")+lease.reason()+"\n":"STOPPED\n");
+  // Engine telemetry can disappear during shutdown. Only an exhausted RPM
+  // retry budget with a reaped, verified-clean worker is a boot-local inhibit.
+  // Every other fault retains the existing persistent quarantine behavior.
+  bool bootOnly=lease.failed()&&lease.reason()=="clean I/O retry budget exhausted"&&!child&&cleanupProven;
+  if(lease.failed()&&!bootOnly)saveText(root+"/disabled",lease.reason()+"\n");
+  std::string terminal=lease.failed()?std::string(bootOnly?"BOOT_INHIBITED: ":"QUARANTINED: ")+lease.reason()+"\n":"STOPPED\n";
+  saveText(state+"/resident.status",terminal);
+  saveText(root+"/last-resident.status",terminal+std::string("cleanup_proven=")+(cleanupProven?"true\n":"false\n"));
  }
 };
 int main(int argc,char** argv){
@@ -102,5 +109,5 @@ int main(int argc,char** argv){
  try{std::string root=argv[1],state=argv[2];if(!privateDir(root)||(!access((root+"/disabled").c_str(),F_OK)))fail("disabled/insecure release root");if(mkdir(state.c_str(),0700)&&errno!=EEXIST)fail("state directory");if(!privateDir(state))fail("insecure state directory");
   int lock=open((state+"/resident.lock").c_str(),O_WRONLY|O_CREAT|O_EXCL,0600);if(lock<0)fail("existing resident or unresolved state");close(lock);
   Resident r(argv[1],argv[2]);r.capture(argv[3]);r.bindServer();r.heartbeat();saveText(state+"/ready","CAPTURE_READY\n");r.loop();return r.lease.failed()?2:0;
- }catch(const std::exception& e){fprintf(stderr,"resident: %s\n",e.what());return 2;}
+ }catch(const std::exception& e){fprintf(stderr,"resident: %s\n",e.what());try{if(privateDir(argv[1]))saveText(std::string(argv[1])+"/last-resident.status",std::string("STARTUP_OR_RUNTIME_EXCEPTION: ")+e.what()+"\n");}catch(...){}return 2;}
 }

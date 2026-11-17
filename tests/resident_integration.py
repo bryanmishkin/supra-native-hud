@@ -83,6 +83,14 @@ for recovery in [True,False]:
    else:
     proc.communicate(timeout=13);assert proc.returncode==2;assert int((state/'worker.starts').read_text())==4;assert not server.resources
     assert 'retry budget exhausted' in (state/'resident.status').read_text()
+    # A clean loss of engine telemetry must not poison the next ignition cycle.
+    assert not (root/'disabled').exists(), 'clean RPM exhaustion persisted across boots'
+    server.mode='normal';state=Path(tmp)/'next-boot';before=server.uploads
+    proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    wait(lambda:(state/'ready').exists());time.sleep(.15);assert server.uploads==before
+    state_event(0,True);time.sleep(.1);assert server.uploads==before
+    state_event(1,True);wait(lambda:server.uploads>before+2)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
   finally:
    if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
    server.close()

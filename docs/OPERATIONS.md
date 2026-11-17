@@ -1,5 +1,7 @@
 # Operation, evidence and recovery
 
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual vehicle fault is not yet confirmed and the repair is not installed. See [failure, evidence and exact repair plan](V1-COLD-START.md).
+
 The installed app needs no Mac, cable or SSH session to display RPM. The owner verified startup after an unplugged iDrive reset. Navigation and radio temporarily take priority; the tachometer should return after their acknowledged idle states. A full cold sleep/wake cycle is not yet established.
 
 ## What to save before unplugging

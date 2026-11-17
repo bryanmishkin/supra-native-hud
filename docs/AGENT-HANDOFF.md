@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual vehicle fault is not yet confirmed and the repair is not installed. See [failure, evidence and exact repair plan](V1-COLD-START.md).
+
 ## Current baseline
 
 Accepted executable source: `fd55e97`, private persistent kit revision08, manifest SHA-256 `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`. Later documentation commits describe the same accepted binaries unless explicitly stated otherwise. Installed and enabled on the reference Supra; owner confirmed the final unplugged reset worked.

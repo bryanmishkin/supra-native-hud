@@ -20,6 +20,7 @@ public:
  void fault(const char* why){if(!fault_){fault_=true;reason_=why;++generation_;}}
  bool failed()const{return fault_;}const std::string& reason()const{return reason_;}
  unsigned generation()const{return generation_;}
+ unsigned pendingCount()const{return pending_.size();}
  Visibility state(unsigned lane)const{return lane<2?lanes_[lane].committed:Unknown;}
  static bool valid(const Packet&);
 private:

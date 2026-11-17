@@ -35,6 +35,8 @@ class Package(unittest.TestCase):
     p=call(env);self.assertIn('\nhmi\n',p.stdout);self.assertIn(str(root/'libsupra-navigation-handoff-experimental.so')+':'+env['LD_PRELOAD'],p.stdout)
     env['LD_PRELOAD']='unrecognized.so';p=call(env);self.assertIn('none',p.stdout);self.assertIn('unrecognized.so',p.stdout)
     (root/'disabled').write_text('stop');p=call();self.assertIn('none',p.stdout)
+    self.assertIn('persistent-disable-present',(root/'last-gate-hmi.status').read_text())
+    self.assertEqual((root/'disabled').read_text(),'stop')
    finally:
     if (state/'fake.pid').exists():os.kill(int((state/'fake.pid').read_text()),signal.SIGTERM)
 if __name__=='__main__':unittest.main()
