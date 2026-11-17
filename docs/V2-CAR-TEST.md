@@ -8,7 +8,7 @@ Do not run the new worker beside the active V1 tachometer: both use the same rev
 
 Merged accepted source `377d3fe`: 500 ms correlated drawing ACK allowance, clean input recovery with bounded retries, boot-local clean connection closure, retained gate diagnostics and native state sync. RPM freshness stays 300 ms and uncertain drawing cleanup still quarantines. Both the V2 pressure probe and worker use internal source `160.48.199.119` and gateway `160.48.199.16`; SSH remains at `169.254.199.119`. The persistent resident still selects V1 sport; V2 display and candidate boost remain explicit bounded modes. No connection to the car or persistent change occurs during preparation.
 
-The runner pins accepted baseline manifest SHA-256 `61d2e6424a7f5b12e0509295b148ced41cdd53b0babd2cda7d9e79f5a825ab7a`, checks every installed payload and startup file, and rejects the old Gold kit. It never downgrades the repaired V1 to Gold.
+The runner pins accepted baseline manifest SHA-256 `605bd081a435866006a9267ac1bacc8a41d9fd1593c87984ac9d361ece5933c1`, checks every installed payload and startup file, and rejects the old Gold kit. It never downgrades the repaired V1 to Gold.
 
 ## Prepared implementation
 
@@ -41,7 +41,7 @@ Build using the existing QNX environment. The old compiler requires global `::sn
 python3 tools/prepare_v2_test.py \
   --binary build/supra-standalone-parked-qnx \
   --audit /private/v2/v2-arm-audit.json \
-  --v1-kit /private/v1/readiness-kit/patched-reference \
+  --v1-kit /private/v1/watchdog-fix/patched-reference \
   --output /private/v2/car-kit
 ```
 
@@ -146,3 +146,5 @@ The local `v2-session.json`, numbered stdout/stderr, pre/pause/post V1 checkpoin
 Accepted repair source `377d3fe` is merged. QNX ARM worker SHA-256: `aaefadfcf29a8f0c5fa4fb6eb2baa2ac8ea777c435a0b722218f40c1d834d2e0`. Captured-library static audit passed; 256 Python tests, eight V2 loopback cases, twelve worker regression cases, and the resident recovery/race/cleanup suite passed. Twelve classic/sport frames match accepted V1 source byte-for-byte. Five V2 preview frames round-trip through the corrected wire codec.
 
 **Deployment hold:** owner subsequently reported another cable-free startup with no initial tachometer; it later appeared after ENET connection, without resetting iDrive. Saved packets show eight internal gateway connection rejections before successful RPM replies. Startup delay versus cable activation is under investigation. These offline tests do not resolve that vehicle dependency. No V2 deployment occurred.
+
+The reproduced false startup-watchdog lockout is also merged from `0d33b5e`; the baseline pin now follows the exact installed watchdog-repair kit. A fully cable-free ten-minute shutdown/start check is in progress. V2 remains a separate temporary test candidate.

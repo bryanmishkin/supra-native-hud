@@ -13,3 +13,4 @@ c++ -std=c++98 -Wall -Wextra -Werror -Isrc src/factory_lease.cpp src/factory_str
 "$OUT/stream-test"
 "$OUT/lease-test"
 python3 tests/resident_integration.py "$OUT/resident" "$OUT/worker" "$PROFILE" "$OUT/results.json"
+python3 tests/resident_startup_deadline.py "$OUT/resident" "$OUT/worker" "$PROFILE" "$OUT/startup-watchdog.json"

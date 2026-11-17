@@ -1,5 +1,7 @@
 # Persistent installation and rollback
 
+**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
+
 **Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
 
 This is the current installation runbook. Revision08 was installed and committed on the reference Supra on 17 November 2026, including owner-confirmed startup after an unplugged iDrive reset. See [acceptance evidence](PERSISTENT-LIVE-VALIDATION.md). A new vehicle must first satisfy [COMPATIBILITY.md](COMPATIBILITY.md).

@@ -3,7 +3,7 @@
 import argparse,hashlib,json,shutil
 from pathlib import Path
 from run_v1_validation import manifest
-ACCEPTED_V1_KIT='61d2e6424a7f5b12e0509295b148ced41cdd53b0babd2cda7d9e79f5a825ab7a'
+ACCEPTED_V1_KIT='605bd081a435866006a9267ac1bacc8a41d9fd1593c87984ac9d361ece5933c1'
 def prepare(binary,audit,v1,out):
  files,digest=manifest(v1)
  if digest!=ACCEPTED_V1_KIT:raise ValueError('Expected accepted V1 startup-repair kit')
