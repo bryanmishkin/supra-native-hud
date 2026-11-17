@@ -36,7 +36,7 @@ struct Resident {
   cleanupProven=WIFEXITED(status)&&clean;
   bool expected=text.find("\"reason\":\"factory_navigation_request\"")!=std::string::npos||text.find("\"reason\":\"admission_denied\"")!=std::string::npos||text.find("\"reason\":\"disabled\"")!=std::string::npos;
   bool retryable=WIFEXITED(status)&&clean&&(text.find("\"reason\":\"rpm_transport:")!=std::string::npos||text.find("\"reason\":\"RPM stale\"")!=std::string::npos);
-  if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else lease.fault("clean I/O retry budget exhausted");}
+  if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else {ioRetries=4;retryAfter=now()+30000;}}
   else if(!WIFEXITED(status)||!clean||!expected)lease.fault("worker exit/cleanup uncertain");
   saveText(state+"/last-result",text);
  }
@@ -57,7 +57,7 @@ struct Resident {
 #ifdef SUPRA_TEST
    const char* local="127.0.0.1";const char* gateway=local;const char* cluster=local;const char* iface="test-only";
 #else
-   const char* local="169.254.199.119";const char* gateway="169.254.106.96";const char* cluster="160.48.199.96";const char* iface="vlan73";
+   const char* local="160.48.199.119";const char* gateway="160.48.199.16";const char* cluster="160.48.199.96";const char* iface="vlan73";
 #endif
    execl(exe.c_str(),exe.c_str(),"--continuous-parked-guidance-stopped",profile.c_str(),local,gateway,cluster,iface,"0",journal.c_str(),(char*)0);_exit(127);
   }
@@ -81,7 +81,7 @@ struct Resident {
   bool tracked=lease.before(packet,h[4]);bool clean=stop();replyText(fd,tracked&&clean?"CLEAN\n":"UNCERTAIN\n");close(fd);
  }
  void status(){
-  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[160];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false");saveText(state+"/admission.json",admission);
+  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[256];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s,\"input_retry_wait\":%s,\"input_retry_count\":%u}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false",(!child&&now()<retryAfter)?"true":"false",ioRetries);saveText(state+"/admission.json",admission);
  }
  void loop(){
   while(!stopped&&!quit){heartbeat();pump();acceptOne();reap();status();if(lastGeneration!=lease.generation()){lastGeneration=lease.generation();lastFactory=now();}if(!access((root+"/disabled").c_str(),F_OK))quit=true;

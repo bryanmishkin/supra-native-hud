@@ -1,6 +1,6 @@
 # Supra native HUD tachometer
 
-**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual saved blocker is `factory transport closed`. The narrow repair is installed on the reference car; post-repair cold-start acceptance is pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the original persistent fault was `factory transport closed`. A subsequent cold test exposed early RPM retry exhaustion. The latest installed candidate uses the verified internal gateway and rate-limited input readiness retries; cold-start acceptance is still pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
 
 A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 

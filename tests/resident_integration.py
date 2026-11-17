@@ -81,11 +81,12 @@ for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-m
     server.mode='normal';before=server.uploads;wait(lambda:server.uploads>before+2,5)
     assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
    else:
-    proc.communicate(timeout=13);assert proc.returncode==2;assert int((state/'worker.starts').read_text())==4;assert not server.resources
-    assert 'retry budget exhausted' in (state/'resident.status').read_text()
-    # A clean loss of engine telemetry must not poison the next ignition cycle.
-    assert not (root/'disabled').exists(), 'clean RPM exhaustion persisted across boots'
-    server.mode='normal';state=Path(tmp)/'next-boot';before=server.uploads
+    wait(lambda:int((state/'worker.starts').read_text())>=4,13);time.sleep(.6)
+    assert proc.poll() is None and not server.resources
+    assert not (root/'disabled').exists(), 'clean input failures must not disable later readiness'
+    before=server.uploads;server.mode='normal';wait(lambda:server.uploads>before+2,35)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+    state=Path(tmp)/'next-boot';before=server.uploads
     proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     wait(lambda:(state/'ready').exists());time.sleep(.15);assert server.uploads==before
     state_event(0,True);time.sleep(.1);assert server.uploads==before
@@ -94,7 +95,7 @@ for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-m
   finally:
    if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
    server.close()
-print('Clean RPM timeout recovery and bounded retry exhaustion passed')
+print('Late RPM readiness after repeated timeout/malformed input: rate-limited recovery and fresh-boot admission passed')
 
 # A factory event may arrive after fork but before the child can draw or listen.
 with tempfile.TemporaryDirectory() as tmp:

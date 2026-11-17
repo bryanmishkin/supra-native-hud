@@ -1,6 +1,6 @@
 # Compatibility and installing on another vehicle
 
-**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual saved blocker is `factory transport closed`. The narrow repair is installed on the reference car; post-repair cold-start acceptance is pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the original persistent fault was `factory transport closed`. A subsequent cold test exposed early RPM retry exhaustion. The latest installed candidate uses the verified internal gateway and rate-limited input readiness retries; cold-start acceptance is still pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
 
 **Verified target:** one 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBT Evo NBTevo_T24081I, QNX 6.5 ARM little-endian. The owner confirmed the installed tachometer starts after an unplugged iDrive reset. This establishes independence from the Mac, not universal compatibility or cold-wake reliability.
 
@@ -12,7 +12,7 @@ The repository is sufficient to understand and build the source with an appropri
 | --- | --- | --- |
 | CPU/OS | QNX 6.5 ARM32 little-endian; reviewed loader `/usr/lib/ldqnx.so.2` | ELF audit, live identity, target execution |
 | Head-unit local IP | `169.254.199.119` | Resident child arguments; installer `--head` only changes SSH destination |
-| RPM gateway | `169.254.106.96:6801`, tester `0xf4`, ECU `0x12`, PID 0C | `tools/supra_standalone.cpp` |
+| RPM gateway | Gold: `169.254.106.96:6801`; readiness candidate: `160.48.199.16:6801` from `160.48.199.119`, tester `0xf4`, ECU `0x12`, PID 0C | `tools/supra_standalone.cpp` |
 | Cluster and internal interface | `160.48.199.96:30502`, `vlan73` | Resident, worker, hook and stream classifier |
 | Guidance/list contracts | services `0xb006`/`0xb00e`, instances `200`/`100`, reviewed visibility models | Lease, wire encoder and profile |
 | Resource pool and geometry | IDs `0x01000000`–`0x01000009`; app uses last two; 150 × 36 | Worker and wire encoder |
