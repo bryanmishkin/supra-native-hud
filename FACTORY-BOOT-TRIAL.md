@@ -49,3 +49,9 @@ The gate preserves default factory operation; it does not grant permission to dr
 Approximate occupied time: three normal head-unit restarts plus three two-minute stability windows, the live handoff checks and final recovery. Keep time for failure analysis. If any boot fails, recover first; do not rush to driving with an experimental hook or unresolved display state.
 
 Boot identity is not inferred from a changed PID: factory PIDs can repeat. The runner places a unique RAM-only sentinel before each requested restart and requires it to disappear, then checks the resulting controller for two minutes. This relies on the /tmp RAM filesystem behavior verified by both actual head-unit restarts in the prior session.
+
+## Confirmed target filesystem constraints (2026-11-16 live session)
+
+The system partition `/fs/sda0` is read-only by default. The target mount utility supports `mount -uw /fs/sda0` and `mount -ur /fs/sda0`; both transitions were verified using `df -g /fs/sda0`. Configuration and rollback require a controlled writable interval, with read-only restoration and verification even if the operation fails. The runner does not remount automatically. Do not reboot until read-only protection is restored and config/backup bytes are verified.
+
+The QNX4 RAM filesystem rejects filenames longer than 48 bytes. Boot-boundary filenames now use a 16-hex-character random suffix, and the fake-target test enforces the target filename limit. The initial failed long-name marker happened after configuration applied; exact config, backup and gate readback plus a successful short marker recovered that phase without repeating the configuration transaction.

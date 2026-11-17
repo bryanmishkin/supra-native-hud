@@ -50,7 +50,7 @@ def execute(a):
  def current(expected):
   if read(CFG)!=(a.kit/expected).read_bytes():raise ValueError('Current factory config differs; stop and inspect')
  def mark_boundary():
-  marker='/tmp/supra-boot-boundary-'+uuid.uuid4().hex
+  marker='/tmp/supra-boot-boundary-'+uuid.uuid4().hex[:16]
   run('set -C; umask 077; cat > '+q(marker),b'normal-boot-boundary\n');s['boot_boundary']=marker;save()
  def stable_boot(previous,hook):
   marker=s.get('boot_boundary')

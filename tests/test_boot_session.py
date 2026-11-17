@@ -18,6 +18,9 @@ class BootSession(unittest.TestCase):
     def __init__(self,*args):pass
     def run(self,cmd,data=None):
      commands.append(cmd)
+     if cmd.startswith('set -C; umask 077; cat > /tmp/supra-boot-boundary-'):
+      self_path=cmd.split('> ',1)[1]
+      if len(Path(self_path).name)>48:raise RuntimeError('QNX4 filename too long')
      if cmd=='uname -a':return subprocess.CompletedProcess([],0,b'QNX hu-omap 6.5.0 armle\n',b'')
      if cmd=='slay -p NavNBTEvoController':return subprocess.CompletedProcess([],1,(self.current+'\n').encode(),b'')
      if cmd.startswith('pidin '):return subprocess.CompletedProcess([],0,b'ff-experimental.so' if cmd.endswith('mem') and self.hook else b'NavNBTEvoController',b'')
