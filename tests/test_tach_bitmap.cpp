@@ -32,8 +32,15 @@ int main(){
  std::vector<unsigned char> missing=supra::tachBitmapV2(sport);
  assert(missing.size()==21600);
  for(unsigned i=3;i<missing.size();i+=4)assert(missing[i]==255);
- unsigned cyan=4*(5*150+3);
+ unsigned cyan=4*(7*150+4);
  assert(missing[cyan]==255&&missing[cyan+1]==210&&missing[cyan+2]==90);
+ bool shaded=false,bottom=false;
+ for(unsigned y=15;y<35;++y)for(unsigned x=3;x<74;++x) {
+  unsigned v=missing[4*(y*150+x)];
+  if(v>0&&v<255)shaded=true;
+  if(y==34&&v>0)bottom=true;
+ }
+ assert(shaded&&bottom); // native edge coverage and restored 20px digit height
  sport.boostVisible=true;sport.boostPsi=12.4;p=supra::tachBitmapV2(sport);
  assert(p!=missing);
  // Boost changes only the right readout, never RPM, arc or shift indication.

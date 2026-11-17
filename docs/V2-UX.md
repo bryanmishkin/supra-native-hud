@@ -8,7 +8,7 @@ The owner supplied [this reference](design/v2-reference.png): a curved segmented
 
 ![Exact V2 renderer previews](design/v2-150x36-preview.png)
 
-These are actual C++ pixel outputs enlarged with nearest-neighbor scaling, not a photograph or projected-HUD proof. The reference has much more resolution and a taller aspect ratio; its glow, typography and proportions cannot be reproduced literally in the current canvas. The candidate uses a shallow arc, 15-pixel-high RPM digits, a smaller PSI readout, and five steady shift lights. Inactive arc segments remain dim; the lit amount follows RPM.
+These are actual C++ pixel outputs enlarged with nearest-neighbor scaling, not a photograph or projected-HUD proof. The reference has much more resolution and a taller aspect ratio; its glow, typography and proportions cannot be reproduced literally in the current canvas. The refined candidate removes stepped italic RPM glyphs and the small RPM label to restore V1-sized digits. Rounded seven-segment strokes and arc/shift-light edges use 4-by-4 coverage sampling into the same opaque native pixels; this adds edge shades, not display resolution. The candidate uses a shallow arc, 20-pixel-high upright RPM digits, a smaller PSI readout, and five steady shift lights. Inactive arc segments remain dim; the lit amount follows RPM.
 
 The cyan/orange/red palette is canonical BGRA. The existing measured red/blue boundary correction still applies in the transport. V2's cyan projection and tiny labels must be judged on the actual windshield; offline appearance does not prove readability.
 
