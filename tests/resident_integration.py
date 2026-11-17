@@ -68,7 +68,7 @@ with tempfile.TemporaryDirectory() as tmp:
 print('Uncertain cleanup quarantines without automatic retry')
 
 # Clean RPM timeout may retry, but uncertain drawing transport above may not.
-for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-malformed',True),('rpm-malformed',False)]:
+for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-malformed',True),('rpm-malformed',False),('rpm-cold-timeout',False)]:
  with tempfile.TemporaryDirectory() as tmp:
   root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
   shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
@@ -84,6 +84,7 @@ for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-m
     wait(lambda:int((state/'worker.starts').read_text())>=4,13);time.sleep(.6)
     assert proc.poll() is None and not server.resources
     assert not (root/'disabled').exists(), 'clean input failures must not disable later readiness'
+    if failure_mode=='rpm-cold-timeout':assert server.uploads==0
     before=server.uploads;server.mode='normal';wait(lambda:server.uploads>before+2,35)
     assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
     state=Path(tmp)/'next-boot';before=server.uploads

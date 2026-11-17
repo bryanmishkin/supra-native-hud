@@ -11,7 +11,8 @@ The repository is sufficient to understand and build the source with an appropri
 | Contract | Current implementation | Where it is enforced or used |
 | --- | --- | --- |
 | CPU/OS | QNX 6.5 ARM32 little-endian; reviewed loader `/usr/lib/ldqnx.so.2` | ELF audit, live identity, target execution |
-| Head-unit local IP | `169.254.199.119` | Resident child arguments; installer `--head` only changes SSH destination |
+| Head-unit diagnostic SSH | `169.254.199.119` | Installer `--head` changes only the SSH destination |
+| Internal RPM source IP | `160.48.199.119` in readiness candidate | Resident child arguments; independent of installer `--head` |
 | RPM gateway | Gold: `169.254.106.96:6801`; readiness candidate: `160.48.199.16:6801` from `160.48.199.119`, tester `0xf4`, ECU `0x12`, PID 0C | `tools/supra_standalone.cpp` |
 | Cluster and internal interface | `160.48.199.96:30502`, `vlan73` | Resident, worker, hook and stream classifier |
 | Guidance/list contracts | services `0xb006`/`0xb00e`, instances `200`/`100`, reviewed visibility models | Lease, wire encoder and profile |
