@@ -6,7 +6,7 @@ out=Path(sys.argv[1]);results=[]
 for case in ('clean','null-destination','uncertain','timeout','absent','non-hud','keepalive','other-destination','disabled'):
  with tempfile.TemporaryDirectory() as temp:
   path=str(Path(temp)/'handoff');s=socket.socket(socket.AF_UNIX);s.bind(path);s.listen();s.settimeout(.25)
-  env=os.environ.copy();env.update(LD_PRELOAD=str(out/'libhandoff.so'),SUPRA_HUD_HANDOFF=path)
+  trace=Path(temp)/'trace.log';env=os.environ.copy();env.update(LD_PRELOAD=str(out/'libhandoff.so'),SUPRA_HUD_HANDOFF=path,SUPRA_HUD_TRACE_FILE=str(trace))
   if case=='absent':s.close();os.unlink(path)
   if case=='disabled':
    disable=Path(temp)/'disabled';disable.touch();env['SUPRA_HUD_DISABLE_FILE']=str(disable)
@@ -27,5 +27,10 @@ for case in ('clean','null-destination','uncertain','timeout','absent','non-hud'
   if case in ('uncertain','timeout'):assert b'cleanup uncertain' in stderr
   else:assert stderr==b'',stderr
   if case=='timeout':assert 2.8<=elapsed<3.8
+  events=[line.split()[-1] for line in trace.read_text().splitlines()] if trace.exists() else []
+  if case in ('clean','null-destination'):assert events==['HANDOFF_CHECK','CLEAN','FACTORY_SEND'],events
+  elif case in ('uncertain','timeout'):assert events==['HANDOFF_CHECK','UNCERTAIN','FACTORY_SEND'],events
+  elif case=='absent':assert events==['HANDOFF_CHECK','FACTORY_SEND'],events
+  else:assert not events,events
   results.append(dict(case=case,passed=True,elapsed_seconds=round(elapsed,3)));s.close()
 (out/'hook-tests.json').write_text(json.dumps(results,indent=2));print(json.dumps(results,indent=2))

@@ -66,3 +66,20 @@ printf '%s\n' 'Built fake-factory handoff self-test; never attaches to a factory
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
   tools/hud_control.cpp -lsocket -o build/supra-hud-control-qnx
 printf '%s\n' 'Built cooperative stop client; no PID-based kill or vehicle traffic.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  tools/boot_trial_gate.c -o build/supra-boot-trial-gate-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  tools/startup_file_transaction.c -o build/supra-startup-transaction-qnx
+printf '%s\n' 'Built one-use factory-started gate and inode-preserving transaction; no deployment.'
+
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  '-DSUPRA_STARTUP_TARGET="/tmp/supra-boot-rehearsal/fixture.cfg"' \
+  tools/startup_file_transaction.c -o build/supra-startup-rehearsal-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  '-DSUPRA_BOOT_ROOT="/tmp/supra-boot-rehearsal"' \
+  '-DSUPRA_FACTORY_PATH="/tmp/supra-boot-rehearsal/fake-factory-qnx"' \
+  tools/boot_trial_gate.c -o build/supra-boot-gate-rehearsal-qnx
+"$qcc" -V4.4.2,gcc_ntoarmv7le -Wall -Wextra -Werror -O2 \
+  tests/boot_gate_fake_factory.c -o build/fake-factory-qnx
+printf '%s\n' 'Built RAM-only boot-gate and transaction fixtures; cannot start the factory controller.'

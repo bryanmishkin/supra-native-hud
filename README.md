@@ -1,6 +1,4 @@
-> Live validation supersedes earlier readiness claims: [results and failed startup integration](docs/v1-native-validation-2026-11-16.md). Native drawing/cleanup passed; controller replacement caused restarts. No unattended installation is accepted. Do not repeat the restart trial.
-
-> Latest startup/rollback and acceptance status (2026-11-16): see [STARTUP-ROLLBACK.md](STARTUP-ROLLBACK.md) and [ONE-CAR-SESSION-V1.md](ONE-CAR-SESSION-V1.md). The executable RAM kit is ready; unattended boot drawing is not accepted.
+> Current next attempt: [factory-managed one-use boot trial](FACTORY-BOOT-TRIAL.md). Native drawing/cleanup passed; live PID replacement failed and is retired. The new boot gate is built and rehearsed offline, not yet accepted on the car. Unattended v1 remains unapproved.
 
 Latest: [direct QNX runtime and pre-send navigation handoff candidate](STANDALONE-CANDIDATE.md); offline-tested, not yet installed or target-validated.
 
