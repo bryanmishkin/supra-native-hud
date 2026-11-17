@@ -80,9 +80,18 @@ The one captured negative text-deletion reply is retained as evidence and counte
 
 Offline replay through the real supervisor and worker processed 94 captured background requests and the exact negative text-removal reply with one continuous worker and no clear/restart. A real visibility takeover still cleaned up and returned; changing the rejected resource into the bitmap namespace still quarantined. Fragmented, coalesced, repeated, conflicting, unauthorized and mixed traffic tests passed. Existing 12 worker cases and 253 Python tests passed; the full QNX build and ARM import/dependency audits passed.
 
-Installed candidate (live movement acceptance pending):
+Installed candidate (owner-observed connected drive passed; cable-free startup/drive pending):
 
 - Worker `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`
 - Resident `42071e048e9b32434fd52e3fe9f5496a2baa4daae2b6ab7778a89f8d5bd601fa`
 
 All original hooks, gates, V1 layout/profile and enable state remain. The private install receipt verifies the exact prior 15-file baseline, two empty-pool checks, replacement readbacks, archived fault token, rollback binaries and read-only restoration. The owner returned for a targeted movement check; no additional mock classes are being implemented during that car session.
+
+
+### Connected movement result and next acceptance check
+
+After restarting iDrive on the movement correction above, the owner confirmed the tach was visible, then reported: “Ok I drove around it held”. This is an owner-observed successful connected drive. Duration and route were not recorded; post-drive worker continuity and frame counters have not been independently retrieved. Do not describe it as an endurance result or a cable-free cold-start pass.
+
+The owner then confirmed engine off, ENET completely unplugged from the car, doors locked and key away. The shutdown timer began at 15:20:38 America/Chicago on 17 November 2026 (21:20:38 UTC); the planned ten-minute interval ends at 15:30:38. The remaining test is a normal start without the laptop, automatic advancing tach display, followed by driving without dropouts. Result pending. The elapsed interval alone does not prove full vehicle sleep.
+
+The original Gold Master tag remains unchanged. Startup configuration and enable state were preserved by this movement correction; persistence is expected, but acceptance requires the pending unplugged start/drive result. No unrelated radio/navigation retests are requested.
