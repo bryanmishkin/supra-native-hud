@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 # Consolidated evidence runner and startup strategy
 
 16 November 2026. Offline engineering complete for this runner revision; no vehicle deployment performed. The runner is tested and built. Full cold-boot capture and arbitrary surface allocation are NOT proven.

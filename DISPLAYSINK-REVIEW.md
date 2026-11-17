@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 > Later trace, 16 Nov 2026: [SESSION-CONTRACT.md](SESSION-CONTRACT.md) resolves the factory sink state machine (selection 0 = HUD, 1 = Kombi), create structure/configuration response, initialize method 4, dispose method 7 and resource-dispose method 8. The earlier uncertainties below are historical; independent surface ownership and remote lifetime remain unproven.
 
 # DisplaySink and guidance creation — offline review

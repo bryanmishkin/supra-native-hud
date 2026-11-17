@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 # Consolidated capture evidence plan
 
 The previous sessions completed individual capture lists but did not close the full project's evidence gaps. Do not describe list completion as project-wide capture completeness. Minimize user trips by completing the offline work and instrument validation below before proposing another session.

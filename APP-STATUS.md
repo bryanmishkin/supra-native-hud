@@ -1,37 +1,38 @@
-# HUD application status — 16 November 2026
+# Verified application status
 
-**17 November live update:** [automatic startup, navigation/radio cleanup and return verified; final persistence acceptance in progress](PERSISTENT-LIVE-VALIDATION.md).
+Updated 17 November 2026. This file is the current status; dated research reports describe their own stage of the project.
 
-**Current release candidate:** [persistent tachometer installation](PERSISTENT-INSTALL.md). Continuous RPM, automatic navigation/radio cleanup and return, persistent startup and rollback are implemented and tested offline. Not yet installed or accepted on the car. The last car session ended with original startup restored and factory functions normal.
+## Accepted on the reference vehicle
 
-Earlier research notes below are historical; their unresolved items are not the current release status.
+Reference: 2026 Toyota GR Supra 3.0 Premium, six-speed manual; NBTevo_T24081I; QNX 6.5 ARM. Accepted implementation commit: `fd55e97` (later documentation commits do not change those binaries). Private revision08 kit manifest SHA-256: `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`.
 
-## Implemented and tested offline
+| Capability | Evidence and scope |
+| --- | --- |
+| Native head-unit operation | QNX ARM worker ran on the head unit, with plausible live RPM checked against the factory gauge. No Mac RPM relay is needed. |
+| Sport layout and colors | Owner confirmed readable larger digits/bar, no clipping, corrected orange/red lights. Simulated 5500/6200/6500 display values exercised light progression without commanding engine speed. |
+| Symbol-free, smooth updates | Owner confirmed no circle, arrow or flashing. Alternating bitmap binding is used. |
+| Navigation priority and return | On revision08, a 131-frame worker stopped with `cleanup_verified=true`; navigation was normal in both displays. Tachometer returned automatically after guidance stopped. |
+| Radio priority and return | Next worker stopped after 61 frames with verified cleanup. Normal selector and automatic return were confirmed twice. |
+| Sustained operation | Final uninterrupted worker reached 1238 frames; healthy resident, worker_starts=7, clean_stops=3, no quarantine. Owner confirmed smooth, symbol-free live RPM. |
+| Persistent startup | Commit succeeded; enabled token, mapped hooks and read-only filesystem verified before restart. Owner confirmed automatic smooth tachometer after committed restart. |
+| Startup without Mac | Owner unplugged ENET, reset iDrive again and confirmed it worked. This is a visual confirmation, not a post-reset machine log. |
+| Factory functions | Navigation in windshield/cluster, radio selector and iDrive were confirmed normal during acceptance. |
 
-The C++98 core draws a normalized 24-segment upper tach arc and five progressive shift indicators. Defaults suppress output; RPM thresholds, object ownership and overlay state must be explicitly validated. Optional pressure calculation uses fresh paired manifold/ambient samples; the native renderer does not yet render numeric boost text.
+[Detailed installation evidence](PERSISTENT-LIVE-VALIDATION.md) separates actual observations from regression tests. The accepted app was left installed and enabled. Do not apply the older “restore factory startup at the end of every demo” instructions to a passed persistent installation.
 
-The core rejects invalid/future/stale RPM, out-of-order source timestamps and clock rollback even between presentation frames. Source timestamps are preserved; cached readings must not be restamped. Input safety can now be checked on an acknowledgement without consuming the next presentation slot.
+## Known design boundaries
 
-The native encoder creates bounded commands only for two explicitly owned handles. It builds a hidden back buffer and switches visibility last. The session permits one outstanding command, requires an exact correlated acknowledgement, and stops on timeout, send failure, permission loss or clock rollback. A queued frame expires using its original sample timestamp; fresh incoming samples do not extend it.
+- The app uses **shared factory guidance instance 200**, not a separately owned session. It must yield rather than draw simultaneously with factory guidance/radio.
+- The demonstrated drawing path can affect both windshield and gauge cluster. There is no proven independent windshield-only destination or larger canvas.
+- 150 × 36 is the implemented/observed bitmap size. Removing the circle did not establish more display area.
+- Display scale 7000 and full shift cue 6500 are hard-coded. They are not engine calibration recommendations; the code's `thresholdsValidated=true` enables rendering and is not evidence of OEM limit validation.
+- The app does not include a settings UI, boost display, installer GUI, automatic firmware discovery, or generic upgrade/re-enable procedure.
+- Unknown factory state prevents drawing. Loss of capture, uncorrelated shared traffic or uncertain removal can disable the app until serviced. The software cannot guarantee remote image expiry after every possible transport failure.
 
-The application controller coordinates those components without opening a connection. The observer creates temporary DSI registration/subscriptions and captures at most eight registry snapshots and 256 HUD headers, without payloads. It sends no HUD commands. Its 15-second observation has a 20-second hard deadline.
+## Not yet established
 
-Three QNX ARM candidates compile: registry observer, offline replay and no-vehicle-I/O self-test. The self-test covers ten cases and has a five-second deadline. Linux tests run on both 32-bit and 64-bit hosts; target compilation is distinct from target execution.
+Full vehicle shutdown/sleep/wake, repeated ignition cycles, engine-off/stop-start behavior, extended road endurance, other driver-assistance overlays, and other vehicles/firmwares remain unverified. The unplugged iDrive restart is not a full cold vehicle power cycle. The complete navigation/radio acceptance happened before persistent commit; the recorded final restart checks confirmed automatic display, not a second complete post-commit handoff sequence.
 
-## Important limits
+## Offline evidence
 
-The encoder emits 40 calls per full frame. At the current 50 ms minimum spacing, the sequence needs at least 1.95 seconds. Production input freshness is 300 ms, so the frame-expiry guard intentionally prevents that slow sequence from becoming a live tachometer. The simulator uses a declared 2000 ms synthetic fixture budget to exercise completion; that is not approved for live use.
-
-Stopping local sends does not remove a previously visible remote image. The native service's lifetime/release behavior must be verified before live drawing. Unknown overlay state, ownership or echoed-tag behavior cannot be solved with a guessed profile.
-
-## Remaining work that needs car evidence
-
-- Execute the self-test and confirm the target loader/C++ runtime.
-- Validate the private DSI adapter through bounded registry observation.
-- Determine the actual HUD host, ownership/acquisition/release, geometry and palette.
-- Validate reply correlation and a transport/update strategy fast enough for fresh RPM.
-- Establish factory overlay signals and verified cleanup/recovery behavior.
-- Bind a validated live telemetry source and agree the car-specific shift thresholds.
-- Implement the live sender/profile only after those facts are established.
-
-No persistent startup, global HUD clear, firmware change or coding operation is implemented. See NEXT-CAR-SESSION.md for the ordered tests.
+At the accepted implementation revision, 244 Python tests passed. Native integration tests cover worker/supervisor handoff and return, pre-admission takeover, delayed CLEAN exit, classified RPM recovery, retry exhaustion, and uncertain-ack quarantine. Gate tests cover exact factory preload preservation and fallback. Captured boot replay tests do not grant admission. ARM builds and static import audits passed; these complement, not replace, target execution.

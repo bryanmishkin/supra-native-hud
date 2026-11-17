@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 > **Later same-session result:** RLE32 encoding and the shared road-icon path were implemented and tested successfully. See [RLE32-LIVE-PROOF.md](RLE32-LIVE-PROOF.md). The PNG/own-session procedure below is historical.
 
 # Own-session live drawing experiment

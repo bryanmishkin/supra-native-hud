@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](../APP-STATUS.md) and [current installation/rollback](../PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 ENGINE-RUNNING CAPTURES AND DRAWING BUFFERS VERIFIED — 16 NOVEMBER 2026
 
 Completed parked outdoors with engine running and user-confirmed windshield HUD visibility. Engine-start/radio window: 120.008 s, 5,610 packets, 1,082,288 bytes, zero drops. Navigation start/stop window: 120.007 s, 5,128 packets, 1,059,691 bytes, zero drops. All extracted TCP streams parse. Both recorders exited and their temporary RAM directories were removed. Final process check found no recorder; SSH master closed. User confirmed normal HUD and iDrive response after all tests.

@@ -1,84 +1,39 @@
-# Supra native HUD
+# Supra native HUD tachometer
 
-**17 November live update:** [automatic startup, navigation/radio cleanup and return verified; final persistence acceptance in progress](PERSISTENT-LIVE-VALIDATION.md).
+A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 
-**Current release candidate:** [persistent tachometer installation](PERSISTENT-INSTALL.md). Continuous RPM, automatic navigation/radio cleanup and return, persistent startup and rollback are implemented and tested offline. Not yet installed or accepted on the car. The last car session ended with original startup restored and factory functions normal.
+**Installed and enabled on the reference Supra on 17 November 2026.** Automatic startup, navigation/radio handoff and return, verified cleanup, and a five-minute uninterrupted run passed. The owner confirmed automatic startup after a further iDrive reset **with the ENET cable unplugged**. See [verified status and limits](APP-STATUS.md) and [installation evidence](PERSISTENT-LIVE-VALIDATION.md).
 
-Earlier research notes below are historical; their unresolved items are not the current release status.
+The reference vehicle is a **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, NBT Evo **NBTevo_T24081I**, QNX 6.5 ARM. This is one verified vehicle/firmware combination, not a universal BMW/Supra installer. The drawing path shares factory guidance state; it is not an independent overlay surface. Cold vehicle sleep/wake and road endurance have not been established by the recorded acceptance tests.
 
-Personal research project for the **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, with NBT Evo firmware **NBTevo_T24081I**. The intended display is the factory windshield HUD: an upper curved tachometer and progressive shift cues while preserving factory speed, speed limit, navigation and radio overlays.
+## Start here
 
-## Current state
+| Need | Read |
+| --- | --- |
+| Pick up the project as an agent | [AGENTS.md](AGENTS.md), then [agent handoff](docs/AGENT-HANDOFF.md) |
+| Understand what is proven | [APP-STATUS.md](APP-STATUS.md) |
+| Understand the app and drawing path | [App architecture](docs/APP-ARCHITECTURE.md) |
+| Build and test offline | [Build environments](environment/README.md) |
+| Install, validate, disable or restore factory startup | [PERSISTENT-INSTALL.md](PERSISTENT-INSTALL.md) |
+| Investigate a missing/stopped display | [Operations and recovery](docs/OPERATIONS.md) |
+| Evaluate another vehicle | [COMPATIBILITY.md](COMPATIBILITY.md) |
+| Find older protocol research or test evidence | [Documentation index](docs/INDEX.md) |
 
-The QNX ARM build, smooth circle-free live RPM, larger sport layout, corrected orange/red shift lights and pre-send navigation handoff have been demonstrated on the Supra. The last radio takeover exposed incomplete cleanup, which prevented a persistent install. The new resident and HMI hook address that path and automatic return; see the linked install runbook for evidence and exact remaining acceptance checks.
+## What the installed app does
 
-## Build and test
+- Renders the sport layout inside the measured **150 × 36** bitmap: large RPM digits, 24 bar segments and five steady shift lights.
+- Reads actual engine RPM through the diagnostic gateway, targeting one display update every **250 ms**. It does not command engine speed.
+- Uses the verified symbol-free graph and alternating bitmap resources to avoid the former circle/arrow and flashing.
+- Starts only after a minimum 30-second resident settling period **and** acknowledged idle states for navigation and radio.
+- Stops drawing for factory navigation/radio, verifies removal, then resumes automatically after acknowledged release.
+- Stops automatic operation on uncertain drawing state. A normal process exit alone is not proof that remote graphics disappeared.
 
-Run commands from the repository root.
+The current code uses a 7000 RPM display scale and 6500 RPM full shift cue. These are display settings, not validated engine limits. Boost, user-adjustable settings, an independent windshield-only surface, and general vehicle support are not implemented in the installed path.
 
-```sh
-# Recreate the ordinary Linux test host (no QNX SDK required).
-docker build --platform linux/amd64 -t supra-hud-build-host:22.04 environment
-docker run --rm --platform linux/amd64 --network none \
-  --mount "type=bind,src=$PWD,dst=/workspace,readonly" \
-  supra-hud-build-host:22.04 sh environment/test-host.sh
+## Build and source availability
 
-# On the prepared Mac, using the locally retained SDK image:
-sh environment/run-local-sdk-build.sh
+[Build instructions](environment/README.md) distinguish ordinary host tests from the QNX ARM build and profile-dependent integration tests. The repository contains source, not a ready-to-install public binary release. A compatible ARM-capable QNX SDK, target runtime audit inputs, and a verified private drawing profile are separate prerequisites.
 
-# Alternative: supply an independently installed SDK and its configuration.
-QNX_SDK_DIR=/path/to/qnx650 QNX_LICENSE_DIR=/path/to/qnx-config \
-  sh environment/run-build.sh
-```
+The installed path is `persistent_boot_gate.c` → `supra_resident.cpp` → `supra_standalone.cpp`, with `navigation_handoff_hook.cpp`, `factory_lease.*`, `factory_stream.*`, `standalone_wire.*` and `tach_bitmap.*`. Older DSI/registry encoders and Mac-driven trial tools remain research code; they are not the installed renderer.
 
-Neither SDK nor license material is included. The local SDK image is private and is not a GitHub build dependency available to other machines. See [environment/README.md](environment/README.md).
-
-The target build produces:
-
-| Candidate | Purpose | Vehicle-service interaction |
-| --- | --- | --- |
-| `supra-hud-selftest-qnx --self-test` | Ten bounded synthetic tests plus monotonic-clock use | None; no DSI loading or sockets |
-| `supra-hud-offline-replay-qnx --simulate` | Forty synthetic commands emitted as JSON | None; commands remain in memory |
-| `supra-registry-observer-qnx --observe-registry` | 15-second registry and bounded HUD-header observation | Temporary DSI client and subscriptions; no drawing/device-control registration |
-
-The 16 November car session passed all ten target self-tests and verified DSI registration/observation. However, no expected 0x82/0 HUD service was advertised. See [CAR-VALIDATION.md](CAR-VALIDATION.md); actual Supra transport discovery remains open. [NEXT-CAR-SESSION.md](NEXT-CAR-SESSION.md) gives the exact order and stop conditions.
-
-## Source map
-
-- `src/hud_core.*`: timestamps, cadence, tach/shift geometry, optional pressure calculation.
-- `src/native_backend.*`: owned-handle command encoding and double-buffer batches.
-- `src/native_session.*`: one outstanding call, exact acknowledgement matching, timeouts and frame expiry.
-- `src/hud_app.*`: single-threaded coordination; no transport connection.
-- `src/registry_observer.*`: bounded registry snapshots and header-only observation.
-- `tools/hud_selftest.cpp`, `tools/hud_pipeline_replay.cpp`: no-vehicle-I/O target checks.
-- `tools/check_session_result.py`: checks saved self-test/observer logs locally.
-- `tools/audit_target.py`: static ELF/dependency/import check (requires `pyelftools`).
-- `tools/prepare_car_kit.py`: packages hash-matched, audited binaries locally; never uploads or runs them.
-- `tools/capture_runtime.py`: default no-network capture plan; explicit read-only execution mode.
-- `tests/`: 32/64-bit host tests and Python preparation/result checks.
-
-Runtime captures, SDKs, license utilities/material, credentials, generated binaries and car-session logs are excluded from GitHub. They are not needed to run the host tests. Private evidence and audited candidates are kept separately in Drive. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for vendored source attribution.
-
-Latest transport investigation and capture prerequisites: [HUD-PATH-REVIEW.md](HUD-PATH-REVIEW.md).
-
-Actual-car payload decoding and current ownership limits: [PROTOCOL-DECODE.md](PROTOCOL-DECODE.md).
-
-Independent-surface lifecycle investigation: [SURFACE-INVESTIGATION.md](SURFACE-INVESTIGATION.md).
-
-Concrete receiver and shape-dispatch trace: [DISPLAY-ROUTING.md](DISPLAY-ROUTING.md).
-
-Latest transport review and targeted binding capture: [RENDERER-TRANSPORT.md](RENDERER-TRANSPORT.md).
-
-DisplaySink wire layouts, guidance create trace and passive decoder validation: [DISPLAYSINK-REVIEW.md](DISPLAYSINK-REVIEW.md).
-
-Before requesting more car time, follow [CONSOLIDATED-CAPTURE-PLAN.md](CONSOLIDATED-CAPTURE-PLAN.md); the startup limitations remain explicit.
-
-Consolidated runner, continuous recorder, validation and startup procedure: [STARTUP-AND-CONSOLIDATED-RUNBOOK.md](STARTUP-AND-CONSOLIDATED-RUNBOOK.md).
-
-See [RIC-GUIDING-BINDING.md](RIC-GUIDING-BINDING.md) for the traced method-11 picture reference, factory session roles, and resource-release selection.
-
-See [RIC-VISIBLE-GRAPH.md](RIC-VISIBLE-GRAPH.md) for capture-validated active maneuver/description messages, cancellation, and the passive graph analyzer.
-
-See [RIC-RESOURCE-REMOVAL.md](RIC-RESOURCE-REMOVAL.md) for correlated resource-check replies, distinct-client create-body preparation, and the remaining removal-test boundary.
-
-See [OWNED-SESSION-LIFECYCLE.md](OWNED-SESSION-LIFECYCLE.md) for the stateful, transport-injected resource lifecycle and failure-injection results. This is not a windshield drawing test.
+Vehicle captures, factory binaries, generated kits, SDKs, credentials and license material stay outside GitHub. See [third-party notices](THIRD_PARTY_NOTICES.md); this documentation does not add a license grant for the original project source.

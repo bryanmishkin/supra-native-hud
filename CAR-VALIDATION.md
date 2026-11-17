@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 # On-car validation — 16 November 2026
 
 Vehicle: 2026 GR Supra manual, NBTevo_T24081I; direct QNX 6.5 ARM OMAP. The source repository contains this summary, not raw vehicle captures or OEM binaries. Complete private evidence is in the Drive diagnostics bundle.

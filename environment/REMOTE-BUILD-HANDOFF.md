@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](../APP-STATUS.md) and [current installation/rollback](../PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 # Building on another authorized host
 
 This source can be built on an existing full ARM-capable QNX SDP 6.5 Linux installation using GCC 4.4.2 and `build-observer.sh`. The local Mac build now works; remote building is an alternative, not a current requirement.

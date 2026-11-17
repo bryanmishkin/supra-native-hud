@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 Live result: the windshield stepped tachometer, complete removal and subsequent factory navigation passed on 16 November 2026. Gauge-cluster tachometer visibility was not observed during this run. See [TACHOMETER-LIVE-RESULT.md](TACHOMETER-LIVE-RESULT.md).
 
 # Tachometer drawing test — prepared 16 November 2026

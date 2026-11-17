@@ -1,3 +1,5 @@
+> **Historical research / stage-specific evidence.** Preserved as recorded; “current,” “remaining,” and “next test” below refer to that earlier stage, not today. For the installed app use [verified status](APP-STATUS.md) and [current installation/rollback](PERSISTENT-INSTALL.md). Do not execute this older runbook as the persistent install procedure.
+
 # Next attempt: factory-managed, one-use hook trial
 
 Prepared offline after the failed live replacement tests. This is a concrete parked integration test, not a production v1 installer. Never stop/replace the running controller PID and never disable factory watchdogs.
