@@ -68,11 +68,11 @@ with tempfile.TemporaryDirectory() as tmp:
 print('Uncertain cleanup quarantines without automatic retry')
 
 # Clean RPM timeout may retry, but uncertain drawing transport above may not.
-for recovery in [True,False]:
+for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-malformed',True),('rpm-malformed',False)]:
  with tempfile.TemporaryDirectory() as tmp:
   root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
   shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
-  server=Servers('rpm-timeout',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  server=Servers(failure_mode,Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   try:
    wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
    wait(lambda:(state/'last-result').exists());assert not server.resources

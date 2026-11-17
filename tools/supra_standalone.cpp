@@ -120,7 +120,7 @@ static double rpmSampleRaw(const char* local,const char* gateway,uint64_t& stamp
 }
 static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
  try{return rpmSampleRaw(local,gateway,stamp,monitor);}catch(const std::exception& e){
-  if(!strcmp(e.what(),"I/O deadline")||!strcmp(e.what(),"send")||!strcmp(e.what(),"receive")||!strcmp(e.what(),"connect")||!strcmp(e.what(),"connect completion")||!strcmp(e.what(),"local bind")){
+  if(!strcmp(e.what(),"I/O deadline")||!strcmp(e.what(),"send")||!strcmp(e.what(),"receive")||!strcmp(e.what(),"connect")||!strcmp(e.what(),"connect completion")||!strcmp(e.what(),"local bind")||!strcmp(e.what(),"RPM frame length")||!strcmp(e.what(),"RPM reply")||!strcmp(e.what(),"RPM frame limit")){
    int saved=errno;fprintf(stderr,"RPM transport: %s errno=%d (%s) elapsed_ms=%llu\n",e.what(),saved,strerror(saved),(unsigned long long)(now()-stamp));
    throw std::runtime_error(std::string("rpm_transport:")+e.what());
   }throw;
