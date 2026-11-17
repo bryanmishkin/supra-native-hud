@@ -35,7 +35,7 @@ struct Resident {
   bool clean=text.find("\"cleanup_verified\":true")!=std::string::npos;
   cleanupProven=WIFEXITED(status)&&clean;
   bool expected=text.find("\"reason\":\"factory_navigation_request\"")!=std::string::npos||text.find("\"reason\":\"admission_denied\"")!=std::string::npos||text.find("\"reason\":\"disabled\"")!=std::string::npos;
-  bool retryable=WIFEXITED(status)&&clean&&text.find("\"reason\":\"rpm_transport:")!=std::string::npos;
+  bool retryable=WIFEXITED(status)&&clean&&(text.find("\"reason\":\"rpm_transport:")!=std::string::npos||text.find("\"reason\":\"RPM stale\"")!=std::string::npos);
   if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else lease.fault("clean I/O retry budget exhausted");}
   else if(!WIFEXITED(status)||!clean||!expected)lease.fault("worker exit/cleanup uncertain");
   saveText(state+"/last-result",text);

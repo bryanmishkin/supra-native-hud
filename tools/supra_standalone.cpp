@@ -21,6 +21,8 @@
 #include <string>
 #include <fstream>
 using namespace supra;
+// Allow scheduling jitter while retaining correlation and 300 ms RPM freshness.
+static const unsigned DRAW_ACK_MS=500;
 static volatile sig_atomic_t stopped=0;
 static void stop(int){stopped=1;}
 static uint64_t now(){timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))throw std::runtime_error("clock");return uint64_t(t.tv_sec)*1000+t.tv_nsec/1000000;}
@@ -167,12 +169,12 @@ int main(int argc,char** argv){
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   acquireAdmission(ric.monitor);heartbeatCheck();
   for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
-  uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
-  for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,100);}++frames;
+  uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),DRAW_ACK_MS);if(!ric.check(visible,DRAW_ACK_MS))fail("upload absent");fresh(stamp);
+  for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,DRAW_ACK_MS);}++frames;
   uint64_t deadline=continuous?~uint64_t(0):now()+seconds*1000;
   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline){
-   unsigned next=visible==0x01000009?0x01000008:0x01000009;rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp);fresh(stamp);checkpoint(ric);if(ric.check(next,100))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),100);if(!ric.check(next,100))fail("upload absent");fresh(stamp);checkpoint(ric);
-   Bytes road=profile.setup[4].body;set32(road,32,next);ric.empty(14,road,100);fresh(stamp);ric.empty(8,removeBody(visible),100);if(ric.check(visible,100))fail("old image retained");owned[visible-0x01000008]=false;visible=next;++frames;
+   unsigned next=visible==0x01000009?0x01000008:0x01000009;rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp);fresh(stamp);checkpoint(ric);if(ric.check(next,DRAW_ACK_MS))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),DRAW_ACK_MS);if(!ric.check(next,DRAW_ACK_MS))fail("upload absent");fresh(stamp);checkpoint(ric);
+   Bytes road=profile.setup[4].body;set32(road,32,next);ric.empty(14,road,DRAW_ACK_MS);fresh(stamp);ric.empty(8,removeBody(visible),DRAW_ACK_MS);if(ric.check(visible,DRAW_ACK_MS))fail("old image retained");owned[visible-0x01000008]=false;visible=next;++frames;
    if(ric.log){fprintf(ric.log,"{\"rpm\":%.2f,\"sample_ms\":%llu,\"frame\":%u}\n",rpm,(unsigned long long)stamp,frames);fflush(ric.log);}
    while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline&&now()<stamp+250){ric.monitor.guard();usleep(5000);}
   }

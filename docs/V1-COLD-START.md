@@ -72,3 +72,13 @@ Post-patch snapshots use `--v1-kit "$PATCH_KIT/patched-reference"` for current i
 A real cold-start success is the missing acceptance criterion. The offline tests prove the code defect and its correction; they cannot prove which failure the vehicle experienced or guarantee recovery from all sleep/wake paths.
 
 The corrected second transaction completed: replacement bytes read back exactly, empty resource pool verified twice, filesystem protection restored, original reason archived, enabled token retained, native sync completed. No automatic restart was issued. Owner restart and cold-wake validation are pending.
+
+## Warm-start validation exposed a second fault
+
+The owner initially saw a smooth tachometer after the repaired startup. Machine evidence then showed `worker exit/cleanup uncertain`: worker `I/O deadline`, 11 frames, cleanup false. The owner confirmed the display was frozen. Method 2 request 85 lacked a worker-log ACK, although the saved packet capture shows its request at 1794938249.452670 and correlated reply at 1794938249.455077; the connection closed at .463331. The preceding upload ACK was at .303021. This supports local scheduling/deadline handling rather than a missing cluster reply; it is not a scheduler trace.
+
+Read-only inspection found both app bitmap slots still allocated. The owner performed the normal recovery restart and confirmed the frozen image disappeared. The post-reset snapshot had no app runtime directory; a fresh pool check verified absence before service recovery.
+
+The next candidate changes drawing-request ACK budget from 100 to 500 ms, preserving exact reply correlation, passive revocation, admission and the 300 ms RPM freshness ceiling. Only a verified-clean `RPM stale` exit may join the existing bounded input-retry policy. It does not retry uncertain drawing I/O. A 150 ms delayed-presence test passes without freezing; a 350 ms delayed reply causes stale-RPM cleanup before bounded restart. Native handoff, closure and lost-ACK tests still pass.
+
+The resident and worker were replaced after exact prior-candidate byte checks, stopped-process/absent-runtime checks, and two fresh empty-pool queries. The saved uncertain-exit reason was archived only after that observed recovery and verified replacements. This was a private reference-car service transaction, not a generalized automatic uncertain-fault reset. Read-only protection and native sync completed. Another owner restart and sustained live validation are pending.

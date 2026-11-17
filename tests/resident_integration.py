@@ -135,3 +135,17 @@ for clean_close in [True,False]:
    if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
    server.close()
 print('Factory transport close: clean next-boot recovery and uncertain-removal quarantine passed')
+
+with tempfile.TemporaryDirectory() as tmp:
+ root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+ shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+ server=Servers('delayed-stale',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ try:
+  wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
+  wait(lambda:(state/'last-result').exists());r=json.loads((state/'last-result').read_text());assert r['reason']=='RPM stale' and r['cleanup_verified'];assert not server.resources
+  before=server.uploads;wait(lambda:server.uploads>before+2,5);assert not (root/'disabled').exists()
+  assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+ finally:
+  if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+  server.close()
+print('Delayed correlated reply with stale RPM: verified cleanup before bounded retry passed')
