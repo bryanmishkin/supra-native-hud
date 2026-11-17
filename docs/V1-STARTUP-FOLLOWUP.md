@@ -95,3 +95,12 @@ After restarting iDrive on the movement correction above, the owner confirmed th
 The owner then confirmed engine off, ENET completely unplugged from the car, doors locked and key away. The shutdown timer began at 15:20:38 America/Chicago on 17 November 2026 (21:20:38 UTC); the planned ten-minute interval ends at 15:30:38. The remaining test is a normal start without the laptop, automatic advancing tach display, followed by driving without dropouts. Result pending. The elapsed interval alone does not prove full vehicle sleep.
 
 The original Gold Master tag remains unchanged. Startup configuration and enable state were preserved by this movement correction; persistence is expected, but acceptance requires the pending unplugged start/drive result. No unrelated radio/navigation retests are requested.
+
+
+## Accepted cable-free startup and drive — 17 November 2026
+
+The owner reported: “Tach came on with the cable unplugged and stayed on during the drive. I'm parked now.” This completes the requested owner-observed normal shutdown/start and driving check on the exact movement-correction binaries listed above. The car had been shut down, locked with key away and ENET completely removed. The owner elected to return before the planned ten-minute deadline; the precise shutdown duration, start latency, route and drive duration were not measured. Do not claim a ten-minute soak, verified full ECU sleep, overnight cold soak, repeated-cycle or extended endurance validation.
+
+Evidence is deliberately separated: installation receipts establish exact binary readbacks and restored read-only protection; the owner establishes automatic cable-free appearance and sustained visibility during this drive. No post-drive machine logs were retrieved for this result. No new changes to the car were made when recording acceptance.
+
+Accepted application source is commit `74dd185`; subsequent commits update documentation only. Worker SHA-256 `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`; resident SHA-256 `42071e048e9b32434fd52e3fe9f5496a2baa4daae2b6ab7778a89f8d5bd601fa`. The private archive preserves the exact installed kit, manifest, rollback configurations, install receipts, source snapshot and offline test reports. The historical `v1.0.0-gold-master` tag is unchanged; this accepted repair supersedes its runtime for the reference vehicle.
