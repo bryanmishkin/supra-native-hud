@@ -2,6 +2,7 @@
 #include "standalone_wire.hpp"
 #include "tach_bitmap.hpp"
 #include "navigation_guard.hpp"
+#include "background_traffic.hpp"
 #ifdef SUPRA_FACTORY_RPM
 #include "factory_rpm.hpp"
 #endif
@@ -32,7 +33,7 @@ static uint64_t now(){timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))throw std:
 static void fail(const char* s){throw std::runtime_error(s);}
 struct Fd {int fd;Fd():fd(-1){}~Fd(){if(fd>=0)close(fd);}private:Fd(const Fd&);Fd& operator=(const Fd&);};
 struct Monitor {
- int control,peer;std::string controlPath,input;bool yield;
+ int control,peer;std::string controlPath,input;bool yield;BackgroundTraffic background;
  pcap_t* capture;unsigned port,ownAddress,clusterAddress;bool foreign,unhealthy;unsigned packets;
  Monitor():control(-1),peer(-1),yield(false),capture(0),port(0),ownAddress(0),clusterAddress(0),foreign(false),unhealthy(false),packets(0){}
  ~Monitor(){if(capture)pcap_close(capture);if(peer>=0)close(peer);if(control>=0)close(control);if(!controlPath.empty())unlink(controlPath.c_str());}
@@ -47,10 +48,24 @@ struct Monitor {
  }
  void controlPump(){
   if(control<0||yield)return;
-  if(peer<0){peer=accept(control,0,0);if(peer>=0&&fcntl(peer,F_SETFL,O_NONBLOCK)<0){close(peer);peer=-1;}}
-  if(peer>=0){char buf[16];ssize_t n=recv(peer,buf,sizeof(buf),0);
-   if(n>0){input.append(buf,n);if(input=="YIELD1\n")yield=true;else if(input.size()>=7){close(peer);peer=-1;input.clear();}}
-   else if(n==0||(n<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK&&errno!=EINTR)){close(peer);peer=-1;input.clear();}
+  for(unsigned attempts=0;attempts<8;++attempts){
+   if(peer<0){peer=accept(control,0,0);if(peer>=0&&fcntl(peer,F_SETFL,O_NONBLOCK)<0){close(peer);peer=-1;}if(peer<0)return;}
+   char buf[4096];ssize_t n=recv(peer,buf,sizeof(buf),0);
+   if(n>0){input.append(buf,n);
+    if(input=="YIELD1\n"){yield=true;return;}
+    if(input.size()<=7&&std::string("YIELD1\n").compare(0,input.size(),input)==0)continue;
+    bool prefix=input.size()<8?std::string("BGSAFE1\n").compare(0,input.size(),input)==0:input.compare(0,8,"BGSAFE1\n")==0;
+    if(prefix&&input.size()<=4108){
+     if(input.size()<12)continue;
+     unsigned size=bg32((const unsigned char*)input.data()+8);
+     if(size<=4096&&size>=20&&input.size()<12+size)continue;
+     if(size<=4096&&size>=20&&input.size()==12+size&&background.authorize((const unsigned char*)input.data()+12,size)){
+      ssize_t sent=send(peer,"READY\n",6,0);(void)sent;
+     }
+    }
+    close(peer);peer=-1;input.clear();
+   }else if(n==0||(n<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK&&errno!=EINTR)){close(peer);peer=-1;input.clear();}
+   else return;
   }
  }
  void open(const char* iface,const char* cluster,unsigned ownPort,unsigned ownIp){
@@ -74,7 +89,8 @@ struct Monitor {
   for(unsigned i=0;i<256;++i){pcap_pkthdr* h;const u_char* b;int r=pcap_next_ex(capture,&h,&b);if(r==0)break;if(r<0){fprintf(stderr,"monitor read: %s\n",pcap_geterr(capture));unhealthy=true;break;}++packets;
    Traffic t=classifyTraffic(b,h->caplen,h->len,ownAddress,port,clusterAddress);
    if(t==UnknownTraffic){fprintf(stderr,"monitor unknown packet cap=%u wire=%u\n",(unsigned)h->caplen,(unsigned)h->len);unhealthy=true;break;}
-   if(t==FactoryTraffic)foreign=true;
+   if(t==FactoryTraffic&&!background.consume(b,h->caplen,h->len))foreign=true;
+   if(t==IgnoreTraffic)background.consume(b,h->caplen,h->len); // track exact cookie sequence bytes too
    if(i==255)unhealthy=true;
   }
   pcap_stat stats;memset(&stats,0,sizeof(stats));int status=pcap_stats(capture,&stats);if(status<0||stats.ps_drop||stats.ps_ifdrop){fprintf(stderr,"monitor stats status=%d drop=%u ifdrop=%u error=%s\n",status,stats.ps_drop,stats.ps_ifdrop,pcap_geterr(capture));unhealthy=true;}

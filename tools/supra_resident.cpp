@@ -14,6 +14,13 @@ static int unixConnect(const std::string& path){
 }
 static bool controlStop(const std::string& path){int fd=unixConnect(path);if(fd<0)return false;bool ok=send(fd,"YIELD1\n",7,0)==7;char b[6];unsigned at=0;uint64_t end=now()+2500;while(ok&&at<6&&now()<end){ssize_t n=recv(fd,b+at,6-at,0);if(n>0)at+=n;else if(n<0&&(errno==EAGAIN||errno==EINTR))continue;else break;}close(fd);return ok&&at==6&&!memcmp(b,"CLEAN\n",6);}
 static bool readAll(int fd,unsigned char* data,unsigned n,unsigned timeout=300){unsigned at=0;uint64_t end=now()+timeout;while(at<n&&now()<end){ssize_t got=recv(fd,data+at,n-at,0);if(got>0)at+=got;else if(got<0&&(errno==EINTR||errno==EAGAIN))continue;else return false;}return at==n;}
+static bool authorizeBackground(const std::string& path,const FactoryLease::Packet& raw){
+ if(raw.size()<20||raw.size()>4096)return false;FactoryLease::Packet p=raw;unsigned n=p.size()-8;for(unsigned i=0;i<4;++i)p[4+i]=(n>>(24-8*i))&255;
+ int fd=unixConnect(path);if(fd<0)return false;Bytes q;const char* header="BGSAFE1\n";q.insert(q.end(),header,header+8);put32(q,p.size());q.insert(q.end(),p.begin(),p.end());
+ unsigned at=0;uint64_t deadline=now()+250;bool ok=true;
+ while(at<q.size()&&now()<deadline){ssize_t sent=send(fd,&q[at],q.size()-at,0);if(sent>0)at+=sent;else if(sent<0&&errno==EINTR)continue;else {ok=false;break;}}
+ unsigned char reply[6];ok=ok&&at==q.size()&&readAll(fd,reply,6,250)&&!memcmp(reply,"READY\n",6);close(fd);return ok;
+}
 static void replyText(int fd,const char* s){ssize_t n=send(fd,s,strlen(s),0);(void)n;}
 static bool privateDir(const std::string& p){struct stat s;return !lstat(p.c_str(),&s)&&S_ISDIR(s.st_mode)&&s.st_uid==geteuid()&&!(s.st_mode&0022);}
 static void saveText(const std::string& path,const std::string& body){std::string temp=path+".new";int fd=open(temp.c_str(),O_WRONLY|O_CREAT|O_TRUNC,0600);if(fd<0)fail("state write");bool ok=write(fd,body.data(),body.size())==(ssize_t)body.size();close(fd);if(!ok||rename(temp.c_str(),path.c_str()))fail("state replace");}
@@ -78,7 +85,9 @@ struct Resident {
   if(memcmp(h,"PRE1",4)||h[4]>1||h[5]||h[6]||h[7]){lease.fault("broker event header");stop();close(fd);return;}
   unsigned char size[4];if(!readAll(fd,size,4)){lease.fault("broker event length");stop();close(fd);return;}unsigned n=(unsigned(size[0])<<24)|(unsigned(size[1])<<16)|(unsigned(size[2])<<8)|size[3];
   if(n<16||n>65552){lease.fault("broker event bound");stop();close(fd);return;}FactoryLease::Packet packet(n);if(!readAll(fd,&packet[0],n)){lease.fault("broker event truncation");stop();close(fd);return;}
-  bool tracked=lease.before(packet,h[4]);bool clean=stop();replyText(fd,tracked&&clean?"CLEAN\n":"UNCERTAIN\n");close(fd);
+  bool background=lease.background(packet);bool tracked=lease.before(packet,h[4]);
+  bool keep=tracked&&background&&(!child||(admitted&&!cleanAck&&authorizeBackground(state+"/active.jsonl.handoff",packet)));
+  bool clean=keep||stop();replyText(fd,tracked&&clean?"CLEAN\n":"UNCERTAIN\n");close(fd);
  }
  void status(){
   if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[256];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s,\"input_retry_wait\":%s,\"input_retry_count\":%u}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false",(!child&&now()<retryAfter)?"true":"false",ioRetries);saveText(state+"/admission.json",admission);
@@ -99,6 +108,8 @@ struct Resident {
   // reasons are boot-local only with no child and proven clean withdrawal.
   // Every other fault retains the existing persistent quarantine behavior.
   bool bootOnly=lease.failed()&&(lease.reason()=="clean I/O retry budget exhausted"||lease.reason()=="factory transport closed")&&!child&&cleanupProven;
+  if(!lease.failedRequest.empty())saveText(state+"/failed-factory-request.bin",std::string((const char*)&lease.failedRequest[0],lease.failedRequest.size()));
+  if(!lease.failedReply.empty())saveText(state+"/failed-factory-reply.bin",std::string((const char*)&lease.failedReply[0],lease.failedReply.size()));
   if(lease.failed()&&!bootOnly)saveText(root+"/disabled",lease.reason()+"\n");
   std::string terminal=lease.failed()?std::string(bootOnly?"BOOT_INHIBITED: ":"QUARANTINED: ")+lease.reason()+"\n":"STOPPED\n";
   saveText(state+"/resident.status",terminal);

@@ -50,3 +50,39 @@ Private evidence is in the 17 November repeat-cold-failure package, `ten-minute-
 `--probe-factory-rpm` is a bounded, no-drawing native-feed check (100 advancing samples). `tools/engine_speed_probe.cpp` is a separate two-minute discovery recorder, with at most 12 read-only GETs; it requires `--read-engine-speed`. Do not substitute either for actual unplugged cold-start acceptance.
 
 The vendor DSI client emits a startup text preamble on stdout. For this candidate, `worker.result`/`last-result` contain that preamble followed by the terminal JSON result; the unchanged resident already checks the required terminal fields without assuming a single JSON-only file. `run_v1_validation.py` now accepts only that known preamble followed by a structurally valid terminal JSON result; missing results, unknown preambles and trailing junk are rejected. Other external consumers must likewise read the terminal result rather than assume the whole file is JSON.
+
+
+### First normal start after factory-feed replacement
+
+The owner confirmed engine off, ENET fully removed, doors locked and key away at 20:30:20 UTC. The owner chose to start before the planned ten-minute deadline; record this as approximately eight to nine minutes, not a verified ten-minute soak or overnight cold boot. At 20:39:36 UTC the owner reported automatic tachometer appearance with ENET still unplugged. The precise engine-start timestamp was not captured, so no exact startup latency is claimed. Sustained updating confirmation is pending. This is evidence for this revised input path on the reference car, not a universal/repeated-start guarantee.
+
+
+## Sustained movement failure — acceptance withdrawn
+
+The owner subsequently drove briefly: the tach disappeared, returned, then disappeared after reversing and pulling forward. The earlier automatic-appearance observation is **not** sustained-operation acceptance. The first native-feed worker logged `rpm_transport:factory feed stale`; it had requested once and incorrectly relied on continued spontaneous delivery. The next worker requests EngineSpeed2 at most every 100 ms from a serialized sender, following the verified cross-thread send-lock pattern in `vendor/nbt/src/most/client.cpp`. The drawing loop never blocks on that sender. The movement reproduction on that version had zero input retries, but still stopped for factory traffic.
+
+The exact second failure was captured:
+
+- Request: `b0060008000000100001002001010000000000c803000004`
+- Reply: `b0060008000000080001002001018101`
+- This is factory service `0xb006`, remove-resource method 8, handle 200, text resource `0x03000004`, with error type `0x81` / return code `0x01`.
+- Runtime: clean tach withdrawal, then persistent `factory request failed` quarantine. All ten bitmap slots were independently empty; filesystem read-only. This was not a failed removal of either custom bitmap (`0x01000008/09`).
+
+The capture also contains repeated RoadInfo model `0x11000000` / type 17 updates while factory guidance and radio remain idle. Treating every such request as a takeover repeatedly removed the tach while moving. The old parked tests did not expose that path; the Gold Master road-readiness claim was premature.
+
+### Movement correction
+
+The supervisor now distinguishes the measured background RoadInfo model, factory text namespace `0x03xxxxxx`, and an idle-only commit from guidance visibility, maneuver/road-image bindings, sessions and custom bitmap operations. Background pending requests do not revoke admission or restart the quiet-period clock. Actual navigation/radio visibility changes still revoke admission.
+
+Before forwarding any background request while the worker is drawing, the supervisor sends the exact normalized message over the private control socket and requires `READY`. The worker's passive monitor accepts only those authorized bytes, with bounded TCP reassembly, exact retransmission checks, gap rejection and cookie tracking. It does not simply ignore a port, assume every partial packet is safe, or infer permission from a plausible embedded header. Failed authorization falls back to normal cleanup. Unknown messages and traffic still withdraw conservatively.
+
+The one captured negative text-deletion reply is retained as evidence and counted without inventing successful deletion or changing visibility. It cannot establish idle. Errors involving bitmap/model/session operations still fault; the app never deletes factory text resources to suppress the error.
+
+Offline replay through the real supervisor and worker processed 94 captured background requests and the exact negative text-removal reply with one continuous worker and no clear/restart. A real visibility takeover still cleaned up and returned; changing the rejected resource into the bitmap namespace still quarantined. Fragmented, coalesced, repeated, conflicting, unauthorized and mixed traffic tests passed. Existing 12 worker cases and 253 Python tests passed; the full QNX build and ARM import/dependency audits passed.
+
+Installed candidate (live movement acceptance pending):
+
+- Worker `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`
+- Resident `42071e048e9b32434fd52e3fe9f5496a2baa4daae2b6ab7778a89f8d5bd601fa`
+
+All original hooks, gates, V1 layout/profile and enable state remain. The private install receipt verifies the exact prior 15-file baseline, two empty-pool checks, replacement readbacks, archived fault token, rollback binaries and read-only restoration. The owner returned for a targeted movement check; no additional mock classes are being implemented during that car session.

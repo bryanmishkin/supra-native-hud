@@ -1,6 +1,6 @@
 # Persistent installation and rollback
 
-**Current startup candidate (17 November):** V1 now reads factory EngineSpeed2 instead of the intermittently unavailable diagnostic gateway. Cable-free feed recording and installed live operation passed; repeated cold-start acceptance is pending. See [evidence and exact build](docs/V1-STARTUP-FOLLOWUP.md).
+**Current status (17 November):** parked acceptance did not establish road readiness. Movement caused background-display handoffs and a factory text-removal error to disable the tach. A captured-traffic-tested correction is now installed on the reference car; live movement acceptance is pending. Do not recommend the original Gold Master as road-validated. See [evidence and exact build](docs/V1-STARTUP-FOLLOWUP.md).
 **Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
 
 **Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).

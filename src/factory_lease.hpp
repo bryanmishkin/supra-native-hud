@@ -10,13 +10,15 @@ public:
  typedef std::vector<unsigned char> Packet;
  enum Visibility {Unknown,Idle,Active};
  struct Lane {Visibility staged,committed;unsigned generation;Lane():staged(Unknown),committed(Unknown),generation(0){}};
- struct Pending {Packet packet;unsigned lane,generation;Visibility commit;bool seen;Pending():lane(0),generation(0),commit(Unknown),seen(false){}};
- FactoryLease():fault_(false),generation_(0){for(unsigned i=0;i<2;++i)idleCommits[i]=activeCommits[i]=0;}
- unsigned idleCommits[2],activeCommits[2];
+ struct Pending {Packet packet;unsigned lane,generation;Visibility commit;bool seen,background;Pending():lane(0),generation(0),commit(Unknown),seen(false),background(false){}};
+ FactoryLease():backgroundFailures(0),fault_(false),generation_(0){for(unsigned i=0;i<2;++i)idleCommits[i]=activeCommits[i]=0;}
+ unsigned idleCommits[2],activeCommits[2],backgroundFailures;
+ Packet failedRequest,failedReply; // bounded evidence for a correlated rejected request
  bool before(const Packet&,unsigned role);
  bool outgoing(const Packet&);
  bool reply(const Packet&);
- bool available() const {return !fault_&&pending_.empty()&&lanes_[0].committed==Idle&&lanes_[1].committed==Idle;}
+ bool available() const {if(fault_||lanes_[0].committed!=Idle||lanes_[1].committed!=Idle)return false;for(std::map<std::string,Pending>::const_iterator i=pending_.begin();i!=pending_.end();++i)if(!i->second.background)return false;return true;}
+ bool background(const Packet&)const;
  void fault(const char* why){if(!fault_){fault_=true;reason_=why;++generation_;}}
  bool failed()const{return fault_;}const std::string& reason()const{return reason_;}
  unsigned generation()const{return generation_;}
