@@ -1,6 +1,6 @@
 # Supra native HUD tachometer
 
-**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), based on the preserved `v1.0.0-gold-master` tag. V2 currently adds an offline renderer; the installed/default persistent worker remains V1.
+**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), based on the preserved `v1.0.0-gold-master` tag. V2 now has an audited RAM-only test candidate and opt-in pressure reader; the installed/default persistent worker remains V1. Follow the [V2 car-test runbook](docs/V2-CAR-TEST.md).
 
 A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 

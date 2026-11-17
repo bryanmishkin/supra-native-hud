@@ -2,6 +2,7 @@
 #include "standalone_wire.hpp"
 #include "tach_bitmap.hpp"
 #include "navigation_guard.hpp"
+#include "boost_input.hpp"
 #include <pcap.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -124,7 +125,30 @@ static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Mo
   }throw;
  }
 }
-static Bytes frame(double rpm,uint64_t stamp){Config c;c.maxRpm=7000;c.shiftRpm=6500;c.thresholdsValidated=true;Input in;in.connected=in.ownershipConfirmed=in.overlayStateKnown=true;in.rpm.valid=true;in.rpm.value=rpm;in.rpm.at=stamp;HudCore core(c);Update u=core.update(in,now());if(u.action!=Present)fail("invalid/stale RPM");return encodeRle(tachBitmapSport(u.frame),true);}
+static Sample pressureRead(const char* local,const char* gateway,unsigned did,uint64_t deadline,Monitor& monitor,FILE* log){
+ uint64_t stamp=now();Fd socket;connectTo(socket,gateway,6801,local,deadline);
+ Bytes q;put32(q,5);q.push_back(0);q.push_back(1);q.push_back(0xf4);q.push_back(0x12);q.push_back(0x22);q.push_back(did>>8);q.push_back(did&255);sendBytes(socket.fd,q,deadline,&monitor);
+ for(unsigned i=0;i<24;++i){Bytes h=receive(socket.fd,6,deadline,&monitor);unsigned n=read32(h,0),kind=(h[4]<<8)|h[5];if(n<2||n>8192)fail("pressure frame length");Bytes b=receive(socket.fd,n,deadline,&monitor);
+  if(kind==0x12){Bytes ack;put32(ack,2);ack.push_back(0);ack.push_back(0x13);ack.push_back(0);ack.push_back(0xf4);sendBytes(socket.fd,ack,deadline,&monitor);}
+  if(kind!=1||b[0]!=0x12||b[1]!=0xf4)continue;
+  if(log){fprintf(log,"{\"pressure_did\":\"%04x\",\"reply_hex\":\"",did);for(unsigned j=2;j<n&&j<66;++j)fprintf(log,"%02x",unsigned(b[j]));fprintf(log,"\",\"truncated\":%s,\"requested_ms\":%llu,\"received_ms\":%llu}\n",n>66?"true":"false",(unsigned long long)stamp,(unsigned long long)now());fflush(log);}
+  if(n==5&&b[2]==0x7f&&b[3]==0x22&&b[4]==0x78)continue;
+  Sample sample;if(!pressureCandidate(sample,did,&b[2],n-2,stamp,now()))fail("pressure candidate rejected");return sample;
+ }fail("pressure frame limit");return Sample();
+}
+struct BoostReader {
+ unsigned failures;BoostReader():failures(0){}
+ BoostCandidate sample(const char* local,const char* gateway,Monitor& monitor,FILE* log){
+  BoostCandidate result;if(failures>=3)return result;
+  uint64_t deadline=now()+100;
+  try{result.absolute=pressureRead(local,gateway,0x4205,deadline,monitor,log);result.ambient=pressureRead(local,gateway,0x4201,deadline,monitor,log);failures=0;}
+  catch(const std::exception&){result=BoostCandidate();++failures;monitor.guard();}
+  if(log){if(result.valid())fprintf(log,"{\"boost_candidate\":true,\"absolute_kpa\":%.6f,\"ambient_kpa\":%.6f,\"absolute_ms\":%llu,\"ambient_ms\":%llu}\n",result.absolute.value,result.ambient.value,(unsigned long long)result.absolute.at,(unsigned long long)result.ambient.at);
+   else fprintf(log,"{\"boost_candidate\":false,\"consecutive_failures\":%u}\n",failures);fflush(log);}
+  return result;
+ }
+};
+static Bytes frame(double rpm,uint64_t stamp,bool v2=false,const BoostCandidate* boost=0,FILE* log=0){Config c;c.maxRpm=7000;c.shiftRpm=6500;c.thresholdsValidated=true;c.boostValidated=boost!=0;Input in;in.connected=in.ownershipConfirmed=in.overlayStateKnown=true;in.rpm.valid=true;in.rpm.value=rpm;in.rpm.at=stamp;if(boost)boost->apply(in);HudCore core(c);Update u=core.update(in,now());if(u.action!=Present)fail("invalid/stale RPM");if(v2&&log){fprintf(log,"{\"v2_frame\":true,\"boost_visible\":%s,\"boost_psi\":",u.frame.boostVisible?"true":"false");if(u.frame.boostVisible)fprintf(log,"%.6f",u.frame.boostPsi);else fputs("null",log);fputs("}\n",log);fflush(log);}return encodeRle(v2?tachBitmapV2(u.frame):tachBitmapSport(u.frame),true);}
 static bool disabled(){const char* p=getenv("SUPRA_HUD_DISABLE_FILE");return p&&*p&&access(p,F_OK)==0;}
 static void heartbeatCheck(){
  const char* path=getenv("SUPRA_HUD_HEARTBEAT");if(!path||!*path)return;
@@ -154,8 +178,16 @@ int main(int argc,char** argv){
   try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSample(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
  }
 
+ if(argc==4&&!strcmp(argv[1],"--probe-boost-candidate")){
+  signal(SIGPIPE,SIG_IGN);Monitor monitor;BoostReader reader;unsigned valid=0;
+  for(unsigned i=0;i<40;++i){uint64_t stamp=now();BoostCandidate b=reader.sample(argv[2],argv[3],monitor,stdout);if(b.valid())++valid;if(reader.failures>=3)break;while(now()<stamp+250)usleep(5000);}
+  printf("{\"boost_probe_completed\":true,\"valid_pairs\":%u,\"hud_writes\":0,\"conversion_validated\":false}\n",valid);return valid==40?0:2;
+ }
+
+ bool v2=argc==9&&(!strcmp(argv[1],"--parked-v2-guidance-stopped")||!strcmp(argv[1],"--parked-v2-boost-candidate"));
+ bool boostMode=v2&&!strcmp(argv[1],"--parked-v2-boost-candidate");
  bool continuous=argc==9&&!strcmp(argv[1],"--continuous-parked-guidance-stopped");
- if(argc!=9 || (!continuous && strcmp(argv[1],"--parked-guidance-stopped"))){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
+ if(argc!=9 || (!continuous && !v2 && strcmp(argv[1],"--parked-guidance-stopped"))){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nV2: --parked-v2-guidance-stopped or explicit --parked-v2-boost-candidate (1..30 seconds).\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
  char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||(continuous?seconds!=0:(seconds<1||seconds>30)))return 64;
  signal(SIGINT,stop);signal(SIGTERM,stop);signal(SIGPIPE,SIG_IGN);Ric ric;Profile profile;bool graph=false,owned[2]={false,false},clean=true;unsigned visible=0x01000009,frames=0;std::string reason="duration_complete";
  try{
@@ -167,14 +199,15 @@ int main(int argc,char** argv){
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   acquireAdmission(ric.monitor);heartbeatCheck();
   for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
-  uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
+  BoostReader boostReader;BoostCandidate boost;if(boostMode)boost=boostReader.sample(argv[3],argv[4],ric.monitor,ric.log);
+  uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp,v2,boostMode?&boost:0,ric.log);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),100);if(!ric.check(visible,100))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,100);}++frames;
   uint64_t deadline=continuous?~uint64_t(0):now()+seconds*1000;
   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline){
-   unsigned next=visible==0x01000009?0x01000008:0x01000009;rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp);fresh(stamp);checkpoint(ric);if(ric.check(next,100))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),100);if(!ric.check(next,100))fail("upload absent");fresh(stamp);checkpoint(ric);
+   uint64_t cycleStart=now();unsigned next=visible==0x01000009?0x01000008:0x01000009;if(boostMode)boost=boostReader.sample(argv[3],argv[4],ric.monitor,ric.log);rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);image=frame(rpm,stamp,v2,boostMode?&boost:0,ric.log);fresh(stamp);checkpoint(ric);if(ric.check(next,100))fail("next bitmap in use");checkpoint(ric);owned[next-0x01000008]=true;ric.empty(3,bitmapBody(next,image),100);if(!ric.check(next,100))fail("upload absent");fresh(stamp);checkpoint(ric);
    Bytes road=profile.setup[4].body;set32(road,32,next);ric.empty(14,road,100);fresh(stamp);ric.empty(8,removeBody(visible),100);if(ric.check(visible,100))fail("old image retained");owned[visible-0x01000008]=false;visible=next;++frames;
    if(ric.log){fprintf(ric.log,"{\"rpm\":%.2f,\"sample_ms\":%llu,\"frame\":%u}\n",rpm,(unsigned long long)stamp,frames);fflush(ric.log);}
-   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline&&now()<stamp+250){ric.monitor.guard();usleep(5000);}
+   while(!stopped&&!disabled()&&!ric.monitor.yield&&now()<deadline&&now()<(boostMode?cycleStart:stamp)+250){ric.monitor.guard();usleep(5000);}
   }
   if(disabled())reason="disabled";else if(stopped)reason="signal";else if(ric.monitor.yield)reason="factory_navigation_request";
  }catch(const std::exception& e){reason=e.what();}

@@ -3,6 +3,8 @@ set -eu
 cd /workspace
 mkdir -p /tmp/supra-tests
 for bits in 64 32; do
+  g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Isrc src/hud_core.cpp tests/test_boost_input.cpp -o /tmp/supra-tests/boost-input-$bits
+  /tmp/supra-tests/boost-input-$bits
   g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Isrc src/navigation_guard.cpp tests/test_navigation_guard.cpp -o /tmp/supra-tests/navigation-guard-$bits
   /tmp/supra-tests/navigation-guard-$bits
   g++ -m$bits -std=gnu++98 -Wall -Wextra -Werror -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/rpm_input.cpp tests/test_rpm_input.cpp -o /tmp/supra-tests/rpm-input-$bits

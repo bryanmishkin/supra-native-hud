@@ -13,4 +13,4 @@ This repository contains a working vehicle-specific persistent HUD tachometer an
 
 ## V2 branch
 
-On `v2-ux`, read [docs/V2-UX.md](docs/V2-UX.md) first. V2 rendering is currently offline-only; the persistent worker still selects V1 sport. Preserve the Gold Master tag and distinguish synthetic PSI previews from live telemetry. Start within 150 × 36; larger-space experiments need separate proof.
+On `v2-ux`, read [docs/V2-UX.md](docs/V2-UX.md) first. V2 has explicit bounded test modes; the default persistent worker still selects V1 sport. Use docs/V2-CAR-TEST.md to pause V1 cleanly, test from RAM, then verify V1 after a normal restart. Never run both workers together or replace installed V1 files for this test. Preserve the Gold Master tag and distinguish synthetic PSI previews from live telemetry. Start within 150 × 36; larger-space experiments need separate proof.

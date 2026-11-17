@@ -3,6 +3,7 @@
 ## V2 development
 
 - [V2 UX candidate and staged development plan](V2-UX.md)
+- [V2 RAM test, candidate boost and V1 recovery](V2-CAR-TEST.md)
 
 ## Current documentation
 

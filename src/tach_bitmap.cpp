@@ -122,7 +122,7 @@ void roundedV2(std::vector<unsigned char>& p,double x,double y,double w,double h
 void rpmV2(std::vector<unsigned char>& p,unsigned rpm) {
     // Upright rounded seven-segment digits, 14 px tall; narrow grouping comma.
     static const unsigned masks[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
-    char number[12];std::snprintf(number,sizeof(number),"%u",rpm);
+    char number[12];::snprintf(number,sizeof(number),"%u",rpm);
     unsigned len=0;while(number[len])++len;
     double width=len*11-1.9+(len>3?3:0),x=38-width/2;
     for(unsigned i=0;i<len;++i) {
@@ -161,8 +161,8 @@ std::vector<unsigned char> tachBitmapV2(const Frame& f) {
     // boostVisible must come from a freshness-validated source. The standalone
     // V1 worker never sets it; only the offline demo supplies synthetic values.
     bool boost=f.boostVisible&&f.boostPsi>=-30&&f.boostPsi<=60;
-    if(boost)std::snprintf(number,sizeof(number),"%+.1f",f.boostPsi);
-    else std::snprintf(number,sizeof(number),"--.-");
+    if(boost)::snprintf(number,sizeof(number),"%+.1f",f.boostPsi);
+    else ::snprintf(number,sizeof(number),"--.-");
     textV2(p,number,113,23,2,2,boost?255:90,false);
     textV2(p,"RPM",70,29,1,1,110,false);
     textV2(p,"PSI",143,29,1,1,boost?110:70,false);

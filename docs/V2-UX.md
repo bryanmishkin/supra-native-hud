@@ -1,6 +1,6 @@
 # V2 UX development
 
-Branch: `v2-ux`, based on `v1.0.0-gold-master`. The installed V1 Gold Master remains the reference baseline. V2 is an offline candidate, not installed or accepted on the car.
+Branch: `v2-ux`, based on `v1.0.0-gold-master`. The installed V1 Gold Master remains the reference baseline. V2 is a built, audited bounded car-test candidate, not installed or accepted on the car. See [the exact test and V1 recovery procedure](V2-CAR-TEST.md).
 
 ## Design direction
 
@@ -21,7 +21,7 @@ The cyan/orange/red palette is canonical BGRA. The existing measured red/blue bo
 - Demo-only `v2` selection with optional explicitly synthetic PSI.
 - Reproducible preview generator and native renderer checks.
 
-The persistent worker **still calls `tachBitmapSport`**. This branch does not silently change the installed/default runtime to V2. The C++ `Frame` already supports boost visibility/value, but the live worker currently reads RPM only. A displayed simulated PSI value is not evidence of a live boost source.
+The default persistent mode **still selects V1 sport**. Explicit bounded V2 modes now select this renderer, with pressure reads only in the experimental boost mode. Existing saved DME pressure replies support a candidate decoder, not a calibrated boost gauge. A displayed simulated PSI value is not evidence of a live boost source. See [pressure evidence and test limits](V2-CAR-TEST.md#what-we-know-about-pressure).
 
 ## Reproduce offline
 
@@ -47,7 +47,7 @@ The demo's accepted PSI range (-30 to +60) is a formatting bound, not a vehicle 
 
 1. **Current space:** refine readability, visual balance, arc shape and color progression offline. Review native-size/enlarged previews before a parked comparison. Preserve the V1 output and Gold Master tag.
 2. **Live integration:** add explicit renderer selection, build/audit the QNX candidate and validate bounded draw/cleanup before considering a persistent change. Keep the proven double-buffer update and pre-send factory handoff. No full-graph rebuild per frame.
-3. **Boost:** identify and verify a fresh pressure source and units/reference. The core can calculate gauge PSI from paired manifold/ambient kPa, but the worker has no such acquisition path yet. Do not label absolute pressure as boost or restamp stale data. Test missing/stale-source behavior and maintain RPM timing. Until then use dashes for actual operation.
+3. **Boost:** identify and verify a fresh pressure source and units/reference. The worker now has an opt-in candidate acquisition path using DIDs 4205/4201, and the core calculates candidate gauge PSI from paired absolute/ambient kPa. Do not label absolute pressure as boost or restamp stale data. Test missing/stale-source behavior and maintain RPM timing. Until then use dashes for actual operation.
 4. **Larger space:** first review the existing captured geometry/model evidence and receiver limits offline. Define one explicit bounded geometry candidate, exact image binding, absence/cleanup checks and rollback. A larger bitmap upload alone does not prove a larger visible surface or windshield-only routing. Validate dimensions, clipping, both displays and factory handoff separately from telemetry changes.
 
 Do not request another broad discovery trip merely to redraw pixels. A future car session should have exact candidates, expected visual differences and removal checks prepared ahead of time. The existing canvas is the first deliverable; expansion is not presumed successful.
@@ -59,4 +59,4 @@ Do not request another broad discovery trip merely to redraw pixels. A future ca
 - Five preview frames pass the corrected RLE32 encode/decode round-trip.
 - Invalid demo RPM/PSI and PSI supplied to a non-V2 style are rejected.
 - All 244 Python regression tests pass in the prepared environment with `pyelftools`.
-- No QNX target execution, vehicle display test, boost acquisition or larger-surface proof is claimed by this change.
+- A QNX ARM candidate builds and passes the target-runtime static audit. No execution of this V2 build on the car, calibrated positive-boost accuracy or larger-surface proof is claimed.
