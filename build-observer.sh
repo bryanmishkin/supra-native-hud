@@ -49,8 +49,8 @@ printf '%s\n' 'Built synthetic tachometer bitmap generator; no vehicle I/O.'
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 -Isrc -c src/rpm_input.cpp -o build/rpm_input.o
 
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 \
-  -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp tools/supra_standalone.cpp \
-  -lpcap -lsocket -o build/supra-standalone-parked-qnx
+  -DSUPRA_FACTORY_RPM -Ivendor/nbt/src -Isrc src/factory_rpm.cpp vendor/nbt/src/dsi_client.cpp src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp tools/supra_standalone.cpp \
+  -Wl,-rpath,/opt/sys/lib:/boot/lib:/lib -lpcap -lsocket -o build/supra-standalone-parked-qnx
 printf '%s\n' 'Built direct standalone parked candidate with passive factory-activity revocation; no autostart.'
 
 "$qcc" -V4.4.2,gcc_ntoarmv7le_gpp -lang-c++ -Wc,-std=gnu++98 -Wall -Wextra -Werror -O2 -shared -fPIC \

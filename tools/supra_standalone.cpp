@@ -2,6 +2,9 @@
 #include "standalone_wire.hpp"
 #include "tach_bitmap.hpp"
 #include "navigation_guard.hpp"
+#ifdef SUPRA_FACTORY_RPM
+#include "factory_rpm.hpp"
+#endif
 #include <pcap.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -119,7 +122,19 @@ static double rpmSampleRaw(const char* local,const char* gateway,uint64_t& stamp
  }fail("RPM frame limit");return 0;
 }
 static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
- try{return rpmSampleRaw(local,gateway,stamp,monitor);}catch(const std::exception& e){
+ try{
+#ifdef SUPRA_FACTORY_RPM
+  (void)local;(void)gateway;static bool started=false;static uint64_t previous=0;
+  uint64_t deadline=now()+(started?300:2000);
+  if(!started){started=true;if(!startFactoryRpm())fail("rpm_transport:factory feed unavailable");}
+  while(now()<deadline){monitor.guard();if(monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");
+   Sample s=latestFactoryRpm();uint64_t t=now();
+   if(s.valid&&s.at>previous&&t>=s.at&&t-s.at<=200){previous=s.at;stamp=s.at;return s.value;}usleep(1000);
+  }fail("rpm_transport:factory feed stale");return 0;
+#else
+  return rpmSampleRaw(local,gateway,stamp,monitor);
+#endif
+ }catch(const std::exception& e){
   if(!strcmp(e.what(),"I/O deadline")||!strcmp(e.what(),"send")||!strcmp(e.what(),"receive")||!strcmp(e.what(),"connect")||!strcmp(e.what(),"connect completion")||!strcmp(e.what(),"local bind")||!strcmp(e.what(),"RPM frame length")||!strcmp(e.what(),"RPM reply")||!strcmp(e.what(),"RPM frame limit")){
    int saved=errno;fprintf(stderr,"RPM transport: %s errno=%d (%s) elapsed_ms=%llu\n",e.what(),saved,strerror(saved),(unsigned long long)(now()-stamp));
    throw std::runtime_error(std::string("rpm_transport:")+e.what());
@@ -147,13 +162,29 @@ static void acquireAdmission(Monitor& monitor){
 }
 static void checkpoint(Ric& r){heartbeatCheck();r.monitor.guard();if(disabled())fail("disabled");if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
 static void fresh(uint64_t stamp){if(now()<stamp||now()-stamp>300)fail("RPM stale");}
-int main(int argc,char** argv){
+static int workerMain(int argc,char** argv){
+#if defined(SUPRA_FACTORY_RPM) && defined(__QNXNTO__)
+ // QNX dlopen dependencies require the loader path at process startup.
+ // Re-exec only this worker, before sockets, threads, admission or drawing.
+ const char* libraryPath="/opt/sys/lib:/boot/lib:/lib";
+ const char* currentPath=getenv("LD_LIBRARY_PATH");
+ if(!currentPath||strcmp(currentPath,libraryPath)){
+  if(setenv("LD_LIBRARY_PATH",libraryPath,1))return 2;
+  execv(argv[0],argv);return 2;
+ }
+#endif
  if(argc==2 && !strcmp(argv[1],"--self-check")){
   try{Bytes raw(21600,0);for(unsigned i=3;i<raw.size();i+=4)raw[i]=255;Bytes image=encodeRle(raw,true);if(image.empty())return 2;puts("{\"self_check\":true,\"vehicle_io\":false}");return 0;}catch(...){return 2;}
  }
+#ifdef SUPRA_FACTORY_RPM
+ if(argc==2 && !strcmp(argv[1],"--probe-factory-rpm")){
+  signal(SIGPIPE,SIG_IGN);Monitor monitor;
+  try{for(unsigned i=0;i<100;++i){uint64_t stamp;double rpm=rpmSample(0,0,stamp,monitor);fresh(stamp);printf("{\"factory_rpm\":%.2f,\"sample_ms\":%llu}\n",rpm,(unsigned long long)stamp);fflush(stdout);usleep(100000);}return 0;}catch(const std::exception& e){fprintf(stderr,"%s\n",e.what());return 2;}
+ }
+#endif
  if(argc==4 && !strcmp(argv[1],"--probe-rpm")){
   signal(SIGPIPE,SIG_IGN);Monitor monitor;unsigned valid=0;
-  try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSample(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
+  try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSampleRaw(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
  }
 
  bool continuous=argc==9&&!strcmp(argv[1],"--continuous-parked-guidance-stopped");
@@ -196,4 +227,15 @@ int main(int argc,char** argv){
 #endif
  fprintf(stdout,"{\"reason\":\"%s\",\"frames\":%u,\"cleanup_verified\":%s,\"factory_activity\":%s,\"monitor_unknown\":%s,\"automatic_resume\":false,\"shared_instance_preserved\":true}\n",reason.c_str(),frames,clean?"true":"false",ric.monitor.foreign?"true":"false",ric.monitor.unhealthy?"true":"false");
  return clean&&(reason=="duration_complete"||reason=="signal"||reason=="factory_navigation_request"||reason=="disabled")?0:2;
+}
+
+int main(int argc,char** argv){
+ int result=workerMain(argc,argv);
+#if defined(SUPRA_FACTORY_RPM) && defined(__QNXNTO__)
+ // workerMain has completed HUD cleanup and destroyed its local sockets.
+ // The factory DSI library owns live background threads without a join API;
+ // do not run process-wide C++ destructors concurrently with those threads.
+ fflush(stdout);fflush(stderr);_exit(result);
+#endif
+ return result;
 }
