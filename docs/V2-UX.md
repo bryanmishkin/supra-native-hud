@@ -1,6 +1,6 @@
 # V2 UX development
 
-Branch: `v2-ux`, based on `v1.0.0-gold-master`. The installed V1 Gold Master remains the reference baseline. V2 is a built, audited bounded car-test candidate, not installed or accepted on the car. See [the exact test and V1 recovery procedure](V2-CAR-TEST.md).
+Branch: `v2-ux`, incorporating the accepted V1 startup/recovery repair (`377d3fe`). The installed repaired V1 is the exact preservation/return baseline; the original Gold tag remains historical and unchanged. V2 is a built, audited bounded car-test candidate, not installed or accepted on the car. See [the exact test and V1 recovery procedure](V2-CAR-TEST.md).
 
 ## Design direction
 

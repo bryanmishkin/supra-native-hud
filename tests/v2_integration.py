@@ -5,7 +5,7 @@ from pathlib import Path
 from standalone_integration import Servers,exact
 class V2Servers(Servers):
  def __init__(self,mode,trigger):
-  super().__init__('normal',trigger);self.boost_mode=mode;self.pressures=0;self.rpms=0
+  super().__init__('delayed-presence' if mode=='delayed-presence' else 'normal',trigger);self.boost_mode=mode;self.pressures=0;self.rpms=0
  def rpm(self,c):
   h=exact(c,6);n,kind=struct.unpack('>IH',h);q=exact(c,n)
   assert kind==1 and q[:2]==b'\xf4\x12'
@@ -22,7 +22,7 @@ class V2Servers(Servers):
   c.sendall(struct.pack('>IH',len(body),1)+body)
 def run(exe,profile,out):
  out.mkdir(parents=True,exist_ok=False);results=[]
- for mode in ['rpm-only','paired','unavailable','timeout','wrong-did','sentinel','yield']:
+ for mode in ['rpm-only','paired','unavailable','timeout','wrong-did','sentinel','delayed-presence','yield']:
   with tempfile.TemporaryDirectory() as d:
    root=Path(d);server=V2Servers(mode,root/'trigger');server.start()
    try:
@@ -45,10 +45,10 @@ def run(exe,profile,out):
     pressure=[row for row in rows if 'boost_candidate' in row]
     rendered=[row for row in rows if row.get('v2_frame')]
     assert rendered
-    if mode in ('paired','yield'):assert all(row['boost_visible'] and 0<row['boost_psi']<.01 for row in rendered)
+    if mode in ('paired','delayed-presence','yield'):assert all(row['boost_visible'] and 0<row['boost_psi']<.01 for row in rendered)
     else:assert all(not row['boost_visible'] and row['boost_psi'] is None for row in rendered)
     if mode=='rpm-only':assert server.pressures==0 and not pressure
-    elif mode in ('paired','yield'):assert all(row['boost_candidate'] for row in pressure) and len(pressure)>=(2 if mode=='yield' else 4)
+    elif mode in ('paired','delayed-presence','yield'):assert all(row['boost_candidate'] for row in pressure) and len(pressure)>=(2 if mode=='yield' else 4)
     else:assert len(pressure)==3 and all(not row['boost_candidate'] for row in pressure) and server.pressures==3
     report.update(case=mode,pressure_requests=server.pressures,rpm_requests=server.rpms);results.append(report)
     (out/(mode+'.json')).write_text(json.dumps(report,indent=2));(out/(mode+'.jsonl')).write_text((root/'journal').read_text())

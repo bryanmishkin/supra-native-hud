@@ -1,8 +1,14 @@
 # V2 layout and candidate boost: prepared car test
 
-This is a **bounded test**, not a V2 persistent upgrade. The V1 Gold Master tag, private kit, installed binaries, startup configuration and enable/disable tokens remain unchanged. V2 runs from a unique `/tmp/supra-v2-*` directory; the installed V1 resident is stopped cooperatively for the test. A normal owner-operated iDrive restart resumes the unchanged V1 installation.
+This is a **bounded test**, not a V2 persistent upgrade. The original V1 Gold Master tag and archive stay intact. The accepted startup-repair kit, installed binaries, startup configuration and enable/disable tokens remain unchanged. V2 runs from a unique `/tmp/supra-v2-*` directory; the installed V1 resident is stopped cooperatively for the test. A normal owner-operated iDrive restart resumes the unchanged V1 installation.
 
 Do not run the new worker beside the active V1 tachometer: both use the same reviewed shared guidance resources. Do not disable V1 persistently, overwrite its executable, delete a quarantine token, or claim that V2 is installed after this procedure.
+
+## Accepted runtime carried forward
+
+Merged accepted source `377d3fe`: 500 ms correlated drawing ACK allowance, clean input recovery with bounded retries, boot-local clean connection closure, retained gate diagnostics and native state sync. RPM freshness stays 300 ms and uncertain drawing cleanup still quarantines. Both the V2 pressure probe and worker use internal source `160.48.199.119` and gateway `160.48.199.16`; SSH remains at `169.254.199.119`. The persistent resident still selects V1 sport; V2 display and candidate boost remain explicit bounded modes. No connection to the car or persistent change occurs during preparation.
+
+The runner pins accepted baseline manifest SHA-256 `61d2e6424a7f5b12e0509295b148ced41cdd53b0babd2cda7d9e79f5a825ab7a`, checks every installed payload and startup file, and rejects the old Gold kit. It never downgrades the repaired V1 to Gold.
 
 ## Prepared implementation
 
@@ -35,11 +41,11 @@ Build using the existing QNX environment. The old compiler requires global `::sn
 python3 tools/prepare_v2_test.py \
   --binary build/supra-standalone-parked-qnx \
   --audit /private/v2/v2-arm-audit.json \
-  --v1-kit /private/v1/persistent-kit-r8 \
+  --v1-kit /private/v1/readiness-kit/patched-reference \
   --output /private/v2/car-kit
 ```
 
-The output must be new. This tool pins the preserved reference Gold Master kit and refuses a stale/failed ARM audit. It packages the exact V2 binary/profile and an unchanged copy of the V1 kit. It has no network or installation behavior. This is specifically for the reference vehicle with V1 already installed, not a new-vehicle installer.
+The output must be new. This tool pins the exact accepted startup-repair reference kit and refuses a stale/failed ARM audit. It packages the exact V2 binary/profile and an unchanged copy of the V1 kit. It has no network or installation behavior. This is specifically for the reference vehicle with V1 already installed, not a new-vehicle installer.
 
 Offline reproducibility (host compiler, libpcap headers/library, Python):
 
@@ -47,7 +53,7 @@ Offline reproducibility (host compiler, libpcap headers/library, Python):
 sh environment/test-v2-offline.sh /private/v1/supra-profile.bin /tmp/v2-offline-check
 ```
 
-This exercises candidate pressure decoding, the renderer, seven V2 loopback cases including cleanup, plus the existing eleven worker regression cases. Static audits and loopback tests do not establish actual QNX execution latency or projected color/readability.
+This exercises candidate pressure decoding, the renderer, eight V2 loopback cases (including a delayed drawing ACK) including cleanup, plus the existing twelve worker regression cases. Static audits and loopback tests do not establish actual QNX execution latency or projected color/readability.
 
 ## One coordinated parked session
 
@@ -129,8 +135,14 @@ python3 tools/run_v2_validation.py verify-v1 --execute \
   --kit "$KIT" --output "$EVIDENCE" --ssh-socket "$SOCKET" --v1-visible
 ```
 
-Final verification requires the temporary trial directory gone, original V1 installed hashes/configurations unchanged, enabled state intact, hooks present, healthy running V1 worker and advancing heartbeat. Briefly check navigation/radio return and factory normality before unplugging. Save user observations separately from machine results. If verification fails, investigate the actual state rather than claim restoration.
+Final verification requires the temporary trial directory gone, original V1 installed hashes/configurations unchanged, enabled state intact, hooks present, healthy running V1 worker, advancing heartbeat, and advancing RPM frame/sample timestamps (a heartbeat alone does not prove a live gauge). Briefly check navigation/radio return and factory normality before unplugging. Save user observations separately from machine results. If verification fails, investigate the actual state rather than claim restoration.
 
 ## Evidence to keep
 
 The local `v2-session.json`, numbered stdout/stderr, pre/pause/post V1 checkpoints, per-run journals/results, pressure probe pairs, source/binary/profile hashes and exact visual observations. Keep these separate from Gold Master and road-test records. The private prepared kit and target audits belong in Drive, not GitHub.
+
+## 17 November offline integration check
+
+Accepted repair source `377d3fe` is merged. QNX ARM worker SHA-256: `aaefadfcf29a8f0c5fa4fb6eb2baa2ac8ea777c435a0b722218f40c1d834d2e0`. Captured-library static audit passed; 256 Python tests, eight V2 loopback cases, twelve worker regression cases, and the resident recovery/race/cleanup suite passed. Twelve classic/sport frames match accepted V1 source byte-for-byte. Five V2 preview frames round-trip through the corrected wire codec.
+
+**Deployment hold:** owner subsequently reported another cable-free startup with no initial tachometer; it later appeared after ENET connection, without resetting iDrive. Saved packets show eight internal gateway connection rejections before successful RPM replies. Startup delay versus cable activation is under investigation. These offline tests do not resolve that vehicle dependency. No V2 deployment occurred.

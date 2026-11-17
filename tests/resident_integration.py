@@ -68,11 +68,11 @@ with tempfile.TemporaryDirectory() as tmp:
 print('Uncertain cleanup quarantines without automatic retry')
 
 # Clean RPM timeout may retry, but uncertain drawing transport above may not.
-for recovery in [True,False]:
+for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-malformed',True),('rpm-malformed',False),('rpm-cold-timeout',False)]:
  with tempfile.TemporaryDirectory() as tmp:
   root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
   shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
-  server=Servers('rpm-timeout',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  server=Servers(failure_mode,Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
   try:
    wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
    wait(lambda:(state/'last-result').exists());assert not server.resources
@@ -81,12 +81,22 @@ for recovery in [True,False]:
     server.mode='normal';before=server.uploads;wait(lambda:server.uploads>before+2,5)
     assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
    else:
-    proc.communicate(timeout=13);assert proc.returncode==2;assert int((state/'worker.starts').read_text())==4;assert not server.resources
-    assert 'retry budget exhausted' in (state/'resident.status').read_text()
+    wait(lambda:int((state/'worker.starts').read_text())>=4,13);time.sleep(.6)
+    assert proc.poll() is None and not server.resources
+    assert not (root/'disabled').exists(), 'clean input failures must not disable later readiness'
+    if failure_mode=='rpm-cold-timeout':assert server.uploads==0
+    before=server.uploads;server.mode='normal';wait(lambda:server.uploads>before+2,35)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+    state=Path(tmp)/'next-boot';before=server.uploads
+    proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    wait(lambda:(state/'ready').exists());time.sleep(.15);assert server.uploads==before
+    state_event(0,True);time.sleep(.1);assert server.uploads==before
+    state_event(1,True);wait(lambda:server.uploads>before+2)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
   finally:
    if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
    server.close()
-print('Clean RPM timeout recovery and bounded retry exhaustion passed')
+print('Late RPM readiness after repeated timeout/malformed input: rate-limited recovery and fresh-boot admission passed')
 
 # A factory event may arrive after fork but before the child can draw or listen.
 with tempfile.TemporaryDirectory() as tmp:
@@ -102,3 +112,42 @@ with tempfile.TemporaryDirectory() as tmp:
   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
   server.close()
 print('Pre-admission factory takeover blocks all drawing and resumes cleanly')
+
+# Closed factory transport: clean withdrawal is boot-local; failed removal stays disabled.
+for clean_close in [True,False]:
+ with tempfile.TemporaryDirectory() as tmp:
+  root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+  shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+  server=Servers('normal',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  try:
+   wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True);wait(lambda:server.uploads>=4)
+   if not clean_close:server.mode='lost-remove-ack'
+   assert command(b'TESTCLS1')==b'OK\n'
+   proc.communicate(timeout=8);assert proc.returncode==2
+   assert (root/'disabled').exists()!=clean_close
+   if clean_close:
+    assert not server.resources
+    state=Path(tmp)/'next-boot';before=server.uploads
+    proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    wait(lambda:(state/'ready').exists());time.sleep(.15);assert server.uploads==before
+    state_event(0,True);time.sleep(.15);assert server.uploads==before
+    state_event(1,True);wait(lambda:server.uploads>before+2)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+  finally:
+   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+   server.close()
+print('Factory transport close: clean next-boot recovery and uncertain-removal quarantine passed')
+
+with tempfile.TemporaryDirectory() as tmp:
+ root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+ shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+ server=Servers('delayed-stale',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+ try:
+  wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
+  wait(lambda:(state/'last-result').exists());r=json.loads((state/'last-result').read_text());assert r['reason']=='RPM stale' and r['cleanup_verified'];assert not server.resources
+  before=server.uploads;wait(lambda:server.uploads>before+2,5);assert not (root/'disabled').exists()
+  assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+ finally:
+  if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+  server.close()
+print('Delayed correlated reply with stale RPM: verified cleanup before bounded retry passed')

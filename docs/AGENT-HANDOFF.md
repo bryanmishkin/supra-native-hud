@@ -1,8 +1,10 @@
 # Pick up this project
 
+**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](V1-COLD-START-ACCEPTANCE.md).
+
 ## Current baseline
 
-Accepted executable source: `fd55e97`, private persistent kit revision08, manifest SHA-256 `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`. Later documentation commits describe the same accepted binaries unless explicitly stated otherwise. Installed and enabled on the reference Supra; owner confirmed the final unplugged reset worked.
+Historical Gold executable source: `fd55e97`, private persistent kit revision08, manifest SHA-256 `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`. The current installed repair uses executable source through `2f1e724`; exact component hashes and accepted evidence are in the startup-repair acceptance record linked above. Installed and enabled on the reference Supra; owner confirmed the final unplugged reset worked.
 
 Read in order: [status](../APP-STATUS.md), [architecture](APP-ARCHITECTURE.md), [compatibility](../COMPATIBILITY.md), [build](../environment/README.md), [installation](../PERSISTENT-INSTALL.md). [Documentation index](INDEX.md) identifies historical material.
 
@@ -32,7 +34,7 @@ Prepare builds, hashes, kit, expected observations and rollback before requestin
 
 An agent should be able to answer before deployment: Which exact candidate? Which target bytes? Which shared resources? What proves removal? What permits automatic return? How does normal startup activate it? What exact originals restore factory startup? What remains untested?
 
-Do not request another discovery session for facts already established on this target. New-target adaptation, cold sleep/wake and endurance are legitimate separate work; they are not completed merely by the unplugged warm restart.
+Do not request another discovery session for facts already established on this target. New-target adaptation, repeated overnight cycles and endurance remain separate work. One actual repaired vehicle shutdown/start is now recorded; do not reduce it to the earlier warm-reset-only evidence.
 
 ## Documentation maintenance
 

@@ -1,12 +1,14 @@
 # Supra native HUD tachometer
 
-**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), based on the preserved `v1.0.0-gold-master` tag. V2 now has an audited RAM-only test candidate and opt-in pressure reader; the installed/default persistent worker remains V1. Follow the [V2 car-test runbook](docs/V2-CAR-TEST.md).
+**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), including accepted V1 startup/recovery fixes from `377d3fe`. V2 now has an audited RAM-only test candidate and opt-in pressure reader; the installed/default persistent worker remains V1. Follow the [V2 car-test runbook](docs/V2-CAR-TEST.md).
+
+**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
 
 A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 
 **Installed and enabled on the reference Supra on 17 November 2026.** Automatic startup, navigation/radio handoff and return, verified cleanup, and a five-minute uninterrupted run passed. The owner confirmed automatic startup after a further iDrive reset **with the ENET cable unplugged**. See [verified status and limits](APP-STATUS.md) and [installation evidence](PERSISTENT-LIVE-VALIDATION.md).
 
-The reference vehicle is a **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, NBT Evo **NBTevo_T24081I**, QNX 6.5 ARM. This is one verified vehicle/firmware combination, not a universal BMW/Supra installer. The drawing path shares factory guidance state; it is not an independent overlay surface. Cold vehicle sleep/wake and road endurance have not been established by the recorded acceptance tests.
+The reference vehicle is a **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, NBT Evo **NBTevo_T24081I**, QNX 6.5 ARM. This is one verified vehicle/firmware combination, not a universal BMW/Supra installer. The drawing path shares factory guidance state; it is not an independent overlay surface. One repaired vehicle shutdown/start is verified; repeated overnight cycles and road endurance remain unverified.
 
 ## Start here
 

@@ -15,7 +15,7 @@ def exact(s,n):
  return b
 class Servers:
  def __init__(self,mode,trigger):
-  self.mode=mode;self.trigger=trigger;self.resources={};self.requests=[];self.images=[];self.stop=False;self.errors=[];self.ready=threading.Event();self.sockets=[];self.threads=[];self.uploads=0;self.sequences=[]
+  self.mode=mode;self.trigger=trigger;self.resources={};self.requests=[];self.images=[];self.stop=False;self.errors=[];self.ready=threading.Event();self.sockets=[];self.threads=[];self.uploads=0;self.sequences=[];self.delayed=False
  def start(self):
   for port,fn in ((30502,self.ric),(6801,self.rpm)):
    s=socket.socket();s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1);s.bind(('127.0.0.1',port));s.listen();s.settimeout(.1);self.sockets.append(s)
@@ -34,11 +34,13 @@ class Servers:
   while not self.stop:
    h=exact(c,16);svc,m,n,client,seq,pv,iv,k,rc=struct.unpack('>HHIHHBBBB',h);b=exact(c,n-8);self.requests.append((m,b));self.sequences.append(seq);assert (svc,client,pv,iv,k,rc)==(0xb006,0x5348,1,1,0,0);assert m not in (1,7)
    result=b''
+   if m==2 and self.mode in ('delayed-presence','delayed-stale') and self.uploads==2 and not self.delayed:self.delayed=True;time.sleep(.35 if self.mode=='delayed-stale' else .15)
    if m==2:
     rid=struct.unpack_from('>I',b,4)[0];result=bytes([rid in self.resources or (self.mode=='busy' and rid==0x01000000)])
    if m==3:
     d=decode_resource_body(b);rid=d['resource_id'];assert rid not in self.resources;raw=decode_bgra(b[30:],5400);self.images.append(raw);self.resources[rid]=raw;self.uploads+=1
     if self.mode=='lost-ack' and self.uploads==2:return
+   if m==8 and self.mode=='lost-remove-ack':return
    if m==8:
     rid=struct.unpack_from('>I',b,4)[0];assert rid in self.resources;del self.resources[rid]
    if self.mode in ('factory','monitor-loss') and self.uploads==2 and m==2:self.trigger.touch()
@@ -49,7 +51,8 @@ class Servers:
    for part in (reply[:7],reply[7:]):c.sendall(part)
  def rpm(self,c):
   q=exact(c,10);assert q==bytes.fromhex('000000040001f412010c')
-  if self.mode=='rpm-timeout' and self.uploads:time.sleep(.35);return
+  if self.mode=='rpm-cold-timeout' or (self.mode=='rpm-timeout' and self.uploads):time.sleep(.35);return
+  if self.mode=='rpm-malformed' and self.uploads:c.sendall(bytes.fromhex('000100000001'));return
   c.sendall(bytes.fromhex('00000006000112f4410c6590')) # 6500 RPM
  def close(self):
   self.stop=True
@@ -57,7 +60,7 @@ class Servers:
   for t in self.threads:t.join(4)
 def run(exe,profile,out):
  out.mkdir(parents=True,exist_ok=False);summary=[]
- for mode in ('normal','signal','busy','factory','lost-ack','bad-reply','rpm-timeout','monitor-loss','cooperative-yield','continuous-stop','sequence-wrap'):
+ for mode in ('normal','delayed-presence','signal','busy','factory','lost-ack','bad-reply','rpm-timeout','monitor-loss','cooperative-yield','continuous-stop','sequence-wrap'):
   with tempfile.TemporaryDirectory() as temp:
    root=Path(temp);trigger=root/'factory';server=Servers(mode,trigger);server.start();env=os.environ.copy();env['SUPRA_TEST_MONITOR_LOSS' if mode=='monitor-loss' else 'SUPRA_TEST_FACTORY_TRIGGER']=str(trigger)
    if mode=='sequence-wrap':env['SUPRA_TEST_SEQUENCE_START']='65530'
@@ -75,7 +78,7 @@ def run(exe,profile,out):
       with socket.socket(socket.AF_UNIX) as control:
        control.settimeout(3);control.connect(str(root/'journal')+'.handoff');control.sendall(b'YIELD1\n');assert exact(control,6)==b'CLEAN\n'
     stdout,stderr=proc.communicate(timeout=8);report=json.loads(stdout);assert not server.errors,server.errors
-    if mode in ('normal','signal','cooperative-yield','continuous-stop','sequence-wrap'):assert proc.returncode==0 and report['cleanup_verified'] and not server.resources
+    if mode in ('normal','delayed-presence','signal','cooperative-yield','continuous-stop','sequence-wrap'):assert proc.returncode==0 and report['cleanup_verified'] and not server.resources
     elif mode=='busy':assert proc.returncode==2 and server.uploads==0
     elif mode=='rpm-timeout':assert proc.returncode==2 and report['cleanup_verified'] and not server.resources
     else:

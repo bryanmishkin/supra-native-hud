@@ -6,13 +6,24 @@ import argparse,hashlib,json,shlex,time,uuid
 from pathlib import Path
 from run_v1_validation import Remote,manifest
 from prepare_persistent import TARGETS
-from prepare_v2_test import GOLD_KIT
+from prepare_v2_test import ACCEPTED_V1_KIT
 ROOT='/var/opt/supra-hud/v1';STATE='/tmp/supra-hud-v1'
 PHASES=('preflight','pause-v1','probe-boost','draw','draw-boost','yield','collect','verify-v1')
 def q(x):return shlex.quote(str(x))
+def rpm_progress(raw):
+ rows=[]
+ for line in raw.splitlines():
+  try:row=json.loads(line)
+  except (ValueError,UnicodeDecodeError):continue
+  if isinstance(row,dict) and all(k in row for k in ('rpm','sample_ms','frame')):rows.append(row)
+ if not rows:raise ValueError('No live RPM frame evidence')
+ return rows[-1]
+def require_rpm_advance(before,after):
+ if after['frame']<=before['frame'] or after['sample_ms']<=before['sample_ms']:
+  raise ValueError('V1 RPM frames not advancing')
 def execute(a):
- files,digest=manifest(a.kit);old,old_digest=manifest(a.kit/'v1-gold-master-kit')
- if old_digest!=GOLD_KIT:raise ValueError('V1 baseline mismatch')
+ files,digest=manifest(a.kit);old,old_digest=manifest(a.kit/'v1-accepted-kit')
+ if old_digest!=ACCEPTED_V1_KIT:raise ValueError('V1 baseline mismatch')
  statefile=a.output/'v2-session.json'
  if a.phase=='preflight':a.output.mkdir(parents=True,exist_ok=False);s={'kit':digest,'head':a.head,'phases':{},'remote':'/tmp/supra-v2-'+uuid.uuid4().hex}
  else:
@@ -31,7 +42,7 @@ def execute(a):
    path=TARGETS['nav'][2] if name=='supra-nav-start-qnx' else TARGETS['system'][2] if name=='supra-hmi-start-qnx' else ROOT+'/'+name
    if hashlib.sha256(read(path)).hexdigest()!=h:raise ValueError('Installed V1 changed: '+name)
   for name,(path,*_) in TARGETS.items():
-   if read(path)!=(a.kit/'v1-gold-master-kit'/(name+'-after.cfg')).read_bytes():raise ValueError('Startup configuration changed')
+   if read(path)!=(a.kit/'v1-accepted-kit'/(name+'-after.cfg')).read_bytes():raise ValueError('Startup configuration changed')
   if read(ROOT+'/enabled')!=b'SUPRA-PERSISTENT-1\n':raise ValueError('V1 not committed')
   run('[ ! -e '+ROOT+'/disabled ]');assert b'rdonly' in run('df -g /fs/sda0').stdout
  def hooks():
@@ -76,7 +87,7 @@ def execute(a):
    attempt=s.get('attempts',0)+1;s['attempts']=attempt;save()
    exe=q(s['remote']+'/supra-v2-test-qnx')
    if a.phase=='probe-boost':
-    v=run(exe+' --probe-boost-candidate 169.254.199.119 169.254.106.96',allow_failure=True)
+    v=run(exe+' --probe-boost-candidate 160.48.199.119 160.48.199.16',allow_failure=True)
     (a.output/('boost-probe-%02d.jsonl'%attempt)).write_bytes(v.stdout)
     rows=[json.loads(x) for x in v.stdout.splitlines()]
     if v.returncode or not rows or rows[-1].get('valid_pairs')!=40:raise ValueError('Pressure probe incomplete; layout-only test remains available')
@@ -85,7 +96,7 @@ def execute(a):
     # while their broker is absent. Archive only the known inactive journal.
     run('if [ -e '+STATE+'/active.jsonl ]; then [ -f '+STATE+'/active.jsonl ] && [ ! -L '+STATE+'/active.jsonl ] && mv '+STATE+'/active.jsonl '+q(s['remote']+'/prior-%02d.jsonl'%attempt)+'; fi')
     opt='--parked-v2-boost-candidate' if a.phase=='draw-boost' else '--parked-v2-guidance-stopped'
-    cmd='unset SUPRA_HUD_BROKER_SOCKET SUPRA_HUD_HEARTBEAT; export SUPRA_HUD_DISABLE_FILE='+ROOT+'/disabled; '+exe+' '+opt+' '+q(s['remote']+'/supra-profile.bin')+' 169.254.199.119 169.254.106.96 160.48.199.96 vlan73 30 '+STATE+'/active.jsonl'
+    cmd='unset SUPRA_HUD_BROKER_SOCKET SUPRA_HUD_HEARTBEAT; export SUPRA_HUD_DISABLE_FILE='+ROOT+'/disabled; '+exe+' '+opt+' '+q(s['remote']+'/supra-profile.bin')+' 160.48.199.119 160.48.199.16 160.48.199.96 vlan73 30 '+STATE+'/active.jsonl'
     s['recovery_required']=True;save()
     v=run(cmd,allow_failure=True,timeout=90);(a.output/('worker-%02d.json'%attempt)).write_bytes(v.stdout)
     collect('v2-%02d'%attempt)
@@ -101,8 +112,11 @@ def execute(a):
    run('[ ! -e '+q(s['remote'])+' ]');intact();hooks()
    health=json.loads(read(STATE+'/acceptance.json'))
    if health.get('quarantined') or not health.get('worker_running'):raise ValueError('V1 not running normally')
-   heartbeat=read(STATE+'/heartbeat');time.sleep(1.1)
+   before=rpm_progress(read(STATE+'/active.jsonl'));heartbeat=read(STATE+'/heartbeat');time.sleep(1.1)
    if heartbeat==read(STATE+'/heartbeat'):raise ValueError('V1 heartbeat not advancing')
+   require_rpm_advance(before,rpm_progress(read(STATE+'/active.jsonl')))
+   health=json.loads(read(STATE+'/acceptance.json'))
+   if health.get('quarantined') or not health.get('worker_running'):raise ValueError('V1 stopped during return verification')
    collect('v1-restored')
   s['phases'][a.phase]=True;save();return s
  except Exception as e:s['phases'][a.phase]=False;s['last_error']=str(e);save();raise

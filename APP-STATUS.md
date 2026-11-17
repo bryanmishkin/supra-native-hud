@@ -1,8 +1,10 @@
 # Verified application status
 
+**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
+
 Updated 17 November 2026. This file is the current status; dated research reports describe their own stage of the project.
 
-## Accepted on the reference vehicle
+## Historical Gold baseline on the reference vehicle
 
 Reference: 2026 Toyota GR Supra 3.0 Premium, six-speed manual; NBTevo_T24081I; QNX 6.5 ARM. Accepted implementation commit: `fd55e97` (later documentation commits do not change those binaries). Private revision08 kit manifest SHA-256: `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`.
 
@@ -31,8 +33,8 @@ Reference: 2026 Toyota GR Supra 3.0 Premium, six-speed manual; NBTevo_T24081I; Q
 
 ## Not yet established
 
-Full vehicle shutdown/sleep/wake, repeated ignition cycles, engine-off/stop-start behavior, extended road endurance, other driver-assistance overlays, and other vehicles/firmwares remain unverified. The unplugged iDrive restart is not a full cold vehicle power cycle. The complete navigation/radio acceptance happened before persistent commit; the recorded final restart checks confirmed automatic display, not a second complete post-commit handoff sequence.
+The accepted repair has one verified locked vehicle shutdown/normal start with the cable unplugged, followed by verified navigation/radio takeover and return. Repeated overnight cycles, full engine stop-start behavior, extended road endurance, other driver-assistance overlays and other vehicles/firmwares remain unverified. See the repair acceptance record above for the exact current build; the historical table records the original Gold acceptance.
 
 ## Offline evidence
 
-At the accepted implementation revision, 244 Python tests passed. Native integration tests cover worker/supervisor handoff and return, pre-admission takeover, delayed CLEAN exit, classified RPM recovery, retry exhaustion, and uncertain-ack quarantine. Gate tests cover exact factory preload preservation and fallback. Captured boot replay tests do not grant admission. ARM builds and static import audits passed; these complement, not replace, target execution.
+At the historical Gold revision, 244 Python tests passed; the accepted repair passes 251 plus the expanded native cold-readiness regressions. Native integration tests cover worker/supervisor handoff and return, pre-admission takeover, delayed CLEAN exit, classified RPM recovery, retry exhaustion, and uncertain-ack quarantine. Gate tests cover exact factory preload preservation and fallback. Captured boot replay tests do not grant admission. ARM builds and static import audits passed; these complement, not replace, target execution.
