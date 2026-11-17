@@ -110,3 +110,28 @@ with tempfile.TemporaryDirectory() as tmp:
   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
   server.close()
 print('Pre-admission factory takeover blocks all drawing and resumes cleanly')
+
+# Closed factory transport: clean withdrawal is boot-local; failed removal stays disabled.
+for clean_close in [True,False]:
+ with tempfile.TemporaryDirectory() as tmp:
+  root=Path(tmp)/'release';state=Path(tmp)/'state';root.mkdir(mode=0o700)
+  shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
+  server=Servers('normal',Path(tmp)/'trigger');server.start();proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+  try:
+   wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True);wait(lambda:server.uploads>=4)
+   if not clean_close:server.mode='lost-remove-ack'
+   assert command(b'TESTCLS1')==b'OK\n'
+   proc.communicate(timeout=8);assert proc.returncode==2
+   assert (root/'disabled').exists()!=clean_close
+   if clean_close:
+    assert not server.resources
+    state=Path(tmp)/'next-boot';before=server.uploads
+    proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    wait(lambda:(state/'ready').exists());time.sleep(.15);assert server.uploads==before
+    state_event(0,True);time.sleep(.15);assert server.uploads==before
+    state_event(1,True);wait(lambda:server.uploads>before+2)
+    assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources
+  finally:
+   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
+   server.close()
+print('Factory transport close: clean next-boot recovery and uncertain-removal quarantine passed')

@@ -1,12 +1,22 @@
 # V1 cold-start failure: repair candidate and single-session plan
 
-17 November 2026. Owner reports no tachometer after a cold vehicle start. The earlier unplugged iDrive reset passed; it was a warm restart, not proof of cold-wake reliability. No post-failure vehicle evidence has yet been collected. V1 Gold Master and V2 remain unchanged; this branch is a V1 repair candidate, not a newly accepted release.
+17 November 2026. Owner reports no tachometer after a cold vehicle start. The earlier unplugged iDrive reset passed; it was a warm restart, not proof of cold-wake reliability. The first-failure capture and reviewed recovery are recorded below. V1 Gold Master and V2 remain unchanged; this branch is a V1 repair candidate, installed for validation but not yet accepted for cold sleep/wake.
+
+## Live first-failure finding
+
+The untouched first capture on 17 November reports **`factory transport closed`**, not the hypothesized RPM exhaustion. All 13 payload hashes and both startup configurations match Gold; enabled persistence remains present. No resident or worker is running and RAM runtime state is absent. Read-only correlated presence queries confirm all ten bitmap slots empty. The permanent disable is the confirmed startup blocker; the exact timing of the earlier connection closure is not preserved.
+
+The live candidate additionally makes `factory transport closed` boot-local **only when the worker has exited with proven cleanup**, or no worker ever started. It does not ignore TCP closure or resume drawing in the faulted boot. A closure with failed removal remains persistently disabled; both paths have native regression coverage. Same-boot wake remains a separate validation point.
+
+The recovery tool's explicit `--factory-close-recovery` option accepts only that exact legacy reason, matching Gold files and stopped processes. It verifies the entire bitmap pool empty twice, including immediately before archiving the reason. This is a reviewed one-time recovery, not automatic deletion of arbitrary faults.
+
+The first live patch transaction found that this target has no shell `sync` utility. Its rollback restored all three originals and retained disable. The corrected package uses the native resident's `--sync-state` operation; each archived fault gets a unique backup name. No application was started by that failed transaction.
 
 ## Reproduced defect and bounded fix
 
 On Gold Master, four consecutive unstable RPM transport failures with verified clean removal exhaust the retry budget and write persistent `disabled` containing `clean I/O retry budget exhausted`. That token prevents subsequent boots even though no custom resources remain. Engine telemetry loss during shutdown is one possible trigger, not a confirmed diagnosis of this car.
 
-The regression reproduces that permanent disable on the old source. The candidate keeps the same retry budget and stops for the remainder of that head-unit boot, but does not create a persistent disable for this exact reason when the worker has exited and cleanup is proven. A fresh boot still starts both factory lanes Unknown and cannot draw until both have acknowledged idle commits. All other faults retain permanent quarantine. Existing operator/fault disable files are never automatically erased.
+The regression reproduces that permanent disable on the old source. The candidate keeps the same retry budget and stops for the remainder of that head-unit boot, but does not create a persistent disable for this exact reason when the worker has exited and cleanup is proven. A fresh boot still starts both factory lanes Unknown and cannot draw until both have acknowledged idle commits. The exact clean factory-closure case described above is also boot-local; other faults retain permanent quarantine. Existing operator/fault disable files are never automatically erased.
 
 This does not implement same-boot recovery after exhausted retries, nor does it establish how this car's sleep/wake preserves head-unit RAM. A wake without a new head-unit boot may still require a separate fix. Collect evidence rather than claiming a warm reset solves cold wake.
 
@@ -47,7 +57,7 @@ python3 tools/repair_clean_rpm_disable.py --execute \
 
 The repair requires the exact Gold manifest, all 13 installed payload hashes plus both startup files, the exact clean-RPM disable reason, enabled persistence, no resident/worker and no broker/handoff sockets. It rechecks the live state. Unexpected bytes or state stop the repair.
 
-Only the resident and two gates are replaced with same-directory staging and byte-for-byte readback. Read-only filesystem protection is restored and checked before archiving the exact legacy disable token as `disabled.before-cold-start-fix`. Enabled state and startup configs are preserved. No reboot or drawing process is started by the tool. On a transaction failure it attempts restoration of the original three binaries and retains disable; retain the log if connection loss prevents verifying rollback. It is intentionally not a generic upgrader or arbitrary fault reset.
+Only the resident and two gates are replaced with same-directory staging and byte-for-byte readback. Read-only filesystem protection is restored and checked before archiving the exact legacy disable token as a unique `disabled.before-cold-start-fix-*` file. Enabled state and startup configs are preserved. No reboot or drawing process is started by the tool. On a transaction failure it attempts restoration of the original three binaries and retains disable; retain the log if connection loss prevents verifying rollback. It is intentionally not a generic upgrader or arbitrary fault reset.
 
 ## Acceptance in the same session
 
@@ -60,3 +70,5 @@ Only the resident and two gates are replaced with same-directory staging and byt
 Post-patch snapshots use `--v1-kit "$PATCH_KIT/patched-reference"` for current installed hashes; the tool's historical JSON field is still named `gold_master_comparison`. This combined reference is for verification, not a new accepted release or fresh installation package.
 
 A real cold-start success is the missing acceptance criterion. The offline tests prove the code defect and its correction; they cannot prove which failure the vehicle experienced or guarantee recovery from all sleep/wake paths.
+
+The corrected second transaction completed: replacement bytes read back exactly, empty resource pool verified twice, filesystem protection restored, original reason archived, enabled token retained, native sync completed. No automatic restart was issued. Owner restart and cold-wake validation are pending.

@@ -39,6 +39,7 @@ class Servers:
    if m==3:
     d=decode_resource_body(b);rid=d['resource_id'];assert rid not in self.resources;raw=decode_bgra(b[30:],5400);self.images.append(raw);self.resources[rid]=raw;self.uploads+=1
     if self.mode=='lost-ack' and self.uploads==2:return
+   if m==8 and self.mode=='lost-remove-ack':return
    if m==8:
     rid=struct.unpack_from('>I',b,4)[0];assert rid in self.resources;del self.resources[rid]
    if self.mode in ('factory','monitor-loss') and self.uploads==2 and m==2:self.trigger.touch()

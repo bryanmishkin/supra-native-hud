@@ -66,6 +66,7 @@ struct Resident {
  void acceptOne(){int fd=accept(server,0,0);if(fd<0)return;timeval timeout;timeout.tv_sec=0;timeout.tv_usec=50000;setsockopt(fd,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout));setsockopt(fd,SOL_SOCKET,SO_SNDTIMEO,&timeout,sizeof(timeout));unsigned char h[8];
   if(!readAll(fd,h,8)){close(fd);return;}
 #ifdef SUPRA_TEST
+  if(!memcmp(h,"TESTCLS1",8)){lease.fault("factory transport closed");replyText(fd,"OK\n");close(fd);return;}
   if(!memcmp(h,"TESTREQ1",8)||!memcmp(h,"TESTACK1",8)){
    unsigned char size[4];if(!readAll(fd,size,4)){close(fd);return;}unsigned n=(unsigned(size[0])<<24)|(unsigned(size[1])<<16)|(unsigned(size[2])<<8)|size[3];
    if(n<16||n>65552){close(fd);return;}FactoryLease::Packet packet(n);if(!readAll(fd,&packet[0],n)){close(fd);return;}
@@ -92,10 +93,10 @@ struct Resident {
   stop();uint64_t deadline=now()+3000;while(child&&now()<deadline){reap();usleep(10000);}
   if(child)lease.fault("worker did not exit");
   lastStatus=0;status();
-  // Engine telemetry can disappear during shutdown. Only an exhausted RPM
-  // retry budget with a reaped, verified-clean worker is a boot-local inhibit.
+  // Engine telemetry and factory TCP can disappear during shutdown. These two
+  // reasons are boot-local only with no child and proven clean withdrawal.
   // Every other fault retains the existing persistent quarantine behavior.
-  bool bootOnly=lease.failed()&&lease.reason()=="clean I/O retry budget exhausted"&&!child&&cleanupProven;
+  bool bootOnly=lease.failed()&&(lease.reason()=="clean I/O retry budget exhausted"||lease.reason()=="factory transport closed")&&!child&&cleanupProven;
   if(lease.failed()&&!bootOnly)saveText(root+"/disabled",lease.reason()+"\n");
   std::string terminal=lease.failed()?std::string(bootOnly?"BOOT_INHIBITED: ":"QUARANTINED: ")+lease.reason()+"\n":"STOPPED\n";
   saveText(state+"/resident.status",terminal);
@@ -103,6 +104,7 @@ struct Resident {
  }
 };
 int main(int argc,char** argv){
+ if(argc==2&&!strcmp(argv[1],"--sync-state")){sync();puts("STATE_SYNCED");return 0;}
  if(argc==3&&!strcmp(argv[1],"--stop")){signal(SIGPIPE,SIG_IGN);int fd=unixConnect(std::string(argv[2])+"/factory.sock");if(fd<0)return 2;replyText(fd,"STOPAPP1");char b[6];bool ok=readAll(fd,(unsigned char*)b,6,3000)&&!memcmp(b,"CLEAN\n",6);close(fd);if(ok)puts("CLEAN");return ok?0:2;}
  if(argc!=4){fprintf(stderr,"usage: supra-resident ROOT RAM_STATE INTERFACE\n");return 64;}
  signal(SIGPIPE,SIG_IGN);signal(SIGINT,stop);signal(SIGTERM,stop);umask(077);

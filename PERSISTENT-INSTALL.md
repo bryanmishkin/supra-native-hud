@@ -1,6 +1,6 @@
 # Persistent installation and rollback
 
-**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual vehicle fault is not yet confirmed and the repair is not installed. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual saved blocker is `factory transport closed`. The narrow repair is installed on the reference car; post-repair cold-start acceptance is pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
 
 This is the current installation runbook. Revision08 was installed and committed on the reference Supra on 17 November 2026, including owner-confirmed startup after an unplugged iDrive reset. See [acceptance evidence](PERSISTENT-LIVE-VALIDATION.md). A new vehicle must first satisfy [COMPATIBILITY.md](COMPATIBILITY.md).
 

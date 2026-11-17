@@ -16,6 +16,10 @@ class ColdStart(unittest.TestCase):
   c={'head':'169.254.199.119','read_only':True,'initial_classification':{'state':'persistently_disabled','clean_rpm_match':True},'gold_master_comparison':{str(i):{'matches':True} for i in range(15)}}
   self.assertTrue(eligible(c,c['head']));self.assertFalse(eligible(c,'169.254.199.99'))
   c['gold_master_comparison']['0']['matches']=False;self.assertFalse(eligible(c,c['head']))
+ def test_factory_close_recovery_is_explicit_and_exact(self):
+  c={'head':'169.254.199.119','read_only':True,'initial_classification':{'state':'persistently_disabled','reason':'factory transport closed','clean_rpm_match':False},'gold_master_comparison':{str(i):{'matches':True} for i in range(15)}}
+  self.assertFalse(eligible(c,c['head']));self.assertTrue(eligible(c,c['head'],True))
+  c['initial_classification']['reason']='worker exit/cleanup uncertain';self.assertFalse(eligible(c,c['head'],True))
  def test_tools_default_to_offline(self):
   tools=Path(__file__).resolve().parents[1]/'tools'
   for name in ['capture_cold_start.py','repair_clean_rpm_disable.py']:
@@ -49,7 +53,7 @@ class RepairTransaction(unittest.TestCase):
      else:self.files[dest]=data
     elif c.startswith('chmod '):pass
     elif c.startswith('mv '):self.files[words[2]]=self.files.pop(words[1])
-    elif c=='sync':pass
+    elif c.endswith('/supra-resident-qnx --sync-state'):pass
     else:raise AssertionError(c)
     return types.SimpleNamespace(returncode=code,stdout=out,stderr=b'fixture failure' if code else b'')
   with tempfile.TemporaryDirectory() as temp:
@@ -71,7 +75,7 @@ class RepairTransaction(unittest.TestCase):
      with self.assertRaises(RuntimeError):repair.execute(args)
      self.assertEqual(remote.files[repair.ROOT+'/disabled'],repair.REASON)
     else:
-     repair.execute(args);self.assertNotIn(repair.ROOT+'/disabled',remote.files);self.assertEqual(remote.files[repair.ROOT+'/disabled.before-cold-start-fix'],repair.REASON)
+     repair.execute(args);self.assertNotIn(repair.ROOT+'/disabled',remote.files);self.assertEqual(remote.files[json.loads((args.output/'repair.json').read_text())['disable_backup']],repair.REASON)
    for name,path in repair.REPLACEMENTS.items():self.assertEqual(remote.files[path],((gold if fail_stage else kit)/name).read_bytes())
    self.assertFalse(remote.writable);self.assertEqual(remote.files[repair.ROOT+'/enabled'],b'SUPRA-PERSISTENT-1\n')
  def test_patch_verifies_then_archives_exact_latch(self):self.exercise()

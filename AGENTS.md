@@ -1,6 +1,6 @@
 # Agent entry point
 
-**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual vehicle fault is not yet confirmed and the repair is not installed. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
+**Cold-start issue reported 17 November:** the owner saw no tachometer after a cold vehicle start. Prior warm-reset acceptance remains valid but does not establish cold-start reliability. This branch contains an offline-tested repair candidate; the actual saved blocker is `factory transport closed`. The narrow repair is installed on the reference car; post-repair cold-start acceptance is pending. See [failure, evidence and exact repair plan](docs/V1-COLD-START.md).
 
 This repository contains a working vehicle-specific persistent HUD tachometer and substantial earlier research. Start with [APP-STATUS.md](APP-STATUS.md), [docs/AGENT-HANDOFF.md](docs/AGENT-HANDOFF.md), [docs/APP-ARCHITECTURE.md](docs/APP-ARCHITECTURE.md), and [PERSISTENT-INSTALL.md](PERSISTENT-INSTALL.md).
 
