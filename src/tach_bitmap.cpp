@@ -120,20 +120,20 @@ void roundedV2(std::vector<unsigned char>& p,double x,double y,double w,double h
     }
 }
 void rpmV2(std::vector<unsigned char>& p,unsigned rpm) {
-    // Upright rounded seven-segment digits, 20 px tall; narrow grouping comma.
+    // Upright rounded seven-segment digits, 14 px tall; narrow grouping comma.
     static const unsigned masks[]={0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
     char number[12];std::snprintf(number,sizeof(number),"%u",rpm);
     unsigned len=0;while(number[len])++len;
-    double width=len*15-2+(len>3?4:0),x=38-width/2;
+    double width=len*11-1.9+(len>3?3:0),x=38-width/2;
     for(unsigned i=0;i<len;++i) {
-        if(len>3&&i==len-3){roundedV2(p,x,31,2,4,0.7,210,210,210);x+=4;}
+        if(len>3&&i==len-3){roundedV2(p,x,32,1.5,3,0.6,210,210,210);x+=3;}
         unsigned m=masks[number[i]-'0'];
         const double segments[7][4]={{2,0,9,2.4},{10.6,1.5,2.4,8},
             {10.6,10.5,2.4,8},{2,17.6,9,2.4},{0,10.5,2.4,8},
             {0,1.5,2.4,8},{2,8.8,9,2.4}};
         for(unsigned s=0;s<7;++s)if(m&(1U<<s))
-            roundedV2(p,x+segments[s][0],15+segments[s][1],segments[s][2],segments[s][3],1.0,255,255,255);
-        x+=15;
+            roundedV2(p,x+0.7*segments[s][0],21+0.7*segments[s][1],0.7*segments[s][2],0.7*segments[s][3],0.7,255,255,255);
+        x+=11;
     }
 }
 }
@@ -143,28 +143,29 @@ std::vector<unsigned char> tachBitmapV2(const Frame& f) {
     if(!f.visible||!(f.rpm>=0&&f.rpm<=7700))return p;
     // Shallow arch: fit the reference's silhouette without claiming more pixels.
     for(unsigned i=0;i<24;++i) {
-        double d=double(i)-11.5,y=0.25+d*d/32;
+        double d=double(i)-11.5,y=0.25+d*d/56;
         unsigned char r=90,g=210,b=255;
         if(i>=18){r=255;g=i>=22?40:(i>=20?100:170);b=0;}
         if(!f.tach[i].lit){r/=7;g/=7;b/=7;}
-        roundedV2(p,3+6*i,y,5,4.75,0.6,r,g,b);
+        roundedV2(p,3+6*i,y,5,8,0.6,r,g,b);
     }
     unsigned lights=f.shiftLights>5?5:f.shiftLights;
     for(unsigned i=0;i<5;++i) {
         bool on=i<lights;
-        roundedV2(p,40+14*i,11,11,3,0.7,on?255:28,
+        roundedV2(p,20+23*i,13,18,5,0.9,on?255:28,
                   on?((lights==5||i>=3)?40:170):12,on?0:8);
     }
     char number[16];unsigned rpm=(unsigned)(f.rpm+0.5);
     rpmV2(p,rpm);
-    colorRect(p,78,17,1,18,75,75,75);
+    colorRect(p,78,22,1,13,75,75,75);
     // boostVisible must come from a freshness-validated source. The standalone
     // V1 worker never sets it; only the offline demo supplies synthetic values.
     bool boost=f.boostVisible&&f.boostPsi>=-30&&f.boostPsi<=60;
     if(boost)std::snprintf(number,sizeof(number),"%+.1f",f.boostPsi);
     else std::snprintf(number,sizeof(number),"--.-");
-    textV2(p,number,115,18,2,2,boost?255:90,false);
-    textV2(p,"PSI",115,31,1,1,boost?150:70,false);
+    textV2(p,number,113,23,2,2,boost?255:90,false);
+    textV2(p,"RPM",70,29,1,1,110,false);
+    textV2(p,"PSI",143,29,1,1,boost?110:70,false);
     return p;
 }
 
