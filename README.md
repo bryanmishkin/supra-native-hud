@@ -1,5 +1,7 @@
 # Supra native HUD tachometer
 
+**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), based on the preserved `v1.0.0-gold-master` tag. V2 currently adds an offline renderer; the installed/default persistent worker remains V1.
+
 A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 
 **Installed and enabled on the reference Supra on 17 November 2026.** Automatic startup, navigation/radio handoff and return, verified cleanup, and a five-minute uninterrupted run passed. The owner confirmed automatic startup after a further iDrive reset **with the ENET cable unplugged**. See [verified status and limits](APP-STATUS.md) and [installation evidence](PERSISTENT-LIVE-VALIDATION.md).

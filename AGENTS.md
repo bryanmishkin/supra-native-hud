@@ -10,3 +10,7 @@ This repository contains a working vehicle-specific persistent HUD tachometer an
 - Keep factory captures, private profiles, generated kits/binaries, SDK/license material and credentials out of Git. Preserve exact original startup files and installer state privately for rollback.
 - Update current docs when behavior or acceptance changes. Mark historical evidence as historical rather than rewriting old failures into successes. Record machine evidence and human display observations separately.
 - Documentation-only changes need link/command/source consistency checks; do not connect to the vehicle or rerun live tests for prose edits.
+
+## V2 branch
+
+On `v2-ux`, read [docs/V2-UX.md](docs/V2-UX.md) first. V2 rendering is currently offline-only; the persistent worker still selects V1 sport. Preserve the Gold Master tag and distinguish synthetic PSI previews from live telemetry. Start within 150 × 36; larger-space experiments need separate proof.

@@ -1,5 +1,9 @@
 # Documentation index
 
+## V2 development
+
+- [V2 UX candidate and staged development plan](V2-UX.md)
+
 ## Current documentation
 
 These documents describe the accepted implementation and current procedure. Historical reports remain useful evidence, but do not override these entry points.

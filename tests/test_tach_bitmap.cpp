@@ -25,5 +25,28 @@ int main(){
  assert(p[4*(19*150+82)+1]==40);
  sport.visible=false;p=supra::tachBitmapSport(sport);
  for(unsigned i=0;i<p.size();++i)assert(p[i]==(i%4==3?255:0));
+ // V2 stays inside the known opaque canvas, including invalid-input clearing.
+ p=supra::tachBitmapV2(sport);
+ for(unsigned i=0;i<p.size();++i)assert(p[i]==(i%4==3?255:0));
+ sport.visible=true;sport.rpm=4250;sport.boostVisible=false;
+ std::vector<unsigned char> missing=supra::tachBitmapV2(sport);
+ assert(missing.size()==21600);
+ for(unsigned i=3;i<missing.size();i+=4)assert(missing[i]==255);
+ unsigned cyan=4*(5*150+3);
+ assert(missing[cyan]==255&&missing[cyan+1]==210&&missing[cyan+2]==90);
+ sport.boostVisible=true;sport.boostPsi=12.4;p=supra::tachBitmapV2(sport);
+ assert(p!=missing);
+ // Boost changes only the right readout, never RPM, arc or shift indication.
+ for(unsigned y=0;y<36;++y)for(unsigned x=0;x<150;++x)
+  if(y<18||x<80)for(unsigned k=0;k<4;++k)
+   assert(p[4*(y*150+x)+k]==missing[4*(y*150+x)+k]);
+ sport.boostPsi=std::numeric_limits<double>::quiet_NaN();
+ assert(supra::tachBitmapV2(sport)==missing);
+ sport.boostPsi=61;assert(supra::tachBitmapV2(sport)==missing);
+ sport.boostPsi=-31;assert(supra::tachBitmapV2(sport)==missing);
+ sport.rpm=7701;p=supra::tachBitmapV2(sport);
+ for(unsigned i=0;i<p.size();++i)assert(p[i]==(i%4==3?255:0));
+ sport.rpm=std::numeric_limits<double>::quiet_NaN();p=supra::tachBitmapV2(sport);
+ for(unsigned i=0;i<p.size();++i)assert(p[i]==(i%4==3?255:0));
  return 0;
 }
