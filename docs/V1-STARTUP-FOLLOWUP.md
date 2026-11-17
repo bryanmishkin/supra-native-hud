@@ -14,4 +14,4 @@ The startup watchdog now applies only before admission. Reaping and verified res
 
 Deployment requires exact installed hashes, stopped app, the exact saved fault plus cleanup proof, and two read-only empty-resource checks. Only the supervisor changes. Preserve the fault token in an archive after validated replacement, keep enable/startup/worker/profile unchanged, and restore read-only protection.
 
-Live validation pending. Earlier gateway rejection/delay remains a separate question; do not claim this watchdog correction proves cable-free gateway readiness.
+Installed on the reference car after exact 15-file baseline comparison and two empty-pool checks. Only resident changed: SHA-256 `d49da8e89dc03e695283fb86297e9fc1d77b0811e6fba3720e13a7bda51d1d9b`. Fault token archived, persistence preserved, read-only mount restored. Targeted before/after reproduction, 251 Python tests, resident recovery regressions and ARM static audit passed. Normal shutdown/start validation is pending. Earlier gateway rejection/delay remains a separate question; do not claim this watchdog correction proves cable-free gateway readiness.
