@@ -47,3 +47,7 @@ Building from source requires a compatible ARM-capable QNX SDK and target audit 
 The installed path is `persistent_boot_gate.c` → `supra_resident.cpp` → `supra_standalone.cpp`, with `navigation_handoff_hook.cpp`, `factory_lease.*`, `factory_stream.*`, `standalone_wire.*` and `tach_bitmap.*`. Older DSI/registry encoders and Mac-driven trial tools remain research code; they are not the installed renderer.
 
 Vehicle captures, factory binaries, generated kits, SDKs, credentials and license material stay outside GitHub. See [third-party notices](THIRD_PARTY_NOTICES.md); this documentation does not add a license grant for the original project source.
+
+## Credits
+
+Thanks to **[ryseek](https://github.com/ryseek)** for the G30 PiP implementation and native pixel-path research informing our larger-display investigation, and to **[Sq00ky / nanaisu and the Supra Android Auto contributors](https://github.com/Sq00ky/Supra-iDrive6-Android-Auto)** for the upstream work. See [exact references and licensing](THIRD_PARTY_NOTICES.md). G30 cluster output is not yet demonstrated as a larger Supra windshield display.
