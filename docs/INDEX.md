@@ -2,6 +2,8 @@
 
 ## V2 development
 
+- [Current receiver-binding evidence limit; no larger-display candidate ready](PIP-RECEIVER-EVIDENCE-2026-11-18.md)
+
 - [PiP marker car result: arrow only; V1 restored](PIP-MARKER-RESULT-2026-11-18.md)
 
 - [30-second larger PiP marker experiment and V1 recovery](PIP-MARKER-TEST.md)

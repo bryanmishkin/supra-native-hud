@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Current PiP limit:** [receiver evidence audit](PIP-RECEIVER-EVIDENCE-2026-11-18.md). The latest upstream G30 branch still pauses video for HUD selection. No matching Supra receiver implementation or complete windshield pixel-routing contract has been established. HU selector tests are not a substitute. No larger-display candidate is ready; keep the failed runner retired and V1 intact. Older candidate descriptions below are historical, not permission to run them.
+
 **Latest routing trace:** [exact HUD type selection](PIP-HUD-TYPE-SELECTION-2026-11-18.md). Forty captured-ARM execution cases resolve exact candidate pairs and preference-dependent selection; the previous range description is corrected. These are HU producer predicates, not receiver delivery proof. No actual larger-display fix or new car candidate is ready; V1 unchanged.
 
 **Latest implementation:** [DisplaySink codec and captured replay](PIP-DISPLAYSINK-IMPLEMENTATION-2026-11-18.md). 49 factory subscription packets reproduce exactly; 94 ACKs and two selection/completion pairs replay successfully. 24 focused tests pass. Socket-free protocol component only; no producer ownership or larger windshield delivery proven. Live runner remains retired, V1 untouched.
