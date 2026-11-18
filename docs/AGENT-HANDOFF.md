@@ -1,6 +1,6 @@
 # Pick up this project
 
-Next prepared session: [batched output-driver capture](OUTPUT-DRIVER-CAR-CAPTURE.md). Offline-tested read-only runner; V1 unchanged. Review newly captured configuration references before unplugging.
+Latest completed session: [output-driver capture](OUTPUT-DRIVER-CAPTURE-2026-11-18.md). 65 unique files verified; all 15 V1 comparisons passed, faults unchanged, owner confirmed normal displays. Continue output-driver tracing offline; no larger windshield binding proven.
 
 Latest offline PiP result: [metadata image, identified HMI consumer, disposal and external source review](PIP-METADATA-AND-CONSUMERS-2026-11-18.md). The 21×1 metadata codec matches captured ARM execution; larger windshield routing remains unproven. V1 is unchanged.
 

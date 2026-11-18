@@ -14,9 +14,9 @@ class OutputDriverTests(unittest.TestCase):
         self.assertEqual(len(paths),15)
         self.assertEqual(paths['/opt/sys/etc/starter.cfg'],expected['system-after.cfg'])
     def test_inventory_includes_versioned_drivers_and_all_configs(self):
-        self.assertEqual(c.inventory_names('graphics.conf\nlibWFD.so\nlibwfdcfg.so.0\nsubdir\n'),['graphics.conf','libWFD.so','libwfdcfg.so.0'])
+        self.assertEqual(c.inventory_names('.\n..\ngraphics.conf\nlibWFD.so\nlibwfdcfg.so.0\nsubdir\n'),['graphics.conf','libWFD.so','libwfdcfg.so.0'])
     def test_inventory_rejects_shell_or_traversal(self):
-        for value in ('../bad.so','x;touch.so','/other/lib.so','$(id).so','..'):
+        for value in ('../bad.so','x;touch.so','/other/lib.so','$(id).so'):
             with self.assertRaises(ValueError):c.inventory_names(value)
     def test_inventory_bounded(self):
         with self.assertRaises(ValueError):c.inventory_names('\n'.join('x%d.so'%i for i in range(257)))

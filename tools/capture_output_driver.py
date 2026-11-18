@@ -13,7 +13,7 @@ GRAPHICS='/lib/graphics/omap5430'
 BASELINE=Path(__file__).resolve().parents[1]/'docs/V1-BASELINE.json'
 
 def inventory_names(text):
-    names=text.splitlines()
+    names=[n for n in text.splitlines() if n not in ('.','..')]
     if len(names)>256: raise ValueError('Graphics inventory limit exceeded')
     if any(not re.fullmatch(r'[A-Za-z0-9_.+-]+',n) or n in ('.','..') for n in names):
         raise ValueError('Unsafe graphics inventory')

@@ -10,9 +10,13 @@ from consolidated_capture import Session,DIRS
 FILES=('/opt/sys/bin/LayerManagerService','/opt/sys/bin/LayerManagerControl',
        '/lib/graphics/omap5430/libWFDomap5430ES2_0.so',
        '/lib/graphics/omap5430/libwfdcfg-emodule-hu.so',
-       '/lib/graphics/omap5430/libwfdcfg.so.0')
+       '/lib/graphics/omap5430/libwfdcfg.so.0',
+       '/bin/screen','/lib/libGAL-vivante-omap5430.so.1',
+       '/lib/libinputevents.so.1','/lib/screen-vivante-omap5430.so',
+       '/lib/libextproc.so','/lib/libcapture-soc-omap4-5.so')
 CONFIG_FILES=('/lib/graphics/omap5430/graphics.conf',
-              '/lib/graphics/omap5430/graphics-1280_480.conf')
+              '/lib/graphics/omap5430/graphics-1280_480.conf',
+              '/bin/start_screen.sh','/proc/boot/.script')
 MAP_PROCESSES=('LayerManagerService','screen')
 CONTROL='LD_LIBRARY_PATH=/opt/sys/lib:/lib:/boot/lib /opt/sys/bin/LayerManagerControl '
 COMMANDS=(('processes','pidin ar'),('loader','getconf CS_LIBPATH'),
