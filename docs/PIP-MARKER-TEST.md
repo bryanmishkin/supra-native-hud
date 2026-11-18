@@ -1,5 +1,7 @@
 # Larger PiP marker experiment
 
+**Current offline revision:** [format selection and producer binding](PIP-BINDING-REVISION-2026-11-18.md). Use the revision-2 kit; depth 0 replaces the earlier maximum-as-selection value 1. This remains an unproven image-delivery candidate.
+
 **Car result:** [18 November attempt](PIP-MARKER-RESULT-2026-11-18.md) showed only a factory right-turn arrow, not the custom image. Cleanup and V1 return passed. This candidate is not a verified larger renderer.
 
 This is an executable **parked, RAM-only experiment**, not a verified larger HUD renderer or a persistent V2 installation. It pairs a compiled QNX ARM native producer with a correlated Guidance controller. V1 binaries, configuration, enable tokens and tags are unchanged. The purpose is to observe whether this concrete pixel/model path reaches the windshield, the gauge cluster, or neither.
@@ -11,7 +13,7 @@ Credit to **ryseek** for the native Screen/APIX producer and metadata convention
 - Native backing: measured secondary Screen output OTHER2, **800×480**. No display mode, pipeline, factory window or LayerManager configuration is changed.
 - Marker: **320×200**, within the decoded Supra PiP maximum of 320×320. White border/cross with cyan upper-left and orange lower-right blocks; deliberately asymmetric to identify orientation and distinguish factory icons.
 - Visible opportunity: producer runs for **30 seconds total**; graph setup consumes part of the beginning. The controller prints `MARKER TEST RUNNING` after activation acknowledgements. Observe windshield and cluster separately. No RPM change or driving is needed.
-- Resource: only `0x02000004`, checked absent before attempting configuration; resource type 2, depth 1, packing 0 from the retained Supra profile. Factory PiP slots 0–3 and all bitmap slots are untouched.
+- Resource: only `0x02000004`, checked absent before attempting configuration; resource type 2, selected depth 0 (reference native selection, below advertised maximum 1), packing 0 (within the retained Supra limit). Factory PiP slots 0–3 and all bitmap slots are untouched.
 - Models: negotiated last detailed-maneuver model `0x07000004` and description `0x0f000004`, plus the measured V1 current-state, distance and position fields and shared list/state. These are selected slots, **not exclusive ownership**. Factory guidance and radio must remain stopped.
 - Native metadata uses the reference maneuver template with the selected description identity. **That identity mapping and byte convention on this Supra are hypotheses**, not established by a successful build.
 - No G30 temporary IP address, B009 subscription takeover, fabricated sink-switch event, or factory instance create/dispose is used. Existing factory sink control remains in place. Failure to see the marker is a failed routing hypothesis, not permission to force another sink or overwrite factory resources.
@@ -61,6 +63,8 @@ python3 tools/pip_trial.py \
   --producer-argv /private/start-producer.json \
   --producer-stop-argv /private/stop-producer.json
 ```
+
+Before activation, the controller validates the helper’s `PIP_BINDING` record. The helper records active display state after first post and before removal. A mismatch prevents graph activation.
 
 The agent announces the marker window as soon as the controller reports activation. Ask whether the border/cross appears in the **windshield**, **cluster**, or both, whether it is larger than V1, and whether the edges are clipped. Keep the engine idling. Do not start navigation or operate the radio during this brief experiment.
 

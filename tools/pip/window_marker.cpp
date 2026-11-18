@@ -34,6 +34,18 @@ static bool admission() {
         contains("/dev/screen/0/dpy-2","scene = (empty)\n") &&
         contains("/dev/screen/0/dpy-2","windows = (none)\n");
 }
+static void snapshot(const char* phase) {
+    // Read-only evidence while our own image is still posted, not just after teardown.
+    FILE* f=fopen("/dev/screen/0/dpy-2","rb");
+    printf("ACTIVE_OUTPUT_BEGIN phase=%s\n",phase);
+    if(f) {
+        char b[8192];size_t n=fread(b,1,sizeof(b),f);
+        fwrite(b,1,n,stdout);
+        printf("\nACTIVE_OUTPUT_END read_error=%u truncated=%u\n",
+               unsigned(ferror(f)!=0),unsigned(n==sizeof(b)));
+        fclose(f);
+    } else puts("ACTIVE_OUTPUT_END unavailable=1");
+}
 static unsigned long long milliseconds() {
     struct timespec t;
     if (clock_gettime(CLOCK_MONOTONIC,&t)) return 0;
@@ -57,6 +69,16 @@ int main(int argc,char** argv) {
     setvbuf(stdout,0,_IONBF,0);
     kombi::pip::screen::ScreenOutput out={0,0,0,0,0};
     out.metadata_profile=kombi::pip::screen::FactoryManeuver;
+    unsigned char metadata[84];
+    if(!nbt::cluster::VideoProfile::encodeMetadataBgra(metadata,1,
+            nbt::cluster::VideoProfile::MetadataManeuver)) return 2;
+    printf("PIP_BINDING {\"schema\":2,\"description_id\":%lu,\"resource_id\":%u,"
+           "\"backing\":[800,480],\"content\":[320,200],\"depth\":%u,\"packing\":%u,"
+           "\"screen_format\":8,\"metadata_id_be\":\"%02x%02x%02x%02x\"}\n",
+           id,unsigned(nbt::cluster::VideoProfile::ResourceId),
+           unsigned(nbt::cluster::VideoProfile::ResourceDepth),
+           unsigned(nbt::cluster::VideoProfile::ResourcePacking),
+           unsigned(metadata[16]),unsigned(metadata[17]),unsigned(metadata[18]),unsigned(metadata[19]));
     bool ok=out.inspect(1) && out.create();
     unsigned char image[320*200*4];
     // Asymmetric marker: white border/cross, cyan left, orange right corners.
@@ -75,9 +97,10 @@ int main(int argc,char** argv) {
     while(ok && !stopped && absent(argv[3]) && milliseconds()-start<30000) {
         if(!v1_quiet()) { puts("V1_STATE_CHANGED");ok=false;break; }
         ok=out.present(image,++frame,false);
-        if(frame==1 && ok) puts("PRODUCER_READY");
+        if(frame==1 && ok) { snapshot("first-post"); puts("PRODUCER_READY"); }
         usleep(100000);
     }
+    if(ok && frame) snapshot("before-removal");
     bool closed=out.close(); alarm(0);
     printf("PRODUCER_END frames=%u producer_ok=%u local_cleanup=%u\n",frame,unsigned(ok),unsigned(closed));
     // Caller must separately withdraw Guidance, dispose its PiP resource,

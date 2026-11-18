@@ -11,7 +11,8 @@ struct VideoProfile {
         DisplayCount=2, DisplayIndex=1, WindowIdLength=9,
         ScreenFormat=8, ScreenUsage=6, ScreenTransparency=0, ScreenAlpha=255,
         ScreenZOrder=1000, ScreenContextFlags=1,
-        MetadataMap=0, MetadataManeuver=1, MetadataBytes=84 };
+        MetadataMap=0, MetadataManeuver=1, MetadataBytes=84,
+        ResourceId=0x02000004, ResourceDepth=0, ResourcePacking=0 };
     static uint32_t maneuver;
     static const char* windowId() { return "268444457"; }
     static bool encodeMetadataBgra(uint8_t* p, uint16_t picture, unsigned profile) {

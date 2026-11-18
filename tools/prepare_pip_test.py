@@ -5,11 +5,13 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
-from pip_trial import allocation,measured_support
+from pip_trial import allocation,measured_support,producer_contract
 from prepare_v2_test import ACCEPTED_V1_KIT
 from run_v1_validation import manifest
 
 def prepare(binary,audit,create,v1,out,capture,capture_audit):
+    if b'PIP_BINDING {"schema":2,' not in binary.read_bytes():
+        raise ValueError('Old producer lacks required format-binding handshake')
     _,baseline=manifest(v1)
     if baseline!=ACCEPTED_V1_KIT:raise ValueError('Wrong V1 preservation baseline')
     a=json.loads(audit.read_text());sha=hashlib.sha256(binary.read_bytes()).hexdigest()
@@ -27,7 +29,7 @@ def prepare(binary,audit,create,v1,out,capture,capture_audit):
     repo=Path(__file__).resolve().parents[1]
     shutil.copytree(repo/'vendor/ryseek-pip',out/'third-party/ryseek-pip')
     shutil.copy2(repo/'THIRD_PARTY_NOTICES.md',out/'THIRD_PARTY_NOTICES.md')
-    data=dict(schema=1,kind='RAM-only experimental larger marker',seconds=30,
+    data=dict(schema=2,producer_contract=producer_contract(contract),kind='RAM-only experimental larger marker',seconds=30,
         v1_kit_sha256=baseline,contract=contract,car_tested=False,
         windshield_route_proven=False,automatic_v1_resume=False,
         sha256={str(p.relative_to(out)):hashlib.sha256(p.read_bytes()).hexdigest()

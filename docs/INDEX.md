@@ -83,3 +83,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [V2 live boost integration and offline evidence](V2-BOOST.md).
 
 - [V2 connected/cable-free pressure session and restored V1](V2-BOOST-IDLE-RESULT.md).
+
+- [PiP binding revision: format-limit execution, strict producer contract and bounded candidate](PIP-BINDING-REVISION-2026-11-18.md).

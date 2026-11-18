@@ -47,7 +47,8 @@ def allocation(packet):
               17:0x11000000,34:0x22000004,29:0x1d00001d}
     if models!=expected:raise ValueError('Unexpected model allocation: '+repr(models))
     return dict(handle=handle,resource_id=0x02000004,models=models,
-                width=320,height=200,depth=1,packing=0)
+                width=320,height=200,depth=0,packing=0,
+                supported_depth=pip[6],supported_packing=pip[7])
 
 
 def measured_support(raw,a):
@@ -76,6 +77,21 @@ def measured_support(raw,a):
     a['support_start']=[(10,bytes(current).hex()),(selected[1][0],selected[1][1].hex())]
     a['position_start']=selected[2][1].hex();a['position_stop']=selected[3][1].hex()
     return a
+
+
+def producer_contract(a):
+    # Resource capability maxima are not a producer's selected format.
+    return dict(schema=2, description_id=a['models'][15], resource_id=a['resource_id'],
+                backing=[800,480], content=[a['width'],a['height']],
+                depth=a['depth'], packing=a['packing'], screen_format=8,
+                metadata_id_be=struct.pack('>I',a['models'][15]).hex())
+
+
+def validate_producer(output,a):
+    rows=[line[len(b'PIP_BINDING '):] for line in output.splitlines()
+          if line.startswith(b'PIP_BINDING ')]
+    if len(rows)!=1 or json.loads(rows[0])!=producer_contract(a):
+        raise ValueError('Native producer/receiver descriptor binding mismatch')
 
 
 def descriptor(a):
@@ -154,6 +170,8 @@ def run(s,a,producer,record,stop_producer=None):
                 if not chunk:raise RuntimeError('Producer exited before first post')
                 output+=chunk
                 if len(output)>65536:raise RuntimeError('Excess producer output')
+        validate_producer(output,a)
+        result['producer_binding_verified']=True
         result['graph_attempted']=True;save()
         s.timeout=.5
         for m,b in steps(a):
@@ -218,7 +236,7 @@ def main():
     plan=dict(allocation=a,create_sha256=hashlib.sha256(raw).hexdigest(),
         configure=descriptor(a).hex(),steps=[(m,b.hex()) for m,b in steps(a)],
         withdrawal=[(m,b.hex()) for m,b in withdrawal(a)],
-        producer_description_id=a['models'][15],live_verified=False,
+        producer_description_id=a['models'][15],producer_contract=producer_contract(a),live_verified=False,
         hypothesis='Native 800x480 secondary backing -> 320x200 PiP -> detailed maneuver; destination must be observed')
     (args.output/'plan.json').write_text(json.dumps(plan,indent=2)+'\n')
     if not args.execute:print('Offline plan saved; no connection or drawing.');return
