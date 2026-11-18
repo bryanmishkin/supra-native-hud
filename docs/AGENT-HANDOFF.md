@@ -1,5 +1,7 @@
 # Pick up this project
 
+Latest offline result: [output-driver contract](OUTPUT-DRIVER-TRACE-2026-11-18.md). Port 2 uses a TDA19988 callback path with RGBA-over-RGB width conversion verified by executing captured ARM routines offline. This does not establish its physical windshield/cluster binding; no larger live test is ready. V1 remains unchanged.
+
 Latest completed session: [output-driver capture](OUTPUT-DRIVER-CAPTURE-2026-11-18.md). 65 unique files verified; all 15 V1 comparisons passed, faults unchanged, owner confirmed normal displays. Continue output-driver tracing offline; no larger windshield binding proven.
 
 Latest offline PiP result: [metadata image, identified HMI consumer, disposal and external source review](PIP-METADATA-AND-CONSUMERS-2026-11-18.md). The 21×1 metadata codec matches captured ARM execution; larger windshield routing remains unproven. V1 is unchanged.
