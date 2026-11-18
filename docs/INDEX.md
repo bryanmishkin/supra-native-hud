@@ -75,3 +75,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [V2 parked layout result and verified V1 restoration](V2-LAYOUT-RESULT.md).
 
 - [V2 live boost integration and offline evidence](V2-BOOST.md).
+
+- [V2 connected/cable-free pressure session and restored V1](V2-BOOST-IDLE-RESULT.md).

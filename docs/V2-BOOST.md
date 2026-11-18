@@ -27,10 +27,14 @@ Logged native-simulation RPM sample gaps reached 400 ms in the partial-pair time
 
 The original reference signal table describes Gen 1 B58/340i candidates. Our saved Supra replies (`62 42 05 31 ec`, `62 42 01 63 d3`) correspond to roughly 99.84/99.82 kPa, consistent with a near-ambient point only. They do not establish sensor location, vacuum response, positive-boost scaling or calibration on this Supra.
 
-The pressure route is still diagnostic-gateway based. Unlike the proven factory RPM feed, its availability without a connected laptop/ENET has not been established. Do not advertise standalone live boost until that is checked. No car access occurred during this offline work.
+The pressure route is still diagnostic-gateway based. Subsequent vehicle testing established 80/80 valid pairs in two complete windows after ENET removal during a running session. Untouched cable-free cold-start availability remains unverified. See [the parked session results](V2-BOOST-IDLE-RESULT.md). The initial implementation/build work above was offline.
 
 ## Next car test
 
 Use [the staged V2 runbook](V2-CAR-TEST.md) with this new kit, preserving V1. Start with read-only pressure acquisition while parked. Save raw replies, timing and engine state. If its gate passes, run the explicit 30-second combined candidate and check PSI/dashes, RPM smoothness and cleanup. Capture before restarting and verify the unchanged V1 afterward.
 
 A later signal comparison must establish pressure accuracy against an independent trusted measurement under appropriate conditions, plus cable-free availability. Stationary revving alone is not positive-boost calibration. Persistent V2/boost deployment is separate from this bounded test.
+
+## Subsequent on-car result
+
+[Pressure and display checks passed, with exact V1 restoration](V2-BOOST-IDLE-RESULT.md). This does not establish pressure calibration or persistent V2 acceptance.
