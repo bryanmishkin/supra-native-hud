@@ -1,6 +1,6 @@
 # Persistent fault evidence and recovery candidate — 18 November 2026
 
-Status: installed on the reference car on 18 November; owner restart, permanent-record survival readback and live tach validation pending. The old acceleration-failure lockout was archived only after exact baseline checks and two empty-pool proofs. The successful short drive remains historical evidence, not proof of extended reliability.
+Status: installed on the reference car on 18 November; permanent-record survival after restart verified byte-for-byte; tach returned and recorded up to 7024 RPM. The old acceleration-failure lockout was archived only after exact baseline checks and two empty-pool proofs. The successful short drive remains historical evidence, not proof of extended reliability.
 
 ## Observed failure
 
@@ -40,3 +40,5 @@ Candidate supervisor SHA-256: `1cd996960892f0cc98b64851f177358101ef596e163590526
 ## Installation checkpoint
 
 Exact candidate supervisor was installed and read back, rollback copy retained, and filesystem read-only protection restored. A separate no-drawing probe using the production Resident::evidence method successfully wrote/read permanent JSON on the head unit, removed its synthetic fixture and retained the record under an isolated fault-proof directory. It did not touch the real fault-record files or send HUD commands. Restart survival and live runtime acceptance are pending. Probe source: `tools/fault_store_probe.cpp`.
+
+The subsequent drive captured a clean `bitmap pool in use` stop. See [installed retry correction](BITMAP-POOL-RETRY.md).

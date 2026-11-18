@@ -27,8 +27,8 @@ static void replyText(int fd,const char* s){ssize_t n=send(fd,s,strlen(s),0);(vo
 static bool privateDir(const std::string& p){struct stat s;return !lstat(p.c_str(),&s)&&S_ISDIR(s.st_mode)&&s.st_uid==geteuid()&&!(s.st_mode&0022);}
 static void saveText(const std::string& path,const std::string& body){std::string temp=path+".new";int fd=open(temp.c_str(),O_WRONLY|O_CREAT|O_TRUNC,0600);if(fd<0)fail("state write");bool ok=write(fd,body.data(),body.size())==(ssize_t)body.size();close(fd);if(!ok||rename(temp.c_str(),path.c_str()))fail("state replace");}
 struct Resident {
- FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath,lastEvidenceKey;bool quit,cleanAck,admitted,cleanupProven;unsigned starts,cleanStops,lastGeneration,ioRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter,lastEvidence;unsigned evidenceSlot;int lastWaitStatus;
- Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),cleanupProven(true),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0),lastEvidence(0),evidenceSlot(0),lastWaitStatus(-1){}
+ FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath,lastEvidenceKey;bool quit,cleanAck,admitted,cleanupProven;unsigned starts,cleanStops,lastGeneration,ioRetries,busyRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter,lastEvidence;unsigned evidenceSlot;int lastWaitStatus;
+ Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),cleanupProven(true),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),busyRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0),lastEvidence(0),evidenceSlot(0),lastWaitStatus(-1){}
  ~Resident(){if(bootTrace)fclose(bootTrace);if(cap)pcap_close(cap);if(server>=0)close(server);if(!socketPath.empty())unlink(socketPath.c_str());}
  void capture(const char* iface){
  bootTrace=fopen((state+"/startup.pcap").c_str(),"wb");if(!bootTrace)fail("startup trace");
@@ -60,14 +60,22 @@ struct Resident {
   bool exited=WIFEXITED(status)&&(WEXITSTATUS(status)==0||WEXITSTATUS(status)==2),clean=outcome.valid&&outcome.clean;
   cleanupProven=exited&&clean;
   bool expected=outcome.valid&&(outcome.reason=="factory_navigation_request"||outcome.reason=="admission_denied"||outcome.reason=="disabled"||((quit||stopped)&&outcome.reason=="signal"));
+  bool busy=exited&&poolRecovery(outcome);
   bool retryable=exited&&inputRecovery(outcome);
   if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else {ioRetries=4;retryAfter=now()+30000;}}
+  else if(busy){if(++busyRetries>4)busyRetries=4;retryAfter=now()+(busyRetries<4?1000*(1U<<(busyRetries-1)):30000);}
   else if(!exited||!clean||!expected)lease.fault(WIFEXITED(status)&&!exited?"worker unexpected exit code":unexpectedExit(outcome,exited));
   // Capture BEFORE another worker can truncate the RAM result/journal.
-  if(retryable||lease.failed())evidence("worker_exit",lease.failed());
+  if(retryable||busy||lease.failed())evidence("worker_exit",lease.failed());
+  if(exited&&clean&&outcome.frames>0)busyRetries=0;
   saveText(state+"/last-result",text);
  }
- bool stop(){if(!child||cleanAck)return true;if(!admitted){cleanAck=true;++cleanStops;return true;}bool ok=controlStop(state+"/active.jsonl.handoff");if(!ok)lease.fault("worker handoff not CLEAN");cleanAck=ok;if(ok)++cleanStops;return ok;}
+ bool stop(){reap();if(!child||cleanAck)return true;if(!admitted){cleanAck=true;++cleanStops;return true;}bool ok=controlStop(state+"/active.jsonl.handoff");
+  // A clean pre-drawing exit can unlink its socket immediately before waitpid
+  // observes termination. Verify its terminal result instead of inventing a
+  // failed handoff. Never infer cleanup merely from a missing socket.
+  if(!ok){uint64_t deadline=now()+100;while(child&&now()<deadline){reap();if(child)usleep(1000);}ok=!child&&cleanupProven&&!lease.failed();}
+  if(!ok)lease.fault("worker handoff not CLEAN");cleanAck=ok;if(ok)++cleanStops;return ok;}
  void spawn(){
   if(child||!lease.available()||quit||now()<retryAfter||now()-lastFactory<200)return;
 #ifndef SUPRA_TEST
@@ -110,7 +118,7 @@ struct Resident {
   bool clean=keep||stop();replyText(fd,tracked&&clean?"CLEAN\n":"UNCERTAIN\n");close(fd);
  }
  void status(){
-  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[256];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s,\"input_retry_wait\":%s,\"input_retry_count\":%u}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false",(!child&&now()<retryAfter)?"true":"false",ioRetries);saveText(state+"/admission.json",admission);
+  if(now()-lastStatus<1000)return;lastStatus=now();char b[512];snprintf(b,sizeof(b),"{\"uptime_ms\":%llu,\"worker_starts\":%u,\"worker_running\":%s,\"clean_stops\":%u,\"navigation_idle_commits\":%u,\"navigation_active_commits\":%u,\"radio_idle_commits\":%u,\"radio_active_commits\":%u,\"available\":%s,\"quarantined\":%s}\n",(unsigned long long)(now()-bootTime),starts,child?"true":"false",cleanStops,lease.idleCommits[0],lease.activeCommits[0],lease.idleCommits[1],lease.activeCommits[1],lease.available()?"true":"false",lease.failed()?"true":"false");saveText(state+"/acceptance.json",b);char admission[256];snprintf(admission,sizeof(admission),"{\"navigation_state\":%u,\"radio_state\":%u,\"pending_requests\":%u,\"cleanup_proven\":%s,\"input_retry_wait\":%s,\"input_retry_count\":%u,\"pool_retry_count\":%u}\n",unsigned(lease.state(0)),unsigned(lease.state(1)),lease.pendingCount(),cleanupProven?"true":"false",(!child&&now()<retryAfter)?"true":"false",ioRetries,busyRetries);saveText(state+"/admission.json",admission);
  }
  void loop(){
   while(!stopped&&!quit){heartbeat();pump();acceptOne();reap();status();if(lastGeneration!=lease.generation()){lastGeneration=lease.generation();lastFactory=now();}if(!access((root+"/disabled").c_str(),F_OK))quit=true;

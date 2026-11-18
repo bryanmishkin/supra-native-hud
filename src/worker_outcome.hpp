@@ -19,6 +19,7 @@ inline WorkerOutcome workerOutcome(std::string text){
  o.valid=true;o.clean=a=="true";o.foreign=b=="true";o.unknown=c=="true";return o;
 }
 inline bool inputRecovery(const WorkerOutcome& o){return o.valid&&o.clean&&!o.foreign&&!o.unknown&&(o.reason.compare(0,14,"rpm_transport:")==0||o.reason=="RPM stale"||o.reason=="invalid/stale RPM");}
+inline bool poolRecovery(const WorkerOutcome& o){return o.valid&&o.clean&&!o.foreign&&!o.unknown&&o.frames==0&&o.reason=="bitmap pool in use";}
 inline const char* unexpectedExit(const WorkerOutcome& o,bool exited){
  if(!exited)return "worker terminated by signal";
  if(!o.valid)return "worker result missing or malformed";
