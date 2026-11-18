@@ -33,7 +33,7 @@ python3 tools/collect_pip_phase.py --execute --phase navigation-visible \
   --output "$PRIVATE_SESSION/phases"
 ```
 
-Its fixed read-only commands are `uname -a`, `pidin ar`, `netstat -an`, `ls -l /dev/shmem`, and `ls -l /dev/screen`. It timestamps and hashes each result, limits command duration to 20 seconds, rejects oversized saved results, preserves failures, and refuses to overwrite a phase. `/dev/screen` is a discovery inventory, not an assumed available API. Missing inventory is an explicit incomplete result, not permission to probe arbitrary nodes or change graphics settings. Pixel data is not read by this collector.
+Its fixed read-only commands are `uname -a`, `pidin ar`, `netstat -an`, `ls -l /dev/shmem`, `ls -l /dev/screen`, and a non-following `sloginfo` snapshot. It timestamps and hashes each result, limits command duration to 20 seconds, rejects oversized saved results, preserves failures, and refuses to overwrite a phase. `/dev/screen` is a discovery inventory, not an assumed available API. Missing inventory is an explicit incomplete result, not permission to probe arbitrary nodes or change graphics settings. Pixel data is not read by this collector.
 
 ## Adaptive work while still connected
 
@@ -50,3 +50,9 @@ The existing shared-memory inspector requires the independent DisplayableData le
 - Save the exact evidence bundle privately to Drive. Publish only findings/tools, excluding routes, OEM binaries and captures.
 
 A clean packet capture is not proof of an owned larger surface. The batch is ready for baseline metadata/packet collection; specialized native-window introspection remains dependent on what the actual head unit exposes.
+
+## Additional source clue: CarPlay installer review
+
+See [the pinned repository review](CARPLAY-INSTALLER-REVIEW.md). Capture system-log snapshots with each phase, retaining their timestamps and hashes. Search offline for navigation-start, route-visible and route-disable events, as well as PiP/window/session messages. Match route IDs: a preview-route disable immediately after a new route begins must not be labeled guidance stop. Snapshot backlog is not a fresh event, and missing debug lines do not prove a session is absent. These snapshots are supporting evidence; they do not replace owner timestamps, packet capture or independent displayable sequence/length evidence.
+
+The collector uses non-following `sloginfo`, not an indefinitely running log watcher, and reports missing/oversized/failed logs explicitly. No changes to logging levels or third-party plugins are needed. No external installer or hud-probe is part of the batch.

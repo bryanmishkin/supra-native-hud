@@ -8,7 +8,8 @@ from pathlib import Path
 import capture_runtime as runtime
 PHASES=('normal','radio-open','radio-closed','navigation-start','navigation-visible','navigation-stop','normal-final')
 COMMANDS=(('processes','pidin ar'),('sockets','netstat -an'),
-          ('shared-memory','ls -l /dev/shmem'),('screen-inventory','ls -l /dev/screen'))
+          ('shared-memory','ls -l /dev/shmem'),('screen-inventory','ls -l /dev/screen'),
+          ('system-log','sloginfo'))
 LIMIT=4*1024*1024
 
 def plan():
