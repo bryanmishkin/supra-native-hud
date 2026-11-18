@@ -42,6 +42,19 @@ def decode_resource_body(body):
                                 image_sha256=hashlib.sha256(image).hexdigest(),
                                 outer_identity_matches=(inner_id == resource_id and
                                                         inner_type == resource_type))
+    if tag == 3:
+        # sendPIPElementResource -> aafc2c(tag 3) -> bb51e8.
+        # This descriptor has no pixel array; do not accept appended image data.
+        if len(payload) != 11:
+            raise ValueError('Expected 11-byte picture-in-picture descriptor')
+        inner_id, inner_type, x, y, depth, packing = struct.unpack('>IBHHBB', payload)
+        if inner_type > 11 or depth > 1 or packing > 2:
+            raise ValueError('Invalid picture-in-picture descriptor enum')
+        result['picture_in_picture'] = dict(
+            resource_id=inner_id, resource_type=inner_type,
+            resolution_pair=[x, y], color_depth_enum=depth,
+            packaging_enum=packing, pixel_payload_present=False,
+            outer_identity_matches=(inner_id == resource_id and inner_type == resource_type))
     return result
 
 
