@@ -8,8 +8,10 @@ from elftools.elf.elffile import ELFFile
 import capture_runtime as runtime
 from consolidated_capture import Session,DIRS
 FILES=('/opt/sys/bin/LayerManagerService','/opt/sys/bin/LayerManagerControl')
+CONTROL='LD_LIBRARY_PATH=/opt/sys/lib:/lib:/boot/lib /opt/sys/bin/LayerManagerControl '
 COMMANDS=(('processes','pidin ar'),('loader','getconf CS_LIBPATH'),
-          ('pip-surface','/opt/sys/bin/LayerManagerControl get surface 1056'))
+          ('pip-surface',CONTROL+'get surface 1056'),
+          ('screen-0',CONTROL+'get screen 0'),('screen-1',CONTROL+'get screen 1'))
 
 def needed(path):
     with path.open('rb') as f:
@@ -58,7 +60,18 @@ def collect(a):
     for name in sorted(mapped):fetch(name)
     for p in paths:
         for name in needed(p):fetch(name)
-    s.report.update(missing=missing,capture_complete=not missing,
+    # pidin truncates long basenames from the left. Resolve only unique suffixes
+    # against files actually verified through the ELF dependency closure.
+    verified={Path(k).name for k,v in s.report['files'].items()
+              if v['status'] in ('verified','reverified')}
+    aliases={}
+    for item in list(missing):
+        if item.startswith('dependency:'):
+            suffix=item.split(':',1)[1]
+            matches=[n for n in verified if n.endswith(suffix)]
+            if suffix in mapped and len(matches)==1:
+                aliases[suffix]=matches[0];missing.remove(item)
+    s.report.update(mapped_suffix_resolutions=aliases,missing=missing,capture_complete=not missing,
                     pixel_transport_proven=False,drawing_test_ready=False)
     s.persist();return s.report
 

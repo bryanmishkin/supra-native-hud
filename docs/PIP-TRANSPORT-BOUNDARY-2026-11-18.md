@@ -47,3 +47,5 @@ Offline validation: plan invocation succeeded; dependency-name/architecture extr
 ## Decision
 
 The descriptor, content identity and native producer are traced, and resource-removal notification is now located. The actual windshield pixel-export edge is still absent. The identified next component is not available locally, so an actual larger-display test cannot honestly be completed from the current evidence. Collect this bounded component bundle when access is next available, then trace the implementation before deciding whether another live display experiment is warranted. Do not change V1 or enlarge its bitmap as a substitute.
+
+Resolved capture gap: [targeted LayerManager capture result](PIP-LAYER-CAPTURE-2026-11-18.md). The component and dependencies are now retained privately; the earlier missing-file statement describes the state before that session.
