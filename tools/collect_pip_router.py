@@ -7,7 +7,13 @@ from pathlib import Path
 from elftools.elf.elffile import ELFFile
 import capture_runtime as runtime
 from consolidated_capture import Session,DIRS
-FILES=('/opt/sys/bin/LayerManagerService','/opt/sys/bin/LayerManagerControl')
+FILES=('/opt/sys/bin/LayerManagerService','/opt/sys/bin/LayerManagerControl',
+       '/lib/graphics/omap5430/libWFDomap5430ES2_0.so',
+       '/lib/graphics/omap5430/libwfdcfg-emodule-hu.so',
+       '/lib/graphics/omap5430/libwfdcfg.so.0')
+CONFIG_FILES=('/lib/graphics/omap5430/graphics.conf',
+              '/lib/graphics/omap5430/graphics-1280_480.conf')
+MAP_PROCESSES=('LayerManagerService','screen')
 CONTROL='LD_LIBRARY_PATH=/opt/sys/lib:/lib:/boot/lib /opt/sys/bin/LayerManagerControl '
 COMMANDS=(('processes','pidin ar'),('loader','getconf CS_LIBPATH'),
           ('pip-surface',CONTROL+'get surface 1056'),
@@ -25,25 +31,29 @@ def needed(path):
     return names
 
 def plan():
-    return dict(files=list(FILES),commands=dict(COMMANDS),dependency_directories=list(DIRS),
+    return dict(files=list(FILES),config_files=list(CONFIG_FILES),map_processes=list(MAP_PROCESSES),commands=dict(COMMANDS),dependency_directories=list(DIRS),
         dependency_closure=True,process_maps=True,remote_writes=False,
         driving_required=False,restart_required=False,drawing_test=False,
         limits='Existing Session limits: 64 MiB/file, 512 MiB/session, 1200 seconds; double-read files.',
-        limitation='LayerManagerControl path is supported by reference source, not verified present on this unit. Missing files, dependencies, maps or surface output are incomplete evidence. No drawing authorization.')
+        limitation='Paths are grounded in the saved 18 November inventory. Output-driver contents remain uncaptured. Missing files, dependencies, maps or surface output are incomplete evidence. No drawing authorization.')
 
 def collect(a):
-    s=Session(a);s.identity();paths=[];missing=[];maps=[];mapped=set()
+    s=Session(a);s.identity();paths=[];missing=[];maps=[];mapped=set();found_processes=set()
     for name,cmd in COMMANDS:
         r=s.call(cmd);(s.root/(name+'.txt')).write_bytes(r.stdout)
         if r.returncode:missing.append(name)
     for line in (s.root/'processes.txt').read_text(errors='replace').splitlines():
         cols=line.split()
-        if len(cols)>1 and cols[0].isdigit() and Path(cols[1]).name=='LayerManagerService':
+        if len(cols)>1 and cols[0].isdigit() and Path(cols[1]).name in MAP_PROCESSES:
+            found_processes.add(Path(cols[1]).name)
             maps.append(cols[0]);r=s.call('pidin -p '+cols[0]+' mem')
             (s.root/('maps-'+cols[0]+'.txt')).write_bytes(r.stdout)
             if r.returncode:missing.append('map-'+cols[0])
             mapped.update(re.findall(r'\b[A-Za-z0-9_+.-]+\.so(?:\.[A-Za-z0-9_+.-]+)?',r.stdout.decode(errors='replace')))
-    if not maps:missing.append('LayerManagerService process')
+    for process in MAP_PROCESSES:
+        if process not in found_processes:missing.append(process+' process')
+    for name in CONFIG_FILES:
+        if not s.file(name):missing.append(name)
     for name in FILES:
         p=s.file(name)
         if p:needed(p);paths.append(p)

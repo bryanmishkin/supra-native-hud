@@ -1,6 +1,6 @@
 # Pick up this project
 
-Latest offline PiP result: [local pixel transport and HMI texture cleanup](PIP-LOCAL-PIXEL-TRANSPORT-2026-11-18.md). Larger windshield routing remains unproven; V1 is unchanged.
+Latest offline PiP result: [metadata image, identified HMI consumer, disposal and external source review](PIP-METADATA-AND-CONSUMERS-2026-11-18.md). The 21×1 metadata codec matches captured ARM execution; larger windshield routing remains unproven. V1 is unchanged.
 
 Start with [current V1 baseline](V1-BASELINE.md) and its [machine-readable hashes](V1-BASELINE.json). The reference car is installed and enabled; the owner unplugged after a no-visible-loss drive on 18 November. Do not restore factory startup automatically or substitute the old Gold kit.
 
