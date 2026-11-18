@@ -95,3 +95,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [Direct PiP producer and missing DisplaySink contract](PIP-SINK-CONTRACT-GAP-2026-11-18.md)
 
 - [DisplaySink implementation and recorded exchange replay](PIP-DISPLAYSINK-IMPLEMENTATION-2026-11-18.md)
+
+- [Exact HUD guidance-type selection](PIP-HUD-TYPE-SELECTION-2026-11-18.md)

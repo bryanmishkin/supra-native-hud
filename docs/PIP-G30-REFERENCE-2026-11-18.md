@@ -33,7 +33,7 @@ Controller SHA-256: `71b2813f6ae243f3a01d8b134cc6aaddf47aa32b6b712d1202085d68e24
 
 - Sink notification at `0xa7a448` forwards to native display session virtual slot `0x24`. Constructor `0xa7b0c8` installs vtable `0x10574b0`; this slot resolves to `0xa7c5c4`.
 - That handler dispatches through the task at session offset `0x20`, virtual slot `0x18`. Task constructor `0xa83ab8` installs vtable `0x1058f00`; the slot resolves to `0xa837a8` (`scheduleSinkSwitch`).
-- This routine iterates existing jobs and recomputes guidance type via `0xa86b10`/`0xa8699c`. It is not itself a direct assignment to Screen display 2. The selector uses guidance-type ranges starting at 4301, 5301 and 8301. These values are not pixel dimensions or Screen IDs.
+- This routine iterates existing jobs and recomputes guidance type via `0xa86b10`/`0xa8699c`. It is not itself a direct assignment to Screen display 2. Correction from [executed selector tracing](PIP-HUD-TYPE-SELECTION-2026-11-18.md): the selector checks exact candidate pairs 4301/4402, 5301/5402 and 8301/8402, not ranges. These values are not pixel dimensions or Screen IDs.
 - Coding handler `0x6ddb74` calls `0x6f453c`; value 3 follows the diagnostic “ethernet IC coded, do not start MOST guiding.” This narrows the legacy MOST path only; it does not prove native video is absent.
 
 Private bounded disassembly is archived separately; factory executable bytes are not added to GitHub.

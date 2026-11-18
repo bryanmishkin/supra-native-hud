@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Latest routing trace:** [exact HUD type selection](PIP-HUD-TYPE-SELECTION-2026-11-18.md). Forty captured-ARM execution cases resolve exact candidate pairs and preference-dependent selection; the previous range description is corrected. These are HU producer predicates, not receiver delivery proof. No actual larger-display fix or new car candidate is ready; V1 unchanged.
+
 **Latest implementation:** [DisplaySink codec and captured replay](PIP-DISPLAYSINK-IMPLEMENTATION-2026-11-18.md). 49 factory subscription packets reproduce exactly; 94 ACKs and two selection/completion pairs replay successfully. 24 focused tests pass. Socket-free protocol component only; no producer ownership or larger windshield delivery proven. Live runner remains retired, V1 untouched.
 
 **Current correction:** [direct-producer sink contract gap](PIP-SINK-CONTRACT-GAP-2026-11-18.md). HU factory session/jobs are not the cluster receiver. The failed marker runner omits the reference’s DisplaySink startup handshake; no claim that adding it alone fixes the windshield. Live `pip_trial.py --execute` is retired; offline planning remains. V1 unchanged.
