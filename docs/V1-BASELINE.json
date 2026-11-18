@@ -1,0 +1,27 @@
+{
+  "baseline": "v1-baseline-2026-11-18",
+  "installed": true,
+  "enabled_at_last_capture": true,
+  "reference_firmware": "NBTevo_T24081I",
+  "worker_source_commit": "db214b5",
+  "supervisor_source_commit": "32da565",
+  "package_manifest_sha256": "ac903624ebda36039885a2d2fb36cc3f5d9403f22b554d448ab8ae584268c6c7",
+  "component_sha256": {
+    "libsupra-navigation-handoff-experimental.so": "1014c6db92db42a8a282f2f83a9783d2997c8d374db5ce0725d2d3b6c029c63a",
+    "nav-after.cfg": "ce96f552e23bd2ddbe8690ff6d385999c38724df3b14e20b5fa146528354647c",
+    "nav-before.cfg": "ca4d6a6c907debf20681fa2679db75b1912e638862e0eae2843cb60c72890835",
+    "supra-hmi-start-qnx": "39b10dcce62c61008b7ec9bfc1ffa99f4ad3dfd066645144bcaf64a756887817",
+    "supra-nav-start-qnx": "bc8664099f5685f63b062fda67833cd8e5686fe90163867a38d3177fe66c3279",
+    "supra-persistent-state-qnx": "18654d2f2e602236bdc0108cb4264abd517113e4d7460600a415aed9e3b6695a",
+    "supra-profile.bin": "f621e800338a3225f9fecf20f98b6938034aafb4f6bebb208e1ea156b89f4791",
+    "supra-resident-qnx": "7396aaaf9ddfd58011c5cde875f8f4df332a41bdbad1a1cb984aa7a590446595",
+    "supra-standalone-parked-qnx": "5be8a000f7d8d0561a3c7b1d2043d1be5bce88af5d68cbc66c7be5189f232274",
+    "supra-startup-transaction-qnx": "60953d24d25b4cc375c39f90229e9f77721ccf365a2209aa132f1c349f6925fb",
+    "supra-system-transaction-qnx": "65474c2b9cb97d06763bf202524d2a118d78647dc147213d56863df37b06cebd",
+    "system-after.cfg": "813ee236ccf33eea80842ac9da0783c95fba895acd9f8f40048a0db53904a65c",
+    "system-before.cfg": "8d99223442a822973547ba0522e2e58ecdc908a5aaf86cb5f6ff868cf7b14772"
+  },
+  "verification": "18 November restart and one owner-confirmed no-visible-loss drive; 15 comparisons passed; 6 clean handoffs; no new fault records; current retry counters zero",
+  "limits": "Not a final-build overnight/repeated cold-start or endurance validation; one reference vehicle",
+  "historical_gold_tag": "v1.0.0-gold-master unchanged"
+}

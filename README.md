@@ -1,16 +1,18 @@
 # Supra native HUD tachometer
 
-**V2 development branch:** [UX candidate and preview](docs/V2-UX.md), including accepted V1 startup/recovery fixes from `377d3fe`. V2 now has an audited RAM-only test candidate and opt-in pressure reader; the installed/default persistent worker remains V1. Follow the [V2 car-test runbook](docs/V2-CAR-TEST.md).
-
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
+**V2 development branch:** the [visual test candidate](docs/V2-CAR-TEST.md) includes the current V1 baseline fixes. It is a RAM-only layout trial; the installed V1 remains unchanged. Live boost is a separate experimental mode.
 
 A native QNX application that adds live RPM, a segmented tachometer bar, and orange/red shift lights to the factory windshield HUD. It runs on the head unit without a connected Mac. It yields to factory navigation and the radio selector, removes its graphics, and returns when both factory functions are explicitly idle.
 
-**Installed and enabled on the reference Supra on 17 November 2026.** Automatic startup, navigation/radio handoff and return, verified cleanup, and a five-minute uninterrupted run passed. The owner confirmed automatic startup after a further iDrive reset **with the ENET cable unplugged**. See [verified status and limits](APP-STATUS.md) and [installation evidence](PERSISTENT-LIVE-VALIDATION.md).
+**Current V1 baseline: [`v1-baseline-2026-11-18`](docs/V1-BASELINE.md).** Installed and enabled on the reference 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBTevo_T24081I / QNX 6.5 ARM. The final build passed restart and one owner-confirmed no-visible-loss drive, with no new permanent fault records. Six clean factory handoffs occurred. Repeated overnight cycles and extended endurance on this exact build remain unverified.
 
-The reference vehicle is a **2026 Toyota GR Supra 3.0 Premium, six-speed manual**, NBT Evo **NBTevo_T24081I**, QNX 6.5 ARM. This is one verified vehicle/firmware combination, not a universal BMW/Supra installer. The drawing path shares factory guidance state; it is not an independent overlay surface. One repaired vehicle shutdown/start is verified; repeated overnight cycles and road endurance remain unverified.
+[Exact installed hashes and rollback package](docs/V1-BASELINE.md) are authoritative. Original `v1.0.0-gold-master` remains historical and unchanged. This shares factory guidance state; it is not a universal installer or independent HUD surface.
+
+<p align="center"><img src="docs/assets/v1-layout.png" width="750" alt="V1 tachometer software preview: RPM, segmented bar and shift lights"></p>
+
+*Actual V1 renderer at a simulated 6200 RPM, enlarged 5× for illustration. This is a software preview, not a windshield photograph; the vehicle bitmap is 150 × 36 pixels.*
+
+**[Download compiled V1](https://github.com/bryanmishkin/supra-native-hud/releases/tag/v1-baseline-2026-11-18)** · **[Equipment & setup](docs/GETTING-STARTED.md)** · **[Install & rollback](PERSISTENT-INSTALL.md)** · **[Current verification](APP-STATUS.md)**
 
 ## Start here
 
@@ -28,7 +30,7 @@ The reference vehicle is a **2026 Toyota GR Supra 3.0 Premium, six-speed manual*
 ## What the installed app does
 
 - Renders the sport layout inside the measured **150 × 36** bitmap: large RPM digits, 24 bar segments and five steady shift lights.
-- Reads actual engine RPM through the diagnostic gateway, targeting one display update every **250 ms**. It does not command engine speed.
+- Reads actual engine RPM through the factory EngineSpeed2 DSI/MOST feed, targeting one display update every **250 ms**. It does not command engine speed.
 - Uses the verified symbol-free graph and alternating bitmap resources to avoid the former circle/arrow and flashing.
 - Starts only after a minimum 30-second resident settling period **and** acknowledged idle states for navigation and radio.
 - Stops drawing for factory navigation/radio, verifies removal, then resumes automatically after acknowledged release.
@@ -38,7 +40,9 @@ The current code uses a 7000 RPM display scale and 6500 RPM full shift cue. Thes
 
 ## Build and source availability
 
-[Build instructions](environment/README.md) distinguish ordinary host tests from the QNX ARM build and profile-dependent integration tests. The repository contains source, not a ready-to-install public binary release. A compatible ARM-capable QNX SDK, target runtime audit inputs, and a verified private drawing profile are separate prerequisites.
+[Build instructions](environment/README.md) distinguish ordinary host tests from the QNX ARM build and profile-dependent integration tests. The release includes the exact compiled QNX ARM application components used on the reference car, their SHA-256 checksums, and notices. Installing these prebuilt components does not require a compiler. The public ZIP is **not a complete vehicle installation kit**: a verified private drawing profile, the target's own startup configurations and runtime audit are still required. Never reuse another vehicle's factory configuration blindly.
+
+Building from source requires a compatible ARM-capable QNX SDK and target audit inputs. The full reference-car installation and rollback package is preserved privately by the owner; it is intentionally excluded from the public runtime download.
 
 The installed path is `persistent_boot_gate.c` → `supra_resident.cpp` → `supra_standalone.cpp`, with `navigation_handoff_hook.cpp`, `factory_lease.*`, `factory_stream.*`, `standalone_wire.*` and `tach_bitmap.*`. Older DSI/registry encoders and Mac-driven trial tools remain research code; they are not the installed renderer.
 

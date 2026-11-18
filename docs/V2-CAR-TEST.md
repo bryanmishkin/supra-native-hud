@@ -4,11 +4,11 @@ This is a **bounded test**, not a V2 persistent upgrade. The original V1 Gold Ma
 
 Do not run the new worker beside the active V1 tachometer: both use the same reviewed shared guidance resources. Do not disable V1 persistently, overwrite its executable, delete a quarantine token, or claim that V2 is installed after this procedure.
 
-## Accepted runtime carried forward
+## Current V1 runtime carried forward
 
-Merged accepted source `377d3fe`: 500 ms correlated drawing ACK allowance, clean input recovery with bounded retries, boot-local clean connection closure, retained gate diagnostics and native state sync. RPM freshness stays 300 ms and uncertain drawing cleanup still quarantines. Both the V2 pressure probe and worker use internal source `160.48.199.119` and gateway `160.48.199.16`; SSH remains at `169.254.199.119`. The persistent resident still selects V1 sport; V2 display and candidate boost remain explicit bounded modes. No connection to the car or persistent change occurs during preparation.
+Recut from `v1-baseline-2026-11-18`. Native factory EngineSpeed2 RPM, movement/background handling, owned-slot-only checks, clean retries, startup recovery and permanent fault logging are inherited. The resident, hook and installed startup files remain the exact V1 components; only a temporary worker selects V2 drawing.
 
-The runner pins accepted baseline manifest SHA-256 `605bd081a435866006a9267ac1bacc8a41d9fd1593c87984ac9d361ece5933c1`, checks every installed payload and startup file, and rejects the old Gold kit. It never downgrades the repaired V1 to Gold.
+The runner pins V1 manifest `ac903624ebda36039885a2d2fb36cc3f5d9403f22b554d448ab8ae584268c6c7`. Earlier V2 kits are stale and must not be used. Layout mode uses factory RPM and does not request pressure. The optional pressure probe still uses the diagnostic gateway and is not part of visual-only acceptance.
 
 ## Prepared implementation
 
@@ -41,11 +41,11 @@ Build using the existing QNX environment. The old compiler requires global `::sn
 python3 tools/prepare_v2_test.py \
   --binary build/supra-standalone-parked-qnx \
   --audit /private/v2/v2-arm-audit.json \
-  --v1-kit /private/v1/watchdog-fix/patched-reference \
+  --v1-kit /private/v1/current-baseline/installed \
   --output /private/v2/car-kit
 ```
 
-The output must be new. This tool pins the exact accepted startup-repair reference kit and refuses a stale/failed ARM audit. It packages the exact V2 binary/profile and an unchanged copy of the V1 kit. It has no network or installation behavior. This is specifically for the reference vehicle with V1 already installed, not a new-vehicle installer.
+The output must be new. This tool pins the exact current V1 reference kit and refuses a stale/failed ARM audit. It packages the exact V2 binary/profile and an unchanged copy of the V1 kit. It has no network or installation behavior. This is specifically for the reference vehicle with V1 already installed, not a new-vehicle installer.
 
 Offline reproducibility (host compiler, libpcap headers/library, Python):
 
@@ -141,10 +141,8 @@ Final verification requires the temporary trial directory gone, original V1 inst
 
 The local `v2-session.json`, numbered stdout/stderr, pre/pause/post V1 checkpoints, per-run journals/results, pressure probe pairs, source/binary/profile hashes and exact visual observations. Keep these separate from Gold Master and road-test records. The private prepared kit and target audits belong in Drive, not GitHub.
 
-## 17 November offline integration check
+## Recut validation scope
 
-Accepted repair source `377d3fe` is merged. QNX ARM worker SHA-256: `aaefadfcf29a8f0c5fa4fb6eb2baa2ac8ea777c435a0b722218f40c1d834d2e0`. Captured-library static audit passed; 256 Python tests, eight V2 loopback cases, twelve worker regression cases, and the resident recovery/race/cleanup suite passed. Twelve classic/sport frames match accepted V1 source byte-for-byte. Five V2 preview frames round-trip through the corrected wire codec.
+For the first session use only preflight, pause-v1, draw, collect and verify-v1. Check the larger bar/shift indicators, smaller digits, smooth RPM, PSI dashes and clean removal. A short factory takeover check verifies that the temporary worker cleans up; do not repeat the full V1 startup campaign for an unchanged installation. Restore V1 by the normal iDrive restart and verify its unchanged installed hashes and live RPM.
 
-**Deployment hold:** owner subsequently reported another cable-free startup with no initial tachometer; it later appeared after ENET connection, without resetting iDrive. Saved packets show eight internal gateway connection rejections before successful RPM replies. Startup delay versus cable activation is under investigation. These offline tests do not resolve that vehicle dependency. No V2 deployment occurred.
-
-The reproduced false startup-watchdog lockout is also merged from `0d33b5e`; the baseline pin now follows the exact installed watchdog-repair kit. A fully cable-free ten-minute shutdown/start check is in progress. V2 remains a separate temporary test candidate.
+Pressure acquisition and calibrated boost are separate work. Do not describe the optional boost mode as a cosmetic-only change or enable it implicitly. Current candidate has not run in the car. Offline results and exact worker hash are recorded in V2-RECUT.md when packaging completes.

@@ -61,6 +61,14 @@ with tempfile.TemporaryDirectory() as tmp:
   stdout,stderr=proc.communicate(timeout=6)
   assert proc.returncode==2 and (root/'disabled').exists(),(stdout,stderr)
   assert 'QUARANTINED' in (state/'resident.status').read_text()
+  evidence=json.loads((root/'fault-first.json').read_text())
+  assert evidence['event']=='worker_exit' and evidence['wait_status']>=0
+  terminal=json.loads(evidence['worker.result']);assert not terminal['cleanup_verified']
+  assert evidence['active.jsonl'] and evidence['fault']=='worker cleanup unverified'
+  preserved=(root/'fault-first.json').read_bytes()
+  shutil.rmtree(state) # Simulated loss of the entire RAM filesystem after shutdown.
+  assert (root/'fault-first.json').read_bytes()==preserved
+  assert list(root.glob('fault-recent-*.json'))
   result['transport_failure_quarantines']=True;out.write_text(json.dumps(result,indent=2))
  finally:
   if proc.poll() is None:proc.terminate();proc.wait(timeout=5)
@@ -77,6 +85,9 @@ for failure_mode,recovery in [('rpm-timeout',True),('rpm-timeout',False),('rpm-m
    wait(lambda:(state/'ready').exists());state_event(0,True);state_event(1,True)
    wait(lambda:(state/'last-result').exists());assert not server.resources
    assert json.loads((state/'last-result').read_text())['cleanup_verified']
+   evidence=json.loads((root/'fault-first.json').read_text())
+   assert json.loads(evidence['worker.result'])['cleanup_verified']
+   assert evidence['cleanup_proven'] and evidence['wait_status']>=0
    if recovery:
     server.mode='normal';before=server.uploads;wait(lambda:server.uploads>before+2,5)
     assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=5);assert proc.returncode==0;assert not server.resources

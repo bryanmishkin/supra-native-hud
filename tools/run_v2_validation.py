@@ -57,6 +57,8 @@ def execute(a):
   d=a.output/label;d.mkdir(exist_ok=False)
   for n in ['acceptance.json','worker.result','worker.stderr','last-result','active.jsonl','previous.jsonl','hook.log','resident.status','heartbeat','startup.pcap']:
    v=run('cat '+STATE+'/'+n,allow_failure=True);(d/n).write_bytes(v.stdout);(d/(n+'.stderr')).write_bytes(v.stderr)
+  for n in ['fault-first.json']+['fault-recent-%d.json'%i for i in range(4)]:
+   v=run('cat '+ROOT+'/'+n,allow_failure=True);(d/n).write_bytes(v.stdout);(d/(n+'.stderr')).write_bytes(v.stderr)
  try:
   if a.phase=='preflight':
    if b'QNX hu-omap 6.5.0' not in run('uname -a').stdout:raise ValueError('Wrong target')

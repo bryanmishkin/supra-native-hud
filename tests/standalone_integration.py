@@ -36,7 +36,7 @@ class Servers:
    result=b''
    if m==2 and self.mode in ('delayed-presence','delayed-stale') and self.uploads==2 and not self.delayed:self.delayed=True;time.sleep(.35 if self.mode=='delayed-stale' else .15)
    if m==2:
-    rid=struct.unpack_from('>I',b,4)[0];result=bytes([rid in self.resources or (self.mode=='busy' and rid==0x01000000)])
+    rid=struct.unpack_from('>I',b,4)[0];result=bytes([rid in self.resources or (self.mode=='busy' and rid==0x01000008)])
    if m==3:
     d=decode_resource_body(b);rid=d['resource_id'];assert rid not in self.resources;raw=decode_bgra(b[30:],5400);self.images.append(raw);self.resources[rid]=raw;self.uploads+=1
     if self.mode=='lost-ack' and self.uploads==2:return

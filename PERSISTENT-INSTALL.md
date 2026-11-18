@@ -1,10 +1,6 @@
 # Persistent installation and rollback
 
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
-
-This is the current installation runbook. Revision08 was installed and committed on the reference Supra on 17 November 2026, including owner-confirmed startup after an unplugged iDrive reset. See [acceptance evidence](PERSISTENT-LIVE-VALIDATION.md). A new vehicle must first satisfy [COMPATIBILITY.md](COMPATIBILITY.md).
+Current installed identity: [V1 baseline](docs/V1-BASELINE.md). The public compiled release supplies runtime components only; fresh installation still requires the target-specific inputs below. The reference car already has an enabled installation: do not rerun fresh preflight/staging over it. Revision08 records are historical; final runtime upgrades are documented in the baseline's private receipts.
 
 The installed app runs continuously; it is not a 30-second demo. Successful acceptance ends with **commit and leave running**, unless the owner requests removal. Earlier RAM-only runners and one-boot research scripts are not substitutes for this installer.
 
@@ -155,3 +151,12 @@ python3 tools/persistent_install.py verify-restored --execute \
 ```
 
 This verifies a new boot, exact originals, absent hooks and absent runtime directory. Rollback intentionally leaves inert release/backups/gate files; it is restoration of factory startup, not a full file purge. There is no general in-place upgrade or re-enable command. Service an existing installation using its evidence and a reviewed change plan, not by rerunning fresh preflight/staging.
+
+
+## Current baseline package and component rollback
+
+Use `installed/manifest.json` from **Supra-HUD-V1-Current-Baseline-2026-11-18.zip** for final component/configuration comparisons. `rollback/prior-installed-package/` preserves the complete immediately preceding package. That version still checked all factory bitmap slots and could suppress the tach; it is a known fallback, not a newly accepted baseline. The original Gold tag/package remains separately preserved.
+
+For a component rollback: capture permanent/RAM evidence; cooperatively stop and verify cleanup; prevent automatic activation during replacement; compare exact currently installed bytes; stage and read back the selected archived component; restore protection; deliberately re-enable only after resource/identity checks; restart normally and verify. Keep fault records and archive activation tokens rather than restoring old tokens blindly. Do not treat this description as a universal automated upgrade command.
+
+Full factory restoration uses the original startup configurations and the installer state from the original installation. The private archive includes that state when available plus the current configuration before/after images. Retain its pinned kit; do not fabricate installer state or substitute a different manifest to satisfy assertions. The public runtime ZIP alone is insufficient for full installation or rollback on another car.

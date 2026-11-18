@@ -7,8 +7,8 @@ from pathlib import Path
 from run_v1_validation import Remote,manifest
 from prepare_persistent import TARGETS
 ROOT='/var/opt/supra-hud/v1';STATE='/tmp/supra-hud-v1'
-FILES=['disabled','enabled','armed','consumed','last-gate-nav.status','last-gate-hmi.status','last-resident.status']
-RAM=['admission.json','ready','heartbeat','acceptance.json','resident.status','resident.stderr','worker.starts','worker.result','worker.stderr','last-result','hook.log','active.jsonl','previous.jsonl','startup.pcap']
+FILES=['fault-first.json']+['fault-recent-%u.json'%i for i in range(4)]+['disabled','enabled','armed','consumed','last-gate-nav.status','last-gate-hmi.status','last-resident.status']
+RAM=['admission.json','ready','heartbeat','acceptance.json','resident.status','resident.stderr','worker.starts','worker.result','worker.stderr','last-result','hook.log','active.jsonl','previous.jsonl','startup.pcap','failed-factory-request.bin','failed-factory-reply.bin']
 def classify(data):
  disabled=data.get('disabled',b'').decode(errors='replace').strip()
  if disabled:return {'state':'persistently_disabled','reason':disabled,'clean_rpm_match':disabled=='clean I/O retry budget exhausted','action':'Preserve token/evidence; do not clear automatically.'}

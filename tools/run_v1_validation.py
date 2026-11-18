@@ -7,6 +7,14 @@ Default prints the plan. Each execute phase is explicit; drawing requires a fres
 import argparse,hashlib,json,subprocess,shlex,uuid,ipaddress,stat
 from pathlib import Path
 PHASES=('preflight','stage','isolated','rpm','draw','yield','collect','remove')
+def worker_result(data):
+ """Accept a terminal result after only the audited DSI startup preamble."""
+ text=data.decode('utf-8') if isinstance(data,bytes) else data
+ lines=[line for line in text.splitlines() if line.strip()]
+ if not lines or any(not line.startswith('[DsiClient] ') for line in lines[:-1]):raise ValueError('Unexpected worker result preamble')
+ result=json.loads(lines[-1])
+ if not isinstance(result,dict) or not isinstance(result.get('reason'),str) or type(result.get('cleanup_verified')) is not bool:raise ValueError('Incomplete terminal worker result')
+ return result
 def sha(b):return hashlib.sha256(b).hexdigest()
 def q(s):return shlex.quote(str(s))
 class Remote:
@@ -83,7 +91,7 @@ def execute(a):
    else:
     command=worker(journal)+' > '+q(d+'/'+base+'-result.json')+' 2> '+q(d+'/'+base+'-worker.stderr')+' & child=$!; sleep 5; '+q(d+'/supra-hud-control-qnx')+' '+q(journal+'.handoff')+' > '+q(d+'/'+base+'-control.txt')+'; control=$?; wait "$child"; child_status=$?; cat '+q(d+'/'+base+'-result.json')+'; [ "$control" = 0 ] && [ "$child_status" = 0 ]'
     s['remote_artifacts'].extend(base+x for x in ('-result.json','-worker.stderr','-control.txt'));save();r=run(command,label=base)
-   result=json.loads(r)
+   result=worker_result(r)
    if result.get('cleanup_verified') is not True or result.get('shared_instance_preserved') is not True:raise ValueError('Cleanup not verified')
    if a.phase=='draw' and result.get('reason')!='duration_complete':raise ValueError('Display run did not complete its window')
    if a.phase=='yield' and result.get('reason')!='factory_navigation_request':raise ValueError('No cooperative handoff')

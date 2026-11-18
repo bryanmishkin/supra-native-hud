@@ -9,6 +9,9 @@
 
 These documents describe the accepted implementation and current procedure. Historical reports remain useful evidence, but do not override these entry points.
 
+- [Current V1 baseline](V1-BASELINE.md) and [component hashes](V1-BASELINE.json)
+- [Download and install](GETTING-STARTED.md)
+- [Latest drive result](OWN-SLOTS-DRIVE-RESULT.md)
 - [README.md](../README.md)
 - [APP-STATUS.md](../APP-STATUS.md)
 - [docs/APP-ARCHITECTURE.md](APP-ARCHITECTURE.md)
@@ -18,7 +21,7 @@ These documents describe the accepted implementation and current procedure. Hist
 - [environment/README.md](../environment/README.md)
 - [docs/AGENT-HANDOFF.md](AGENT-HANDOFF.md)
 - [AGENTS.md](../AGENTS.md)
-- [PERSISTENT-LIVE-VALIDATION.md](../PERSISTENT-LIVE-VALIDATION.md)
+- [Historical original install evidence](../PERSISTENT-LIVE-VALIDATION.md)
 - [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)
 
 ## Historical research and test records
@@ -66,3 +69,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [docs/history/COMPATIBILITY-RESEARCH.md](history/COMPATIBILITY-RESEARCH.md)
 - [docs/v1-native-validation-2026-11-16.md](v1-native-validation-2026-11-16.md)
 - [environment/REMOTE-BUILD-HANDOFF.md](../environment/REMOTE-BUILD-HANDOFF.md)
+
+- [V2 current recut and focused validation](V2-RECUT.md) — temporary layout candidate on the final V1 baseline.

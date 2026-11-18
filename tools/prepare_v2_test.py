@@ -3,10 +3,10 @@
 import argparse,hashlib,json,shutil
 from pathlib import Path
 from run_v1_validation import manifest
-ACCEPTED_V1_KIT='605bd081a435866006a9267ac1bacc8a41d9fd1593c87984ac9d361ece5933c1'
+ACCEPTED_V1_KIT='ac903624ebda36039885a2d2fb36cc3f5d9403f22b554d448ab8ae584268c6c7'
 def prepare(binary,audit,v1,out):
  files,digest=manifest(v1)
- if digest!=ACCEPTED_V1_KIT:raise ValueError('Expected accepted V1 startup-repair kit')
+ if digest!=ACCEPTED_V1_KIT:raise ValueError('Expected exact current V1 baseline kit')
  sha=hashlib.sha256(binary.read_bytes()).hexdigest();a=json.loads(audit.read_text())
  if not a.get('static_gate_passed') or a.get('candidate',{}).get('sha256')!=sha:raise ValueError('Missing/failed/stale ARM executable audit')
  out.mkdir(parents=True,exist_ok=False);shutil.copytree(v1,out/'v1-accepted-kit');shutil.copyfile(binary,out/'supra-v2-test-qnx');shutil.copyfile(v1/'supra-profile.bin',out/'supra-profile.bin');shutil.copyfile(audit,out/'v2-audit.json')

@@ -3,6 +3,10 @@
 #include "tach_bitmap.hpp"
 #include "navigation_guard.hpp"
 #include "boost_input.hpp"
+#include "background_traffic.hpp"
+#ifdef SUPRA_FACTORY_RPM
+#include "factory_rpm.hpp"
+#endif
 #include <pcap.h>
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -30,7 +34,7 @@ static uint64_t now(){timespec t;if(clock_gettime(CLOCK_MONOTONIC,&t))throw std:
 static void fail(const char* s){throw std::runtime_error(s);}
 struct Fd {int fd;Fd():fd(-1){}~Fd(){if(fd>=0)close(fd);}private:Fd(const Fd&);Fd& operator=(const Fd&);};
 struct Monitor {
- int control,peer;std::string controlPath,input;bool yield;
+ int control,peer;std::string controlPath,input;bool yield;BackgroundTraffic background;
  pcap_t* capture;unsigned port,ownAddress,clusterAddress;bool foreign,unhealthy;unsigned packets;
  Monitor():control(-1),peer(-1),yield(false),capture(0),port(0),ownAddress(0),clusterAddress(0),foreign(false),unhealthy(false),packets(0){}
  ~Monitor(){if(capture)pcap_close(capture);if(peer>=0)close(peer);if(control>=0)close(control);if(!controlPath.empty())unlink(controlPath.c_str());}
@@ -45,10 +49,24 @@ struct Monitor {
  }
  void controlPump(){
   if(control<0||yield)return;
-  if(peer<0){peer=accept(control,0,0);if(peer>=0&&fcntl(peer,F_SETFL,O_NONBLOCK)<0){close(peer);peer=-1;}}
-  if(peer>=0){char buf[16];ssize_t n=recv(peer,buf,sizeof(buf),0);
-   if(n>0){input.append(buf,n);if(input=="YIELD1\n")yield=true;else if(input.size()>=7){close(peer);peer=-1;input.clear();}}
-   else if(n==0||(n<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK&&errno!=EINTR)){close(peer);peer=-1;input.clear();}
+  for(unsigned attempts=0;attempts<8;++attempts){
+   if(peer<0){peer=accept(control,0,0);if(peer>=0&&fcntl(peer,F_SETFL,O_NONBLOCK)<0){close(peer);peer=-1;}if(peer<0)return;}
+   char buf[4096];ssize_t n=recv(peer,buf,sizeof(buf),0);
+   if(n>0){input.append(buf,n);
+    if(input=="YIELD1\n"){yield=true;return;}
+    if(input.size()<=7&&std::string("YIELD1\n").compare(0,input.size(),input)==0)continue;
+    bool prefix=input.size()<8?std::string("BGSAFE1\n").compare(0,input.size(),input)==0:input.compare(0,8,"BGSAFE1\n")==0;
+    if(prefix&&input.size()<=4108){
+     if(input.size()<12)continue;
+     unsigned size=bg32((const unsigned char*)input.data()+8);
+     if(size<=4096&&size>=20&&input.size()<12+size)continue;
+     if(size<=4096&&size>=20&&input.size()==12+size&&background.authorize((const unsigned char*)input.data()+12,size)){
+      ssize_t sent=send(peer,"READY\n",6,0);(void)sent;
+     }
+    }
+    close(peer);peer=-1;input.clear();
+   }else if(n==0||(n<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK&&errno!=EINTR)){close(peer);peer=-1;input.clear();}
+   else return;
   }
  }
  void open(const char* iface,const char* cluster,unsigned ownPort,unsigned ownIp){
@@ -72,7 +90,8 @@ struct Monitor {
   for(unsigned i=0;i<256;++i){pcap_pkthdr* h;const u_char* b;int r=pcap_next_ex(capture,&h,&b);if(r==0)break;if(r<0){fprintf(stderr,"monitor read: %s\n",pcap_geterr(capture));unhealthy=true;break;}++packets;
    Traffic t=classifyTraffic(b,h->caplen,h->len,ownAddress,port,clusterAddress);
    if(t==UnknownTraffic){fprintf(stderr,"monitor unknown packet cap=%u wire=%u\n",(unsigned)h->caplen,(unsigned)h->len);unhealthy=true;break;}
-   if(t==FactoryTraffic)foreign=true;
+   if(t==FactoryTraffic&&!background.consume(b,h->caplen,h->len))foreign=true;
+   if(t==IgnoreTraffic)background.consume(b,h->caplen,h->len); // track exact cookie sequence bytes too
    if(i==255)unhealthy=true;
   }
   pcap_stat stats;memset(&stats,0,sizeof(stats));int status=pcap_stats(capture,&stats);if(status<0||stats.ps_drop||stats.ps_ifdrop){fprintf(stderr,"monitor stats status=%d drop=%u ifdrop=%u error=%s\n",status,stats.ps_drop,stats.ps_ifdrop,pcap_geterr(capture));unhealthy=true;}
@@ -120,7 +139,19 @@ static double rpmSampleRaw(const char* local,const char* gateway,uint64_t& stamp
  }fail("RPM frame limit");return 0;
 }
 static double rpmSample(const char* local,const char* gateway,uint64_t& stamp,Monitor& monitor){
- try{return rpmSampleRaw(local,gateway,stamp,monitor);}catch(const std::exception& e){
+ try{
+#ifdef SUPRA_FACTORY_RPM
+  (void)local;(void)gateway;static bool started=false;static uint64_t previous=0;
+  uint64_t deadline=now()+(started?300:2000);
+  if(!started){started=true;if(!startFactoryRpm())fail("rpm_transport:factory feed unavailable");}
+  while(now()<deadline){monitor.guard();if(monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");
+   Sample s=latestFactoryRpm();uint64_t t=now();
+   if(s.valid&&s.at>previous&&t>=s.at&&t-s.at<=200){previous=s.at;stamp=s.at;return s.value;}usleep(1000);
+  }fail("rpm_transport:factory feed stale");return 0;
+#else
+  return rpmSampleRaw(local,gateway,stamp,monitor);
+#endif
+ }catch(const std::exception& e){
   if(!strcmp(e.what(),"I/O deadline")||!strcmp(e.what(),"send")||!strcmp(e.what(),"receive")||!strcmp(e.what(),"connect")||!strcmp(e.what(),"connect completion")||!strcmp(e.what(),"local bind")||!strcmp(e.what(),"RPM frame length")||!strcmp(e.what(),"RPM reply")||!strcmp(e.what(),"RPM frame limit")){
    int saved=errno;fprintf(stderr,"RPM transport: %s errno=%d (%s) elapsed_ms=%llu\n",e.what(),saved,strerror(saved),(unsigned long long)(now()-stamp));
    throw std::runtime_error(std::string("rpm_transport:")+e.what());
@@ -171,13 +202,29 @@ static void acquireAdmission(Monitor& monitor){
 }
 static void checkpoint(Ric& r){heartbeatCheck();r.monitor.guard();if(disabled())fail("disabled");if(r.monitor.yield)fail("factory_navigation_request");if(stopped)fail("signal");}
 static void fresh(uint64_t stamp){if(now()<stamp||now()-stamp>300)fail("RPM stale");}
-int main(int argc,char** argv){
+static int workerMain(int argc,char** argv){
+#if defined(SUPRA_FACTORY_RPM) && defined(__QNXNTO__)
+ // QNX dlopen dependencies require the loader path at process startup.
+ // Re-exec only this worker, before sockets, threads, admission or drawing.
+ const char* libraryPath="/opt/sys/lib:/boot/lib:/lib";
+ const char* currentPath=getenv("LD_LIBRARY_PATH");
+ if(!currentPath||strcmp(currentPath,libraryPath)){
+  if(setenv("LD_LIBRARY_PATH",libraryPath,1))return 2;
+  execv(argv[0],argv);return 2;
+ }
+#endif
  if(argc==2 && !strcmp(argv[1],"--self-check")){
   try{Bytes raw(21600,0);for(unsigned i=3;i<raw.size();i+=4)raw[i]=255;Bytes image=encodeRle(raw,true);if(image.empty())return 2;puts("{\"self_check\":true,\"vehicle_io\":false}");return 0;}catch(...){return 2;}
  }
+#ifdef SUPRA_FACTORY_RPM
+ if(argc==2 && !strcmp(argv[1],"--probe-factory-rpm")){
+  signal(SIGPIPE,SIG_IGN);Monitor monitor;
+  try{for(unsigned i=0;i<100;++i){uint64_t stamp;double rpm=rpmSample(0,0,stamp,monitor);fresh(stamp);printf("{\"factory_rpm\":%.2f,\"sample_ms\":%llu}\n",rpm,(unsigned long long)stamp);fflush(stdout);usleep(100000);}return 0;}catch(const std::exception& e){fprintf(stderr,"%s\n",e.what());return 2;}
+ }
+#endif
  if(argc==4 && !strcmp(argv[1],"--probe-rpm")){
   signal(SIGPIPE,SIG_IGN);Monitor monitor;unsigned valid=0;
-  try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSample(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
+  try{for(unsigned i=0;i<40;++i){uint64_t stamp;double rpm=rpmSampleRaw(argv[2],argv[3],stamp,monitor);fresh(stamp);if(!(rpm>=0&&rpm<=7700))fail("RPM outside display bounds");++valid;printf("{\"rpm\":%.2f,\"sample_ms\":%llu,\"latency_ms\":%llu}\n",rpm,(unsigned long long)stamp,(unsigned long long)(now()-stamp));fflush(stdout);while(now()<stamp+250)usleep(5000);}printf("{\"rpm_probe_passed\":true,\"valid\":%u,\"hud_writes\":0}\n",valid);return 0;}catch(const std::exception& e){fprintf(stderr,"RPM probe failed: %s\n",e.what());return 2;}
  }
 
  if(argc==4&&!strcmp(argv[1],"--probe-boost-candidate")){
@@ -200,7 +247,9 @@ int main(int argc,char** argv){
   ric.monitor.listenControl(argv[8]);
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   acquireAdmission(ric.monitor);heartbeatCheck();
-  for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
+  // Only the two resources this worker may create/remove must be free.
+  // Factory images in slots 0..7 do not grant or revoke model ownership.
+  for(unsigned id=0x01000008;id<=0x01000009;++id)if(ric.check(id,2000)){fprintf(stderr,"occupied tach bitmap: 0x%08x; no images created\n",id);fail("bitmap pool in use");}
   BoostReader boostReader;BoostCandidate boost;if(boostMode)boost=boostReader.sample(argv[3],argv[4],ric.monitor,ric.log);
   uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp,v2,boostMode?&boost:0,ric.log);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),DRAW_ACK_MS);if(!ric.check(visible,DRAW_ACK_MS))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,DRAW_ACK_MS);}++frames;
@@ -229,4 +278,15 @@ int main(int argc,char** argv){
 #endif
  fprintf(stdout,"{\"reason\":\"%s\",\"frames\":%u,\"cleanup_verified\":%s,\"factory_activity\":%s,\"monitor_unknown\":%s,\"automatic_resume\":false,\"shared_instance_preserved\":true}\n",reason.c_str(),frames,clean?"true":"false",ric.monitor.foreign?"true":"false",ric.monitor.unhealthy?"true":"false");
  return clean&&(reason=="duration_complete"||reason=="signal"||reason=="factory_navigation_request"||reason=="disabled")?0:2;
+}
+
+int main(int argc,char** argv){
+ int result=workerMain(argc,argv);
+#if defined(SUPRA_FACTORY_RPM) && defined(__QNXNTO__)
+ // workerMain has completed HUD cleanup and destroyed its local sockets.
+ // The factory DSI library owns live background threads without a join API;
+ // do not run process-wide C++ destructors concurrently with those threads.
+ fflush(stdout);fflush(stderr);_exit(result);
+#endif
+ return result;
 }

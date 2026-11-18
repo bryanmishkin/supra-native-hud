@@ -1,10 +1,6 @@
 # Compatibility and installing on another vehicle
 
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
-
-**Verified target:** one 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBT Evo NBTevo_T24081I, QNX 6.5 ARM little-endian. The owner confirmed the installed tachometer starts after an unplugged iDrive reset. The accepted repair additionally passed one locked shutdown and cable-free normal start. This does not establish universal compatibility or repeated cold-wake endurance.
+**Reference target:** 2026 Toyota GR Supra 3.0 Premium six-speed manual, NBTevo_T24081I, QNX 6.5 ARM. [Current V1](docs/V1-BASELINE.md) passed restart and one owner-confirmed no-visible-loss drive. Earlier cable-free cold-start results are historical; repeated cold-wake/endurance on the exact final build remain unverified.
 
 The repository is sufficient to understand and build the source with an appropriate SDK. It is **not a self-contained generic installation kit**: factory captures, runtime libraries and the measured drawing profile are private inputs. The current installer pins exact images; it does not discover or adapt another firmware.
 
@@ -14,8 +10,7 @@ The repository is sufficient to understand and build the source with an appropri
 | --- | --- | --- |
 | CPU/OS | QNX 6.5 ARM32 little-endian; reviewed loader `/usr/lib/ldqnx.so.2` | ELF audit, live identity, target execution |
 | Head-unit diagnostic SSH | `169.254.199.119` | Installer `--head` changes only the SSH destination |
-| Internal RPM source IP | `160.48.199.119` in accepted repair | Resident child arguments; independent of installer `--head` |
-| RPM gateway | Gold: `169.254.106.96:6801`; accepted repair: `160.48.199.16:6801` from `160.48.199.119`, tester `0xf4`, ECU `0x12`, PID 0C | `tools/supra_standalone.cpp` |
+| RPM input | Factory EngineSpeed2, DSI/MOST Vehicle 05/00 function 0x0cd0, provider 0x5000, big-endian quarter RPM | `src/factory_rpm.*` |
 | Cluster and internal interface | `160.48.199.96:30502`, `vlan73` | Resident, worker, hook and stream classifier |
 | Guidance/list contracts | services `0xb006`/`0xb00e`, instances `200`/`100`, reviewed visibility models | Lease, wire encoder and profile |
 | Resource pool and geometry | IDs `0x01000000`–`0x01000009`; app uses last two; 150 × 36 | Worker and wire encoder |
