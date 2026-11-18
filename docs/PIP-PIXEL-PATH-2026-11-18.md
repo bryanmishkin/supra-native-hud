@@ -53,3 +53,5 @@ The next offline target is the consumer of the native window/session binding and
 ## Reproducibility and limits
 
 The private evidence package contains a per-flow decoded model audit with offsets, original TCP-span timestamps, the analysis script, and the source capture package. Re-extracting the original PCAP reproduced all stream hashes and bytes; all selected resource/graph/guiding decoders completed without errors. Timestamp attribution is to the segment containing the message start, not receiver commit time. Framing consistency does not prove an initial application boundary. Route fields and OEM bytes remain private in Drive.
+
+Follow-up: [PiP session binding trace](PIP-SESSION-BINDING-2026-11-18.md) resolves the attachment virtual call and the RIC maneuver content setting on both controller and navigation sides.
