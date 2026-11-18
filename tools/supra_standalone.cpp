@@ -236,8 +236,8 @@ static int workerMain(int argc,char** argv){
  bool v2=argc==9&&(!strcmp(argv[1],"--parked-v2-guidance-stopped")||!strcmp(argv[1],"--parked-v2-boost-candidate"));
  bool boostMode=v2&&!strcmp(argv[1],"--parked-v2-boost-candidate");
  bool continuous=argc==9&&!strcmp(argv[1],"--continuous-parked-guidance-stopped");
- if(argc!=9 || (!continuous && !v2 && strcmp(argv[1],"--parked-guidance-stopped"))){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nV2: --parked-v2-guidance-stopped or explicit --parked-v2-boost-candidate (1..30 seconds).\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
- char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||(continuous?seconds!=0:(seconds<1||seconds>30)))return 64;
+ if(argc!=9 || (!continuous && !v2 && strcmp(argv[1],"--parked-guidance-stopped"))){fprintf(stderr,"No connections made. Parked candidate only:\n%s --parked-guidance-stopped PROFILE LOCAL_IP GATEWAY_IP CLUSTER_IP MONITOR_INTERFACE SECONDS NEW_JOURNAL\nV2 layout: 1..120 seconds; explicit boost candidate: 1..30 seconds.\nNo autostart; navigation activity stops writes without canceling factory state.\n",argv[0]);return 64;}
+ char* end=0;long seconds=strtol(argv[7],&end,10);if(!end||*end||(continuous?seconds!=0:(seconds<1||seconds>((v2&&!boostMode)?120:30))))return 64;
  signal(SIGINT,stop);signal(SIGTERM,stop);signal(SIGPIPE,SIG_IGN);Ric ric;Profile profile;bool graph=false,owned[2]={false,false},clean=true;unsigned visible=0x01000009,frames=0;std::string reason="duration_complete";
  try{
   if(disabled())fail("disabled");profile=readProfile(argv[2]);int logfd=::open(argv[8],O_WRONLY|O_CREAT|O_EXCL,0600);if(logfd<0)fail("new journal required");ric.log=fdopen(logfd,"w");if(!ric.log){close(logfd);fail("journal");}

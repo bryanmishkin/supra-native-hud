@@ -4,7 +4,7 @@ Never edits installed files/tokens/configuration; owner restarts iDrive to resum
 """
 import argparse,hashlib,json,shlex,time,uuid
 from pathlib import Path
-from run_v1_validation import Remote,manifest
+from run_v1_validation import Remote,manifest,worker_result
 from prepare_persistent import TARGETS
 from prepare_v2_test import ACCEPTED_V1_KIT
 ROOT='/var/opt/supra-hud/v1';STATE='/tmp/supra-hud-v1'
@@ -85,6 +85,7 @@ def execute(a):
    if not a.guidance_stopped or not a.visual_cleanup_confirmed:raise ValueError('Current normal displays and closed factory overlays required')
    intact();hooks();quiet()
    if s.get('recovery_required'):raise ValueError('Prior cleanup uncertain; normal restart/recovery required')
+   if a.phase=='draw-boost' and a.seconds>30:raise ValueError('Boost trial stays limited to 30 seconds')
    if a.phase=='draw-boost' and (not s['phases'].get('draw') or not s['phases'].get('probe-boost') or not a.candidate_boost_confirmed):raise ValueError('Passed layout/pressure probe and explicit experimental-boost confirmation required')
    attempt=s.get('attempts',0)+1;s['attempts']=attempt;save()
    exe=q(s['remote']+'/supra-v2-test-qnx')
@@ -98,11 +99,11 @@ def execute(a):
     # while their broker is absent. Archive only the known inactive journal.
     run('if [ -e '+STATE+'/active.jsonl ]; then [ -f '+STATE+'/active.jsonl ] && [ ! -L '+STATE+'/active.jsonl ] && mv '+STATE+'/active.jsonl '+q(s['remote']+'/prior-%02d.jsonl'%attempt)+'; fi')
     opt='--parked-v2-boost-candidate' if a.phase=='draw-boost' else '--parked-v2-guidance-stopped'
-    cmd='unset SUPRA_HUD_BROKER_SOCKET SUPRA_HUD_HEARTBEAT; export SUPRA_HUD_DISABLE_FILE='+ROOT+'/disabled; '+exe+' '+opt+' '+q(s['remote']+'/supra-profile.bin')+' 160.48.199.119 160.48.199.16 160.48.199.96 vlan73 30 '+STATE+'/active.jsonl'
+    cmd='unset SUPRA_HUD_BROKER_SOCKET SUPRA_HUD_HEARTBEAT; export SUPRA_HUD_DISABLE_FILE='+ROOT+'/disabled; '+exe+' '+opt+' '+q(s['remote']+'/supra-profile.bin')+' 160.48.199.119 160.48.199.16 160.48.199.96 vlan73 '+str(a.seconds)+' '+STATE+'/active.jsonl'
     s['recovery_required']=True;save()
-    v=run(cmd,allow_failure=True,timeout=90);(a.output/('worker-%02d.json'%attempt)).write_bytes(v.stdout)
+    v=run(cmd,allow_failure=True,timeout=a.seconds+60);(a.output/('worker-%02d.json'%attempt)).write_bytes(v.stdout)
     collect('v2-%02d'%attempt)
-    try:report=json.loads(v.stdout)
+    try:report=worker_result(v.stdout)
     except ValueError:s['recovery_required']=True;save();raise
     if not report.get('cleanup_verified') or not report.get('shared_instance_preserved'):s['recovery_required']=True;save();raise ValueError('Removal uncertain; restart recovery required')
     s['recovery_required']=False;save()
@@ -125,6 +126,7 @@ def execute(a):
 if __name__=='__main__':
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('phase',choices=PHASES);p.add_argument('--execute',action='store_true')
  for n in ['kit','output','ssh-socket']:p.add_argument('--'+n,type=Path)
+ p.add_argument('--seconds',type=int,choices=range(1,121),default=30)
  p.add_argument('--head',default='169.254.199.119')
  for n in ['guidance-stopped','visual-cleanup-confirmed','candidate-boost-confirmed','v1-visible']:p.add_argument('--'+n,action='store_true')
  a=p.parse_args()

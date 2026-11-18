@@ -71,3 +71,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [environment/REMOTE-BUILD-HANDOFF.md](../environment/REMOTE-BUILD-HANDOFF.md)
 
 - [V2 current recut and focused validation](V2-RECUT.md) — temporary layout candidate on the final V1 baseline.
+
+- [V2 parked layout result and verified V1 restoration](V2-LAYOUT-RESULT.md).

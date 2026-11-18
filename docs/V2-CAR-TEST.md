@@ -12,7 +12,7 @@ The runner pins V1 manifest `ac903624ebda36039885a2d2fb36cc3f5d9403f22b554d448ab
 
 ## Prepared implementation
 
-- Native QNX ARM worker with explicit `--parked-v2-guidance-stopped` and `--parked-v2-boost-candidate` modes; both limited to 1–30 seconds. The car runner uses 30 seconds.
+- Native QNX ARM worker with explicit `--parked-v2-guidance-stopped` and `--parked-v2-boost-candidate` modes; layout-only limited to 1–120 seconds and boost to 1–30 seconds. The car runner defaults to 30 seconds; use `--seconds 120` for a two-minute layout run.
 - Layout-only mode reads RPM and shows `--.-` PSI. It makes no pressure requests.
 - Experimental boost mode reads the two already-observed DME candidates, then a fresh RPM sample. Pair acquisition has a shared 100 ms deadline; RPM retains its 200 ms transport deadline and 300 ms freshness budget.
 - Missing/invalid pressure makes the PSI field unavailable. Three consecutive pair failures stop pressure polling for the remainder of that bounded run; RPM continues if healthy.
@@ -84,7 +84,7 @@ python3 tools/run_v2_validation.py pause-v1 --execute \
 
 The tool requires CLEAN, final STOPPED resident status and absence of its broker/worker sockets. It saves the V1 checkpoint. Confirm visually that the V1 tach is gone before proceeding. No enabled/disabled token changes occur.
 
-2. Run layout-only for 30 seconds. Confirm bigger bar/lights, smaller digits, no clipping/flicker/symbols, correct plausible RPM, and PSI dashes. Keep factory overlays closed throughout.
+2. Run layout-only for 30 seconds (or add `--seconds 120` for two minutes). Confirm bigger bar/lights, smaller digits, no clipping/flicker/symbols, correct plausible RPM, and PSI dashes. Keep factory overlays closed throughout.
 
 ```sh
 python3 tools/run_v2_validation.py draw --execute \
@@ -145,4 +145,8 @@ The local `v2-session.json`, numbered stdout/stderr, pre/pause/post V1 checkpoin
 
 For the first session use only preflight, pause-v1, draw, collect and verify-v1. Check the larger bar/shift indicators, smaller digits, smooth RPM, PSI dashes and clean removal. A short factory takeover check verifies that the temporary worker cleans up; do not repeat the full V1 startup campaign for an unchanged installation. Restore V1 by the normal iDrive restart and verify its unchanged installed hashes and live RPM.
 
-Pressure acquisition and calibrated boost are separate work. Do not describe the optional boost mode as a cosmetic-only change or enable it implicitly. Current candidate has not run in the car. Offline results and exact worker hash are recorded in V2-RECUT.md when packaging completes.
+Pressure acquisition and calibrated boost are separate work. Do not describe the optional boost mode as a cosmetic-only change or enable it implicitly. The first layout-only car test is documented in V2-LAYOUT-RESULT.md. Offline results and exact worker hash are recorded in V2-RECUT.md when packaging completes.
+
+## First on-car layout result
+
+See [18 November layout session](V2-LAYOUT-RESULT.md). Native DSI startup messages are now parsed with the same strict result reader as V1. Layout-only can run up to 120 seconds; boost remains capped at 30 seconds and was not tested. A deliberate cooperative stop before the deadline is recorded separately from a full timed pass.

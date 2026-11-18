@@ -22,3 +22,7 @@ Use [V2-CAR-TEST.md](V2-CAR-TEST.md), beginning with healthy V1. Preflight check
 A short takeover check is available to confirm this candidate's cleanup. A normal iDrive restart returns the untouched V1 installation; verify original hashes and advancing RPM before unplugging. This is a smaller validation scope than reinstalling/retesting V1 startup. It does not install persistent V2 or imply its automatic return has been car-tested.
 
 If the layout is accepted, a persistent V2 selection is a separate next step. No boost polling or permanent upgrade is enabled implicitly by this trial.
+
+## Subsequent vehicle test
+
+[The layout test passed visually and exact V1 restoration was verified](V2-LAYOUT-RESULT.md). An extended layout-only worker was built during the session; use that result for its hash and duration limits. V2 remains a temporary test, not a persistent installation.

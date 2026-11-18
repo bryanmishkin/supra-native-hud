@@ -12,6 +12,10 @@ class V2Preparation(unittest.TestCase):
   for after in [before,{'rpm':650,'frame':11,'sample_ms':1000},{'rpm':650,'frame':1,'sample_ms':1250}]:
    with self.assertRaises(ValueError):runner.require_rpm_advance(before,after)
   with self.assertRaises(ValueError):runner.rpm_progress(b'{"heartbeat":2000}\n')
+ def test_native_worker_result_preamble(self):
+  row=b'[DsiClient] ATTACHED to server\n{"reason":"duration_complete","cleanup_verified":true,"shared_instance_preserved":true}\n'
+  self.assertTrue(runner.worker_result(row)['cleanup_verified'])
+  with self.assertRaises(ValueError):runner.worker_result(b'unexpected\n'+row)
  def fixture(self,root):
   old=root/'v1';old.mkdir();(old/'supra-profile.bin').write_bytes(b'private-fixture')
   (old/'manifest.json').write_text(json.dumps({'sha256':{'supra-profile.bin':hashlib.sha256(b'private-fixture').hexdigest()}}))
