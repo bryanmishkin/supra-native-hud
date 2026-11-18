@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Latest offline evidence:** [receiver/identity binding](PIP-RECEIVER-BINDING-2026-11-18.md). Actual ARM execution confirms a fixed metadata identity offset and separate HMI/IC identity dispatch; neither proves receiver acceptance. No new candidate is ready, and V1 is unchanged. Do not send the owner back for another speculative marker run.
+
 **Latest live result:** [revision-2 PiP attempt](PIP-REVISION2-RESULT-2026-11-18.md) again showed only a right-turn arrow in the windshield. Active snapshots prove the local window was in the secondary output scene; depth 0 did not fix image delivery. All cleanup checks and 15 unchanged V1 comparisons passed; owner confirmed V1 and unplugged. Do not repeat this candidate or describe binding as fixed. Establish the receiver/physical connection offline before another car test.
 
 Latest offline revision: [PiP binding candidate](PIP-BINDING-REVISION-2026-11-18.md). Actual factory ARM checks establish advertised depth/packing are maxima. Revised producer/controller select depth 0, require a matching binding handshake, and record active output state. Only one wire byte differs from the failed marker attempt. Built/audited; receiver image delivery and root cause remain unproven. Do not label it a confirmed repair or copy G30 geometry/packing beyond the Supra limits.
