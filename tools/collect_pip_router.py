@@ -37,11 +37,11 @@ def plan():
         limits='Existing Session limits: 64 MiB/file, 512 MiB/session, 1200 seconds; double-read files.',
         limitation='Paths are grounded in the saved 18 November inventory. Output-driver contents remain uncaptured. Missing files, dependencies, maps or surface output are incomplete evidence. No drawing authorization.')
 
-def collect(a):
-    s=Session(a);s.identity();paths=[];missing=[];maps=[];mapped=set();found_processes=set()
+def collect(a,session=None):
+    s=session or Session(a);s.identity();paths=[];missing=[];maps=[];mapped=set();found_processes=set()
     for name,cmd in COMMANDS:
         r=s.call(cmd);(s.root/(name+'.txt')).write_bytes(r.stdout)
-        if r.returncode:missing.append(name)
+        if r.returncode or not r.stdout.strip() or re.search(rb"(?im)^.*(?:failed|not found|invalid (?:surface|screen))",r.stdout):missing.append(name)
     for line in (s.root/'processes.txt').read_text(errors='replace').splitlines():
         cols=line.split()
         if len(cols)>1 and cols[0].isdigit() and Path(cols[1]).name in MAP_PROCESSES:
