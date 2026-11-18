@@ -73,3 +73,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [V2 current recut and focused validation](V2-RECUT.md) — temporary layout candidate on the final V1 baseline.
 
 - [V2 parked layout result and verified V1 restoration](V2-LAYOUT-RESULT.md).
+
+- [V2 live boost integration and offline evidence](V2-BOOST.md).

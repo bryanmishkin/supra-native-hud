@@ -60,3 +60,5 @@ Do not request another broad discovery trip merely to redraw pixels. A future ca
 - Invalid demo RPM/PSI and PSI supplied to a non-V2 style are rejected.
 - All 244 Python regression tests pass in the prepared environment with `pyelftools`.
 - A QNX ARM candidate builds and passes the target-runtime static audit. No execution of this V2 build on the car, calibrated positive-boost accuracy or larger-surface proof is claimed.
+
+The [latest boost integration](V2-BOOST.md) adds bounded dropout recovery and native-RPM integration coverage. Pressure semantics and cable-free availability still require vehicle evidence.

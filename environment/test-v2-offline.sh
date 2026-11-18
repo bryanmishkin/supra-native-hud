@@ -14,3 +14,7 @@ CXX=${CXX:-c++}
 "$CXX" -std=c++98 -Wall -Wextra -Werror -DSUPRA_TEST -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp tools/supra_standalone.cpp -lpcap -o "$OUT/worker"
 python3 tests/v2_integration.py "$OUT/worker" "$PROFILE" "$OUT/integration"
 python3 tests/standalone_integration.py "$OUT/worker" "$PROFILE" "$OUT/v1-regression"
+
+# Same native RPM selection as the QNX build; substitute only the host feed boundary.
+"$CXX" -std=c++98 -Wall -Wextra -Werror -DSUPRA_TEST -DSUPRA_FACTORY_RPM -Ivendor/nbt/src -Isrc src/hud_core.cpp src/tach_bitmap.cpp src/standalone_wire.cpp src/navigation_guard.cpp tests/factory_rpm_stub.cpp tools/supra_standalone.cpp -lpcap -o "$OUT/worker-factory"
+python3 tests/v2_integration.py "$OUT/worker-factory" "$PROFILE" "$OUT/factory-integration" --factory

@@ -15,7 +15,7 @@ The runner pins V1 manifest `ac903624ebda36039885a2d2fb36cc3f5d9403f22b554d448ab
 - Native QNX ARM worker with explicit `--parked-v2-guidance-stopped` and `--parked-v2-boost-candidate` modes; layout-only limited to 1–120 seconds and boost to 1–30 seconds. The car runner defaults to 30 seconds; use `--seconds 120` for a two-minute layout run.
 - Layout-only mode reads RPM and shows `--.-` PSI. It makes no pressure requests.
 - Experimental boost mode reads the two already-observed DME candidates, then a fresh RPM sample. Pair acquisition has a shared 100 ms deadline; RPM retains its 200 ms transport deadline and 300 ms freshness budget.
-- Missing/invalid pressure makes the PSI field unavailable. Three consecutive pair failures stop pressure polling for the remainder of that bounded run; RPM continues if healthy.
+- Missing/invalid pressure makes the PSI field unavailable. After three consecutive pair failures, pressure polling backs off for one second between attempts. A valid pair restores normal polling; dashes remain visible during failed/cooldown periods. RPM continues if healthy. The separate read-only probe still fails early after three consecutive failures.
 - The existing core checks paired pressure freshness (300 ms), timestamp order and maximum 100 ms pair skew before rendering. No cached pressure is restamped. Logs preserve bounded raw pressure replies, request/receive timestamps, converted pairs, and whether each frame actually displayed boost. Pressure acquisition is included in the 250 ms cycle target, rather than adding a fixed delay to every RPM cycle. Actual target cadence is still a car-test measurement.
 - Drawing dimensions, bitmap IDs, symbol-free profile, double buffering and cleanup are unchanged. The V1 hook's existing direct-worker fallback handles pre-send cleanup while the V1 resident broker is absent.
 - **V2 automatic return is not part of this temporary test.** A factory takeover ends the bounded worker; it does not restart itself. The normal restart restores V1's resident and automatic return.
@@ -150,3 +150,5 @@ Pressure acquisition and calibrated boost are separate work. Do not describe the
 ## First on-car layout result
 
 See [18 November layout session](V2-LAYOUT-RESULT.md). Native DSI startup messages are now parsed with the same strict result reader as V1. Layout-only can run up to 120 seconds; boost remains capped at 30 seconds and was not tested. A deliberate cooperative stop before the deadline is recorded separately from a full timed pass.
+
+Latest boost integration build, offline evidence and remaining signal checks: [V2-BOOST.md](V2-BOOST.md).

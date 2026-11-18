@@ -170,12 +170,12 @@ static Sample pressureRead(const char* local,const char* gateway,unsigned did,ui
  }fail("pressure frame limit");return Sample();
 }
 struct BoostReader {
- unsigned failures;BoostReader():failures(0){}
+ unsigned failures;uint64_t retryAt;BoostReader():failures(0),retryAt(0){}
  BoostCandidate sample(const char* local,const char* gateway,Monitor& monitor,FILE* log){
-  BoostCandidate result;if(failures>=3)return result;
+  BoostCandidate result;if(now()<retryAt)return result;
   uint64_t deadline=now()+100;
-  try{result.absolute=pressureRead(local,gateway,0x4205,deadline,monitor,log);result.ambient=pressureRead(local,gateway,0x4201,deadline,monitor,log);failures=0;}
-  catch(const std::exception&){result=BoostCandidate();++failures;monitor.guard();}
+  try{result.absolute=pressureRead(local,gateway,0x4205,deadline,monitor,log);result.ambient=pressureRead(local,gateway,0x4201,deadline,monitor,log);failures=0;retryAt=0;}
+  catch(const std::exception&){result=BoostCandidate();if(failures<3)++failures;if(failures>=3)retryAt=now()+1000;monitor.guard();}
   if(log){if(result.valid())fprintf(log,"{\"boost_candidate\":true,\"absolute_kpa\":%.6f,\"ambient_kpa\":%.6f,\"absolute_ms\":%llu,\"ambient_ms\":%llu}\n",result.absolute.value,result.ambient.value,(unsigned long long)result.absolute.at,(unsigned long long)result.ambient.at);
    else fprintf(log,"{\"boost_candidate\":false,\"consecutive_failures\":%u}\n",failures);fflush(log);}
   return result;
