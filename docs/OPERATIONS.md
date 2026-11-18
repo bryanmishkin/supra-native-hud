@@ -1,14 +1,12 @@
 # Operation, evidence and recovery
 
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](V1-COLD-START-ACCEPTANCE.md).
-
-The installed app needs no Mac, cable or SSH session to display RPM. The owner verified startup after an unplugged iDrive reset. Navigation and radio temporarily take priority; the tachometer should return after their acknowledged idle states. The accepted repair also passed one locked vehicle shutdown and normal cable-free start with a fresh head-unit startup.
+[Current V1 baseline](V1-BASELINE.md) is installed and enabled. No laptop is required. The exact final build has restart and one no-visible-loss drive evidence; do not substitute earlier cold-start acceptance for repeated testing of this final combination.
 
 ## What to save before unplugging
 
-Use the existing verified connection; do not unlock or reconnect to a different device based on a guessed address. `persistent_install.py collect` saves these files from `/tmp/supra-hud-v1` into the installer evidence directory:
+Prefer the read-only `tools/capture_cold_start.py` collector with the exact current private kit and verified SSH socket. Despite its historical name, it also captures a running or failed drive. It first copies persistent `fault-first.json`, `fault-recent-0.json` through `fault-recent-3.json`, activation/gate state and resident status, then RAM logs and all 15 installed/configuration comparisons. Use a new output directory each time. It neither resets nor reactivates the car.
+
+`persistent_install.py collect` is the older narrower collector; it saves these RAM files:
 
 - `acceptance.json`: uptime, worker starts, clean stops, active/idle commit counters, availability/quarantine.
 - `worker.starts`, `worker.result`, `worker.stderr`, `last-result`.
@@ -28,6 +26,7 @@ Keep `installer.json`, kit manifest and exact original/after configuration image
 | `available:true`, no child briefly | Coalescing/readiness/retry delay may apply; inspect timings and result. |
 | `disabled` exists / `quarantined:true` | Automatic operation stopped. Read the first fault and worker cleanup result; do not remove the token as a fix. |
 | `rpm_transport:...`, cleanup true | Classified input transport failure; bounded retries may occur. After initial 1/2/4-second backoff, clean input failures wait 30 seconds between attempts; they do not disable an otherwise healthy supervisor. |
+| `bitmap pool in use`, zero frames and cleanup true | Only tach slots 8/9 are checked in the current worker; retry with bounded backoff. Permanent records retain the occupied ID in stderr. Do not delete occupied images. |
 | `cleanup_verified:false` or uncertain drawing ACK | Removal is not established. Preserve evidence and use known normal restart/recovery; never claim stopping the process cleared the display. |
 | Factory normal after restart but no hook | Gate may have fallen back (activation, preload, readiness or private-file checks). Inspect actual startup state before changing it. |
 | Warm iDrive restart did not visibly blank HUD | The cluster drives the HUD; its visible continuity alone does not prove the head unit failed to restart. Use boot/process evidence. |
@@ -40,4 +39,4 @@ Use [disable/rollback](../PERSISTENT-INSTALL.md#disable-and-restore-factory-star
 
 The hook bounds its wait and ultimately allows factory traffic even when tachometer cleanup is uncertain. Quarantine protects against blind app retries; it does not prove the remote display has cleared. Confirm both windshield and gauge cluster visually and check factory functions after recovery.
 
-The accepted revision's startup, normal handoff, return and parked continuous operation are established. A failure during engine-off, sleep/wake or prolonged driving is new evidence, not proof that the parked results were fabricated or that a retry token should be cleared automatically.
+Use the exact baseline evidence scope, not older acceptance wording. A failure during engine-off, sleep/wake or prolonged driving is new evidence, not proof that the parked results were fabricated or that a retry token should be cleared automatically.

@@ -1,49 +1,18 @@
 # Verified application status
 
-**Current 18 November:** own-slot-only startup checks are installed to avoid blocking on factory bitmap slots 0..7. Permanent logging and bounded retry are retained. Restart and one no-visible-loss drive passed; no new permanent fault records. See [exact change](docs/OWN-BITMAP-SLOTS.md).
+Current V1: **`v1-baseline-2026-11-18`**, installed and enabled on the reference Supra. [Exact component hashes, private package and limits](docs/V1-BASELINE.md) are authoritative.
 
-**Latest 18 November:** permanent logs identified a clean pre-drawing `bitmap pool in use` stop. A bounded retry correction is installed; restart and driving validation pending. See [exact build and evidence](docs/BITMAP-POOL-RETRY.md).
-
-**18 November update:** a later acceleration-associated dropout left a persistent lockout after a clean but unrecognized worker exit. Detailed RAM evidence was lost overnight. A permanent-evidence and recovery-classification candidate is prepared offline, not installed. See [current behavior and validation](docs/PERSISTENT-FAULT-RECORDS.md).
-
-**Current status (17 November):** parked acceptance did not establish road readiness. Movement caused background-display handoffs and a factory text-removal error to disable the tach. The installed movement correction passed an owner-observed drive with ENET connected: the tach held. The owner subsequently confirmed automatic startup with ENET completely unplugged and a drive with the tach staying on. This is one owner-observed cable-free shutdown/start-and-drive pass; no post-drive machine-log continuity or overnight/endurance claim is made. Do not recommend the original Gold Master as road-validated. See [evidence and exact build](docs/V1-STARTUP-FOLLOWUP.md).
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
-
-Updated 17 November 2026. This file is the current status; dated research reports describe their own stage of the project.
-
-## Historical Gold baseline on the reference vehicle
-
-Reference: 2026 Toyota GR Supra 3.0 Premium, six-speed manual; NBTevo_T24081I; QNX 6.5 ARM. Accepted implementation commit: `fd55e97` (later documentation commits do not change those binaries). Private revision08 kit manifest SHA-256: `84e5233be33e68bf305028cdb232d6e49f2f939af702ab69d44134768859078a`.
-
-| Capability | Evidence and scope |
+| Item | Current evidence |
 | --- | --- |
-| Native head-unit operation | QNX ARM worker ran on the head unit, with plausible live RPM checked against the factory gauge. No Mac RPM relay is needed. |
-| Sport layout and colors | Owner confirmed readable larger digits/bar, no clipping, corrected orange/red lights. Simulated 5500/6200/6500 display values exercised light progression without commanding engine speed. |
-| Symbol-free, smooth updates | Owner confirmed no circle, arrow or flashing. Alternating bitmap binding is used. |
-| Navigation priority and return | On revision08, a 131-frame worker stopped with `cleanup_verified=true`; navigation was normal in both displays. Tachometer returned automatically after guidance stopped. |
-| Radio priority and return | Next worker stopped after 61 frames with verified cleanup. Normal selector and automatic return were confirmed twice. |
-| Sustained operation | Final uninterrupted worker reached 1238 frames; healthy resident, worker_starts=7, clean_stops=3, no quarantine. Owner confirmed smooth, symbol-free live RPM. |
-| Persistent startup | Commit succeeded; enabled token, mapped hooks and read-only filesystem verified before restart. Owner confirmed automatic smooth tachometer after committed restart. |
-| Startup without Mac | Owner unplugged ENET, reset iDrive again and confirmed it worked. This is a visual confirmation, not a post-reset machine log. |
-| Factory functions | Navigation in windshield/cluster, radio selector and iDrive were confirmed normal during acceptance. |
+| Final worker startup | Owner confirmed tach visible after iDrive restart; installed hashes verified. |
+| Latest drive | Owner reported no visible tach loss; all 15 post-drive comparisons passed. |
+| Runtime health | Seven worker starts, six clean factory handoffs, no quarantine, advancing frames. Not one uninterrupted worker run. |
+| Recovery/faults | Current input/pool retry counters zero; no permanent fault record changed during the passing drive. |
+| Factory image coexistence | Worker checks only its two slots; actual-worker tests preserve occupied factory slots 0..7. |
+| Permanent logging | Target write/read proof and byte-identical record after restart; earlier drive failures successfully captured. |
+| Native RPM | Factory EngineSpeed2 through DSI/MOST; diagnostic gateway no longer supplies persistent runtime RPM. |
+| Display | Existing V1 150 × 36 smooth, symbol-free sport layout with corrected colors; no V2 or boost installation. |
 
-[Detailed installation evidence](PERSISTENT-LIVE-VALIDATION.md) separates actual observations from regression tests. The accepted app was left installed and enabled. Do not apply the older “restore factory startup at the end of every demo” instructions to a passed persistent installation.
+One reference vehicle/firmware only. Repeated overnight starts, extended endurance and all warning/assistance scenarios remain unverified on this exact final build. Earlier cold-start and navigation/radio trials remain dated evidence, not universal guarantees. The original Gold tag is preserved as historical.
 
-## Known design boundaries
-
-- The app uses **shared factory guidance instance 200**, not a separately owned session. It must yield rather than draw simultaneously with factory guidance/radio.
-- The demonstrated drawing path can affect both windshield and gauge cluster. There is no proven independent windshield-only destination or larger canvas.
-- 150 × 36 is the implemented/observed bitmap size. Removing the circle did not establish more display area.
-- Display scale 7000 and full shift cue 6500 are hard-coded. They are not engine calibration recommendations; the code's `thresholdsValidated=true` enables rendering and is not evidence of OEM limit validation.
-- The app does not include a settings UI, boost display, installer GUI, automatic firmware discovery, or generic upgrade/re-enable procedure.
-- Unknown factory state prevents drawing. Loss of capture, uncorrelated shared traffic or uncertain removal can disable the app until serviced. The software cannot guarantee remote image expiry after every possible transport failure.
-
-## Not yet established
-
-The accepted repair has one verified locked vehicle shutdown/normal start with the cable unplugged, followed by verified navigation/radio takeover and return. Repeated overnight cycles, full engine stop-start behavior, extended road endurance, other driver-assistance overlays and other vehicles/firmwares remain unverified. See the repair acceptance record above for the exact current build; the historical table records the original Gold acceptance.
-
-## Offline evidence
-
-At the historical Gold revision, 244 Python tests passed; the accepted repair passes 251 plus the expanded native cold-readiness regressions. Native integration tests cover worker/supervisor handoff and return, pre-admission takeover, delayed CLEAN exit, classified RPM recovery, retry exhaustion, and uncertain-ack quarantine. Gate tests cover exact factory preload preservation and fallback. Captured boot replay tests do not grant admission. ARM builds and static import audits passed; these complement, not replace, target execution.
+See [latest drive](docs/OWN-SLOTS-DRIVE-RESULT.md), [architecture](docs/APP-ARCHITECTURE.md), [operations](docs/OPERATIONS.md), and [historical index](docs/INDEX.md). Do not let older candidate/pending/diagnostic-gateway statements override this current baseline.

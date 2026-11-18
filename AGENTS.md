@@ -1,21 +1,9 @@
 # Agent entry point
 
-**Current 18 November:** own-slot-only startup checks are installed to avoid blocking on factory bitmap slots 0..7. Permanent logging and bounded retry are retained. Restart and one no-visible-loss drive passed; no new permanent fault records. See [exact change](docs/OWN-BITMAP-SLOTS.md).
-
-**Latest 18 November:** permanent logs identified a clean pre-drawing `bitmap pool in use` stop. A bounded retry correction is installed; restart and driving validation pending. See [exact build and evidence](docs/BITMAP-POOL-RETRY.md).
-
-**18 November update:** a later acceleration-associated dropout left a persistent lockout after a clean but unrecognized worker exit. Detailed RAM evidence was lost overnight. A permanent-evidence and recovery-classification candidate is prepared offline, not installed. See [current behavior and validation](docs/PERSISTENT-FAULT-RECORDS.md).
-
-**Current status (17 November):** parked acceptance did not establish road readiness. Movement caused background-display handoffs and a factory text-removal error to disable the tach. The installed movement correction passed an owner-observed drive with ENET connected: the tach held. The owner subsequently confirmed automatic startup with ENET completely unplugged and a drive with the tach staying on. This is one owner-observed cable-free shutdown/start-and-drive pass; no post-drive machine-log continuity or overnight/endurance claim is made. Do not recommend the original Gold Master as road-validated. See [evidence and exact build](docs/V1-STARTUP-FOLLOWUP.md).
-**Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
-
-**Startup repair accepted 17 November:** automatic tachometer startup passed after a locked vehicle shutdown and normal start with ENET unplugged. Navigation/radio cleanup and automatic return then passed with machine evidence and owner confirmation. The accepted runtime uses the internal RPM gateway and rate-limited input recovery. See [exact build, evidence and limits](docs/V1-COLD-START-ACCEPTANCE.md).
-
 This repository contains a working vehicle-specific persistent HUD tachometer and substantial earlier research. Start with [APP-STATUS.md](APP-STATUS.md), [docs/AGENT-HANDOFF.md](docs/AGENT-HANDOFF.md), [docs/APP-ARCHITECTURE.md](docs/APP-ARCHITECTURE.md), and [PERSISTENT-INSTALL.md](PERSISTENT-INSTALL.md).
 
-- The reference installation is committed and enabled, with owner-confirmed startup after an unplugged iDrive reset on 17 November 2026. Do not treat historical “blocked” or “not installed” statements as current status.
-- Installed implementation: gates → resident → native worker, using shared cluster guidance state. Earlier DSI tools and isolated-session prototypes are not this path.
-- Preserve actual evidence scope: one vehicle/firmware, parked acceptance, visual unplugged warm restart. One repaired vehicle shutdown/start is now verified; repeated cycles and road endurance remain unverified.
+- Current installed baseline: `v1-baseline-2026-11-18`; read docs/V1-BASELINE.md and docs/V1-BASELINE.json first. Final worker uses factory EngineSpeed2 and only tach slots 8/9; supervisor retains bounded retries and permanent logging.
+- Exact final build passed restart and one owner-confirmed no-visible-loss drive. Six clean factory handoffs occurred; no new permanent fault records. Repeated final-build cold starts/endurance remain unverified.
 - Read COMPATIBILITY.md before proposing another vehicle installation. Hard-coded network, model, resource and ABI values are not universal configuration defaults. Do not bypass failed identity, hash, ACK or admission checks.
 - For an accepted persistent install, leave it running when requested. Do not automatically roll back at the end of a successful session.
 - Keep factory captures, private profiles, generated kits/binaries, SDK/license material and credentials out of Git. Preserve exact original startup files and installer state privately for rollback.

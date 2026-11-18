@@ -4,6 +4,9 @@
 
 These documents describe the accepted implementation and current procedure. Historical reports remain useful evidence, but do not override these entry points.
 
+- [Current V1 baseline](V1-BASELINE.md) and [component hashes](V1-BASELINE.json)
+- [Download and install](GETTING-STARTED.md)
+- [Latest drive result](OWN-SLOTS-DRIVE-RESULT.md)
 - [README.md](../README.md)
 - [APP-STATUS.md](../APP-STATUS.md)
 - [docs/APP-ARCHITECTURE.md](APP-ARCHITECTURE.md)
@@ -13,7 +16,7 @@ These documents describe the accepted implementation and current procedure. Hist
 - [environment/README.md](../environment/README.md)
 - [docs/AGENT-HANDOFF.md](AGENT-HANDOFF.md)
 - [AGENTS.md](../AGENTS.md)
-- [PERSISTENT-LIVE-VALIDATION.md](../PERSISTENT-LIVE-VALIDATION.md)
+- [Historical original install evidence](../PERSISTENT-LIVE-VALIDATION.md)
 - [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md)
 
 ## Historical research and test records
