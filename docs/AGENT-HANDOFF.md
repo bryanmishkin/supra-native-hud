@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Current offline continuation:** [identity consumer and ID6 HUD comparison](PIP-CONSUMER-AND-ID6-REVIEW-2026-11-18.md). The branch-specific consumer and conditional job-setter chain are traced; seven bounded execution cases pass. The linked ID6 HUD package targets F3X MOST HUDTerminal, not a demonstrated Supra PiP path. No receiver fix or new car candidate is claimed.
+
 **Latest offline evidence:** [receiver/identity binding](PIP-RECEIVER-BINDING-2026-11-18.md). Actual ARM execution confirms a fixed metadata identity offset and separate HMI/IC identity dispatch; neither proves receiver acceptance. No new candidate is ready, and V1 is unchanged. Do not send the owner back for another speculative marker run.
 
 **Latest live result:** [revision-2 PiP attempt](PIP-REVISION2-RESULT-2026-11-18.md) again showed only a right-turn arrow in the windshield. Active snapshots prove the local window was in the secondary output scene; depth 0 did not fix image delivery. All cleanup checks and 15 unchanged V1 comparisons passed; owner confirmed V1 and unplugged. Do not repeat this candidate or describe binding as fixed. Establish the receiver/physical connection offline before another car test.
