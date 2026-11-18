@@ -1,3 +1,5 @@
+> Targeted factory routing capture is packaged: see [PIP-EXPLORATION-RUNBOOK.md](PIP-EXPLORATION-RUNBOOK.md). Offline prepared, no larger-image fix claimed; no outreach, preserve V1.
+
 # Pick up this project
 
 **Owner direction:** no author outreach. [Own exploration and current HUD Gauges inspection](PIP-OWN-EXPLORATION.md) contains the next controlled factory-route experiment and the new offline pixel-binding timeline. The package uses MOST; do not install it as a Supra PiP fix. Active test-kit assembly is still required before calling the next experiment ready.

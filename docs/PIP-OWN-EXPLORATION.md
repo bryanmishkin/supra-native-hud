@@ -46,3 +46,9 @@ Interpretation:
 Before any future active subscription experiment, resolve endpoint ownership and restoration. A second subscription from the factory HU address may affect the factory route. Do not bind the factory discovery listener, invent an address alias, or fabricate a selection-0 notification. The eventual test must use the real receiver's selection and verify both remote withdrawal and local window removal.
 
 Exit with original menu state restored, V1 updating, original V1 hashes unchanged, no experimental window/resource remaining, and all evidence saved. No car connection occurred during this preparation.
+
+## Executable capture kit (18 November)
+
+`tools/pip_exploration.py` now implements before/after V1 hash checks, four timestamped factory-state snapshots and an offline completion audit. Use the supplied private kit's `RUNBOOK.md` and hash-pinned recorder. V1 stays running; no custom producer, SD subscriber, layer setters or persistent writes are included. Capture runs independently for 120 seconds and removes its RAM executable afterward. The recorder and snapshot readers use separate manifests.
+
+The four phase holds are 20/20/30/10 seconds minimum. Record the owner's actual observation and original menu value. Do not imply that a menu toggle is already known to select PiP. If the normal factory option is absent, skip this experiment and preserve that result; do not change coding or invent routing commands. A missed phase, unreadable snapshot, packet gap/drop, hash mismatch or unverified cleanup makes the evidence incomplete. A technically complete capture still requires the owner's final restoration check and does not prove larger windshield pixels.

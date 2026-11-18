@@ -42,7 +42,7 @@ def binding(packet):
 
 def audit(path):
     raw = path.read_bytes()
-    parsed = extract(raw, max_packets=65536)
+    parsed = extract(raw, max_bytes=64*1024*1024, max_packets=65536)
     events, errors = [], []
     for stream in parsed['streams']:
         if stream['parse_error']:
