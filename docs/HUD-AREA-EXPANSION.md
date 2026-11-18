@@ -1,5 +1,7 @@
 # HUD area expansion investigation — 18 November 2026
 
+Latest offline PiP result: [local pixel transport and HMI texture cleanup](PIP-LOCAL-PIXEL-TRANSPORT-2026-11-18.md). Larger windshield routing remains unproven; V1 is unchanged.
+
 Offline research only. No vehicle connection, installed-file change, or larger-area drawing test was performed. V1 baseline and V2 runtime behavior remain unchanged.
 
 ## What we can establish
