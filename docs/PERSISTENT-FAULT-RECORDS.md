@@ -1,6 +1,6 @@
 # Persistent fault evidence and recovery candidate — 18 November 2026
 
-Status: offline candidate, not installed. The reference car retains the 17 November binaries and its saved acceleration-failure lockout. Do not clear that lockout implicitly. The successful short drive remains historical evidence, not proof of extended reliability.
+Status: installed on the reference car on 18 November; owner restart, permanent-record survival readback and live tach validation pending. The old acceleration-failure lockout was archived only after exact baseline checks and two empty-pool proofs. The successful short drive remains historical evidence, not proof of extended reliability.
 
 ## Observed failure
 
@@ -36,3 +36,7 @@ First validate permanent storage on the target with a bounded known input failur
 253 Python tests passed. Existing supervisor/worker integration and startup-watchdog checks passed; retention integration verifies uncertain-cleanup quarantine and input recovery with durable records. The actual supervisor evidence method passed first-record preservation, identical-event throttling, immediate changed-reason saving, RAM deletion/new-instance survival and write-failure blocking. Rapid RPM and boundary rendering tests passed. ARM QNX build and captured-runtime dependency/import audit passed.
 
 Candidate supervisor SHA-256: `1cd996960892f0cc98b64851f177358101ef596e163590526d3b164d849cd793`. Unchanged worker SHA-256: `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`. Not installed or road-validated.
+
+## Installation checkpoint
+
+Exact candidate supervisor was installed and read back, rollback copy retained, and filesystem read-only protection restored. A separate no-drawing probe using the production Resident::evidence method successfully wrote/read permanent JSON on the head unit, removed its synthetic fixture and retained the record under an isolated fault-proof directory. It did not touch the real fault-record files or send HUD commands. Restart survival and live runtime acceptance are pending. Probe source: `tools/fault_store_probe.cpp`.
