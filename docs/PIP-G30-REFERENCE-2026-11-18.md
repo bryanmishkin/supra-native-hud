@@ -23,7 +23,7 @@ The profile selector rejects video builds without the G30 selection. The documen
 
 Our captured secondary Screen display is 800×480, consistent with the candidate backing. Captured output-driver execution establishes a port-2 native path with RGBA-over-RGB packing. Together these make secondary Screen output a concrete transport candidate, rather than an unspecified Ethernet image upload.
 
-However, the retained Supra B009 body is `3ff000000000000001cc00ed01`: scale 1.0, 460×237, selection 1. It matches **neither** G30 sink tuple. In the G30 source, selection 1 is cluster and selection 0 is HUD; that labeling must not be transplanted to the Supra without target evidence. Our advertised PiP configuration is 320×320, while G30 configures an 800×480 backing. Neither number alone is permission to resize the Supra resource.
+However, the retained Supra B009 body is `3ff000000000000001cc00ed01`: scale 1.0, 460×237, selection 1. It matches **neither** G30 sink tuple. Correction from the retained target trace: [SESSION-CONTRACT.md](../SESSION-CONTRACT.md) already resolves selection 0 as HUD and 1 as Kombi in the Supra controller (0xa7a228..0xa7a2d4). This agrees with the G30 labels. It does not establish HUD dimensions or a client-callable sink-selection request. Our advertised PiP configuration is 320×320, while G30 configures an 800×480 backing. Neither number alone is permission to resize the Supra resource.
 
 The earlier metadata codec operates on the factory CPU upload; the G30 template describes captured BGRA output. Comparing their raw bytes without the intermediate format conversion would produce a misleading maneuver identity or frame counter.
 

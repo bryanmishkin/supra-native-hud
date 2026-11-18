@@ -1,5 +1,7 @@
 # Pick up this project
 
+Latest candidate: [30-second native PiP marker experiment](PIP-MARKER-TEST.md). Separate QNX ARM helper and Python controller, selected PiP slot 4, 320×200 marker in an 800×480 native backing, explicit withdrawal/removal and manual verified V1 return. This is a prepared hypothesis test, not proven windshield output. Read its admission and failure handling before any live use. Keep V1 unchanged.
+
 Latest external implementation lead: [ryseek's native G30 PiP source and Supra comparison](PIP-G30-REFERENCE-2026-11-18.md), pinned at `a0242e1`. It supplies the missing concrete secondary-Screen producer pattern and frame envelope, but explicitly pauses for its HUD sink. Preserve the author credit and distinguish G30 geometry from the captured Supra 460×237/selection-1 event. No G30 code or vehicle changes were made by this review.
 
 Latest offline result: [output-driver contract](OUTPUT-DRIVER-TRACE-2026-11-18.md). Port 2 uses a TDA19988 callback path with RGBA-over-RGB width conversion verified by executing captured ARM routines offline. This does not establish its physical windshield/cluster binding; no larger live test is ready. V1 remains unchanged.
