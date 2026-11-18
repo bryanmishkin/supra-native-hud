@@ -35,3 +35,20 @@ The closest source was reviewed at commit `225728ad78cfdf6a558896bc6f6a04128f01a
 4. Keep telemetry and startup unchanged during any future geometry experiment. A larger image upload acknowledged by the receiver is insufficient; visible size and clipping require observation.
 
 No additional car visit is requested by this investigation. Expansion remains unproven; the 320-pair resource trace is the strongest concrete offline next step.
+
+## Follow-up: variant 35 identified as picture-in-picture
+
+Further offline tracing on 18 November identifies the configuration family:
+
+- `setAllConfigInfo` reads the configuration discriminator at `0xa2633c`, subtracts one, bounds it to 39 entries, then dispatches through the table at `0xa26350`.
+- Entry 35 at `0xa263d8` points to `0xa2643c`. That branch explicitly checks union tag `0x23` (35) at `0xa2644c` and calls `0xa26008` at `0xa2645c`.
+- The called setter logs **setPictureinPictureConfig**. It iterates a 16-bit resolution vector from the incoming structure at offset `0x10`, logs **mMaxResolution**, and stores resource count/offset and color depth/packaging fields.
+- The adjacent road-list setter logs **maxRoadIconSize**, as well as maximum road entries, icon count and text count. This strengthens the interpretation that current road-icon geometry is a model limit, rather than an arbitrary renderer constant.
+
+Thus variant 35 is now identified as the **picture-in-picture configuration family**. The saved reply's 320,320 pair is a strong candidate for its maximum resolution. The wire-to-object deserializer still needs to be followed before treating that specific pair as a formally decoded field. It is not a larger bitmap allowance for resource type 1.
+
+The earlier `RIC-BITMAP-RESOURCE.md` trace already identifies a local picture-in-picture resource staging choice in the detailed-navigation builder (`0xaa7b44`, called from `0xaa7c20`). That is a concrete next binding path, but does not establish an independently writable picture-in-picture surface or its windshield placement. Local builder selectors, resource-wire enums and configuration tags are distinct domains.
+
+Next: follow the variant-35 wire decoder and picture-in-picture upload/staging path, then its visible detailed-maneuver binding. Determine whether the resource carries pixels, a stream reference or another representation, and whether it reaches the windshield. Do not enlarge the existing RLE32 bitmap or send a speculative picture-in-picture request based on the configuration name alone.
+
+Trace provenance: same controller SHA-256 `71b2813f6ae243f3a01d8b134cc6aaddf47aa32b6b712d1202085d68e246f04a`; retained extracts in the private `hud-expansion-trace-2026-11-18` archive. Literal pools were read as words, not treated as executable instructions. This remains static evidence, not vehicle acceptance.

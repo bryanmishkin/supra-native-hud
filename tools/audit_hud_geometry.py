@@ -16,7 +16,8 @@ def audit(packet):
    row['bitmap']=decode_bitmap_config(raw);row['bitmap']['wire_format']='Observed in this saved create reply; field decoder statically traced'
   elif tag==35 and n==16:
    row['untraced_u16_pair_at_offset_10']=list(struct.unpack_from('>HH',raw,10))
-   row['limit']='Candidate geometry only: resource type, field semantics and HUD binding not established'
+   row['configuration_family']='picture-in-picture (tag-35 dispatch statically traced)'
+   row['limit']='Resolution-pair wire semantics and HUD binding not established; not a bitmap size allowance'
   elif tag==30 and n==20:
    row['untraced_u16_pair_at_offset_16']=list(struct.unpack_from('>HH',raw,16))
    row['limit']='Road-model configuration tail; do not treat as a writable placement control'
