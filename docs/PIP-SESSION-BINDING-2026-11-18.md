@@ -58,3 +58,5 @@ Controller SHA-256: `71b2813f6ae243f3a01d8b134cc6aaddf47aa32b6b712d1202085d68e24
 NavigationFully SHA-256: `957528a9f37a026fd7737f59ca5f96247ed606d49deb2efe79400d624f439f4d`.
 
 Private archive includes bounded disassembly extracts, string-reference scans, vtable words, reproduction scripts and a file-hash manifest. Literal pools are data, not executable instructions. No OEM bytes, private route data or credentials are added to GitHub.
+
+Follow-up: [transport boundary and reference-counted removal](PIP-TRANSPORT-BOUNDARY-2026-11-18.md) identifies the missing layer-manager capture and a targeted read-only collector.
