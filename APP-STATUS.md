@@ -1,6 +1,6 @@
 # Verified application status
 
-**Current 18 November:** own-slot-only startup checks are installed to avoid blocking on factory bitmap slots 0..7. Permanent logging and bounded retry are retained. Restart/drive validation pending. See [exact change](docs/OWN-BITMAP-SLOTS.md).
+**Current 18 November:** own-slot-only startup checks are installed to avoid blocking on factory bitmap slots 0..7. Permanent logging and bounded retry are retained. Restart and one no-visible-loss drive passed; no new permanent fault records. See [exact change](docs/OWN-BITMAP-SLOTS.md).
 
 **Latest 18 November:** permanent logs identified a clean pre-drawing `bitmap pool in use` stop. A bounded retry correction is installed; restart and driving validation pending. See [exact build and evidence](docs/BITMAP-POOL-RETRY.md).
 

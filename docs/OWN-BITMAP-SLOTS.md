@@ -1,6 +1,6 @@
 # Own-slot startup admission — 18 November 2026
 
-Installed on the reference car; restart verified; next-drive validation pending. Worker SHA-256 `5be8a000f7d8d0561a3c7b1d2043d1be5bce88af5d68cbc66c7be5189f232274`. Supervisor remains `7396aaaf9ddfd58011c5cde875f8f4df332a41bdbad1a1cb984aa7a590446595`.
+Installed on the reference car; restart and one owner-confirmed no-visible-loss drive verified. Worker SHA-256 `5be8a000f7d8d0561a3c7b1d2043d1be5bce88af5d68cbc66c7be5189f232274`. Supervisor remains `7396aaaf9ddfd58011c5cde875f8f4df332a41bdbad1a1cb984aa7a590446595`.
 
 The previous worker unnecessarily required all image slots 0..9 to be empty. Captured drive failures identified an occupied slot 0 before drawing. The resource encoder permits creating/removing only `0x01000008` and `0x01000009`, and the validated profile binds the tach to those slots. Startup now checks only those two slots. Occupied factory slots 0..7 therefore do not independently block startup. A busy tach slot still returns the same zero-frame clean result to the bounded retry supervisor, and stderr records the exact occupied ID for permanent evidence.
 
@@ -11,3 +11,5 @@ Offline tests used the actual worker with all eight factory slots populated: it 
 Installation compared the prior package, cooperatively stopped the active tach, verified terminal cleanup and process exit, retained all permanent fault records, verified empty resources twice, retained the previous worker, read back the replacement and restored read-only protection. No factory resources were removed by the installer. Only the worker changed; no startup, profile, hooks or supervisor changes.
 
 Owner confirmed tach visible after restart. All 15 package/config checks match, the supervisor reports one running worker with no quarantine or retries, and the original first-fault record remains byte-identical. This verifies startup of the new worker, not the next drive result.
+
+The next drive passed with no owner-observed loss and no new permanent fault records. Six clean factory handoffs were recorded. See [drive evidence and limits](OWN-SLOTS-DRIVE-RESULT.md).
