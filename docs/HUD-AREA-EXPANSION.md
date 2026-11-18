@@ -92,3 +92,19 @@ The observed popup traffic does **not** identify the B006 PiP descriptor as the 
 ### Offline implementation and validation
 
 `tools/ric_resource.py` now strictly decodes tag-3 descriptors and rejects image bytes appended to them. `tools/audit_hud_geometry.py` decodes the traced PiP configuration instead of reporting an untyped pair. Both remain offline-only and explicitly deny live drawing authorization. Five new descriptor tests and twelve existing resource-codec tests pass; the retained create reply decodes to the values above. Private traces and the radio inventory are saved in Drive; OEM binaries and captures remain outside Git.
+
+## Pixel-source trace: native-window PiP versus bitmap export
+
+Further offline work distinguishes paths that must not be conflated:
+
+- Controller factory `0xa7933c` supplies `WindowCaption` with decimal **1056** (`0x420`). At `0xa7937c..0xa793c4` it constructs `CRicDisplyableSessionForPiPDisICHUD` with user value `0x321`, view-type argument **0**, and dimensions **800 × 384**. These are factory construction parameters, not a new negotiated HUD area or guaranteed live values.
+- Companion `CRicDisplyableSessionForPiPComICHUD` is constructed at `0xa79180..0xa791c8` with view-type argument **3**, and 1 × 1 dimensions. It is the command-data path. Base constructor `0xa7cf48` stores the registration arguments, and `0xa7ce7c` forwards them to displayable registration.
+- In saved NavigationFully, the displayable constructor's jump table at `0x881e58` maps type **0** to `0x8813e0` (native window), type **1** to `0x88125c` (bitmap buffer), and type **3** to `0x8811e4` (command-only). This is static correspondence of the registration path; runtime activation still needs evidence.
+- Native-window initialization constructs `CGVWindow` (`0x8831a4 -> 0x882e94`), supplies size, caption, QNX class and ID-string properties, optionally uses `ScreenNumber`, realizes the window, then creates an EGL window surface. ELF relocation resolution confirms `eglCreateWindowSurface` at imported PLT entry `0x106908`. Thus the displayed PiP path has a native graphics-window source, rather than pixel bytes embedded in the B006 descriptor.
+- **Separate bitmap-export path:** type 1 names storage `GVBitmap_<displayable ID>` and creates an off-screen EGL pbuffer (`eglCreatePbufferSurface` at PLT `0x1062fc`). `0x88d638..0x88d710` reads pixels through `0x8606f4`, optionally compresses them, resizes shared storage and publishes via `0x88d184`. Options `NBT_RLE32` and `NBT_RLE16` are selected at `0x88d49c`. This path exists, but the traced PiPDisICHUD factory requests type 0, so GVBitmap must not be presented as its proven pixel feed.
+
+NavigationFully SHA-256: `957528a9f37a026fd7737f59ca5f96247ed606d49deb2efe79400d624f439f4d`. Controller hash is unchanged. Imported EGL names were verified through ELF relocations, not inferred solely from graphics constants.
+
+**Implication for V2:** there is a concrete factory native-window route to investigate. It does not yet provide us an app-owned window, establish how that window is forwarded to the cluster, or show that 800 × 384 construction dimensions equal visible windshield pixels. Do not replace the factory window or write its buffers. The remaining runtime question is whether window 1056 is instantiated and routed on this Supra during navigation, and which compositor/output owns that route.
+
+[The batched capture plan](PIP-BATCH-CAPTURE.md) combines normal, radio and navigation transitions with packet and process/shared-memory/window inventories. The new phase collector is read-only, defaults offline, and has three focused tests for no-network planning, wrong-host rejection and incomplete/duplicate capture handling. Specialized window introspection is explicitly not claimed ready before its actual interface is identified. No car session or installed-file change occurred during this work.
