@@ -129,7 +129,7 @@ class TrialTests(unittest.TestCase):
         r,obs=self.exercise(binding_mismatch=True)
         self.assertFalse(r['graph_attempted']);self.assertTrue(r['protocol_cleanup'])
         self.assertEqual([m for m,b in obs],[2,3,2,8,2])
-        self.assertIn('binding mismatch',r['error'])
+        self.assertIn('contract mismatch',r['error'])
 
     def test_producer_failure_removes_resource_without_graph(self):
         r,obs=self.exercise(producer_fail=True)

@@ -91,3 +91,5 @@ Retained at existing paths so old links keep working. Observed failures and earl
 - [PiP receiver and identity binding: bounded offline evidence](PIP-RECEIVER-BINDING-2026-11-18.md)
 
 - [PiP identity consumer and ID6 HUD reference review](PIP-CONSUMER-AND-ID6-REVIEW-2026-11-18.md)
+
+- [Direct PiP producer and missing DisplaySink contract](PIP-SINK-CONTRACT-GAP-2026-11-18.md)

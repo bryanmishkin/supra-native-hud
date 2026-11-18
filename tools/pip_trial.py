@@ -91,7 +91,7 @@ def validate_producer(output,a):
     rows=[line[len(b'PIP_BINDING '):] for line in output.splitlines()
           if line.startswith(b'PIP_BINDING ')]
     if len(rows)!=1 or json.loads(rows[0])!=producer_contract(a):
-        raise ValueError('Native producer/receiver descriptor binding mismatch')
+        raise ValueError('Local producer/descriptor contract mismatch')
 
 
 def descriptor(a):
@@ -171,7 +171,8 @@ def run(s,a,producer,record,stop_producer=None):
                 output+=chunk
                 if len(output)>65536:raise RuntimeError('Excess producer output')
         validate_producer(output,a)
-        result['producer_binding_verified']=True
+        result['producer_contract_verified']=True
+        result['receiver_binding_verified']=False
         result['graph_attempted']=True;save()
         s.timeout=.5
         for m,b in steps(a):
@@ -231,7 +232,10 @@ def main():
     p.add_argument('--local-port',type=int)
     p.add_argument('--producer-argv',type=Path,help='Reviewed JSON argv for matching RAM helper; no shell')
     p.add_argument('--producer-stop-argv',type=Path,help='Reviewed argv to create its private RAM stop file')
-    args=p.parse_args();raw=args.create_response.read_bytes();a=measured_support(args.support_profile.read_bytes(),allocation(raw))
+    args=p.parse_args()
+    if args.execute:
+        p.error('Live PiP runner retired after two failed image tests: receiver sink binding is unverified. Offline plans remain available.')
+    raw=args.create_response.read_bytes();a=measured_support(args.support_profile.read_bytes(),allocation(raw))
     args.output.mkdir(parents=True,exist_ok=False)
     plan=dict(allocation=a,create_sha256=hashlib.sha256(raw).hexdigest(),
         configure=descriptor(a).hex(),steps=[(m,b.hex()) for m,b in steps(a)],

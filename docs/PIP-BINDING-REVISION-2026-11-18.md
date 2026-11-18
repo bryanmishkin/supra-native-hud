@@ -1,3 +1,5 @@
+> Live execution retired. See [sink-contract correction](PIP-SINK-CONTRACT-GAP-2026-11-18.md). This historical candidate did not deliver custom pixels.
+
 # PiP image-binding revision — 18 November 2026
 
 **Superseding live result:** [revision-2 test failed to display custom pixels](PIP-REVISION2-RESULT-2026-11-18.md). Only the right-turn arrow appeared. Cleanup and unchanged V1 return passed. Retain the procedure as historical; do not repeat this candidate as a ready image-binding fix.
