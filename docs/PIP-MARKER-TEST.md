@@ -1,5 +1,7 @@
 # Larger PiP marker experiment
 
+**Superseding live result:** [revision-2 test failed to display custom pixels](PIP-REVISION2-RESULT-2026-11-18.md). Only the right-turn arrow appeared. Cleanup and unchanged V1 return passed. Retain the procedure as historical; do not repeat this candidate as a ready image-binding fix.
+
 **Current offline revision:** [format selection and producer binding](PIP-BINDING-REVISION-2026-11-18.md). Use the revision-2 kit; depth 0 replaces the earlier maximum-as-selection value 1. This remains an unproven image-delivery candidate.
 
 **Car result:** [18 November attempt](PIP-MARKER-RESULT-2026-11-18.md) showed only a factory right-turn arrow, not the custom image. Cleanup and V1 return passed. This candidate is not a verified larger renderer.
