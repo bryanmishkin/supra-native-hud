@@ -21,3 +21,7 @@ The real supervisor and existing worker passed a loopback test with an occupied 
 On the head unit: exact prior baseline matched, all ten slots empty in two independent checks, replacement readback matched, rollback retained and read-only filesystem restored. No factory images were removed by the installation. Live acceptance is pending; this is not yet proof that all possible driving dropouts are resolved.
 
 Owner restarted iDrive and confirmed tach visible. Read-only post-restart checks matched all 15 installed files/configurations, showed one running worker with no quarantine, no input retries and no pool retries. The original permanent failure record remained byte-identical after replacement and restart. Next drive remains pending.
+
+## Drive follow-up
+
+The next drive recorded repeated clean pool-busy retries, followed by resumed drawing without quarantine. This establishes recovery, not uninterrupted visibility. See [exact drive findings](BITMAP-RETRY-DRIVE-RESULT.md).
