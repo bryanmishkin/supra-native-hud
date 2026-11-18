@@ -12,6 +12,6 @@ Owner returned parked with ENET connected and iDrive unchanged. Read-only captur
 - Original first-fault record is byte-identical to its pre-drive copy. No new permanent quarantine appears. Recent stderr files are empty.
 
 ## Interpretation
-The measured pre-drawing contention now waits and recovers rather than permanently disabling the tach. However, retained evidence shows repeated contention across at least a 90-second interval; this is not dropout-free driving acceptance. Four rolling records do not reconstruct every earlier retry. Whether the owner noticed each disappearance remains to be confirmed separately.
+The measured pre-drawing contention now waits and recovers rather than permanently disabling the tach. However, retained evidence shows repeated contention across at least a 90-second interval; this is not dropout-free driving acceptance. Four rolling records do not reconstruct every earlier retry. The owner separately confirmed: “Disappeared and returned.” This agrees with recovered operation and visible interruptions.
 
 The factory feature occupying the bitmap is still unidentified; stability-control attribution remains a hypothesis. The next improvement should address unnecessary suppression caused by the whole-pool availability check while preserving ownership of factory resources. Do not delete occupied slots or infer permission to reuse them. This capture makes no source or vehicle behavior change.
