@@ -4,6 +4,8 @@
 #undef main
 #include "factory_lease.hpp"
 #include "factory_stream.hpp"
+#include "worker_outcome.hpp"
+#include "fault_record.hpp"
 #include <sys/wait.h>
 #include <vector>
 static int unixConnect(const std::string& path){
@@ -25,8 +27,8 @@ static void replyText(int fd,const char* s){ssize_t n=send(fd,s,strlen(s),0);(vo
 static bool privateDir(const std::string& p){struct stat s;return !lstat(p.c_str(),&s)&&S_ISDIR(s.st_mode)&&s.st_uid==geteuid()&&!(s.st_mode&0022);}
 static void saveText(const std::string& path,const std::string& body){std::string temp=path+".new";int fd=open(temp.c_str(),O_WRONLY|O_CREAT|O_TRUNC,0600);if(fd<0)fail("state write");bool ok=write(fd,body.data(),body.size())==(ssize_t)body.size();close(fd);if(!ok||rename(temp.c_str(),path.c_str()))fail("state replace");}
 struct Resident {
- FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath;bool quit,cleanAck,admitted,cleanupProven;unsigned starts,cleanStops,lastGeneration,ioRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter;
- Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),cleanupProven(true),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0){}
+ FactoryLease lease;FactoryStream stream;pcap_t* cap;FILE* bootTrace;unsigned traceBytes;int server;pid_t child;std::string root,state,socketPath,lastEvidenceKey;bool quit,cleanAck,admitted,cleanupProven;unsigned starts,cleanStops,lastGeneration,ioRetries;uint64_t started,lastStatus,bootTime,lastFactory,retryAfter,lastEvidence;unsigned evidenceSlot;int lastWaitStatus;
+ Resident(const char* r,const char* s):stream(lease),cap(0),bootTrace(0),traceBytes(0),server(-1),child(0),root(r),state(s),quit(false),cleanAck(false),admitted(false),cleanupProven(true),starts(0),cleanStops(0),lastGeneration(0),ioRetries(0),started(0),lastStatus(0),bootTime(now()),lastFactory(now()),retryAfter(0),lastEvidence(0),evidenceSlot(0),lastWaitStatus(-1){}
  ~Resident(){if(bootTrace)fclose(bootTrace);if(cap)pcap_close(cap);if(server>=0)close(server);if(!socketPath.empty())unlink(socketPath.c_str());}
  void capture(const char* iface){
  bootTrace=fopen((state+"/startup.pcap").c_str(),"wb");if(!bootTrace)fail("startup trace");
@@ -38,13 +40,31 @@ struct Resident {
  void pump(){if(!cap)return;for(unsigned i=0;i<2048;++i){pcap_pkthdr* h;const u_char* b;int rc=pcap_next_ex(cap,&h,&b);if(!rc)break;if(rc<0){lease.fault("capture read");break;}if(traceBytes+h->caplen+16<=2097152){uint32_t record[4]={(uint32_t)h->ts.tv_sec,(uint32_t)h->ts.tv_usec,h->caplen,h->len};fwrite(record,1,16,bootTrace);fwrite(b,1,h->caplen,bootTrace);traceBytes+=h->caplen+16;fflush(bootTrace);}stream.ethernet(b,h->caplen,h->len);if(lease.failed())break;if(i==2047)lease.fault("capture backlog");}pcap_stat st;memset(&st,0,sizeof(st));if(pcap_stats(cap,&st)||st.ps_drop||st.ps_ifdrop)lease.fault("capture loss");}
  void bindServer(){socketPath=state+"/factory.sock";sockaddr_un a;memset(&a,0,sizeof(a));a.sun_family=AF_UNIX;if(socketPath.size()>=sizeof(a.sun_path))fail("broker path");strcpy(a.sun_path,socketPath.c_str());server=socket(AF_UNIX,SOCK_STREAM,0);if(server<0||bind(server,(sockaddr*)&a,sizeof(a))||chmod(socketPath.c_str(),0600)||listen(server,16)||fcntl(server,F_SETFL,O_NONBLOCK))fail("broker bind");}
  void heartbeat(){char b[64];snprintf(b,sizeof(b),"%llu\n",(unsigned long long)now());saveText(state+"/heartbeat",b);}
+ void evidence(const char* event,bool force){
+  uint64_t stamp=now();WorkerOutcome observed=workerOutcome(recordTail(state+"/worker.result",16384));
+  std::string key=std::string(event)+"|"+lease.reason()+"|"+observed.reason;
+  if(!force&&lastEvidence&&key==lastEvidenceKey&&stamp-lastEvidence<30000)return;
+  std::ostringstream b;b<<"{\"schema\":1,\"event\":"<<jsonString(event)<<",\"wall_epoch\":"<<(long long)time(0)<<",\"monotonic_ms\":"<<(unsigned long long)stamp<<",\"worker_starts\":"<<starts<<",\"wait_status\":"<<lastWaitStatus<<",\"cleanup_proven\":"<<(cleanupProven?"true":"false")<<",\"fault\":"<<jsonString(lease.reason());
+  const char* names[]={"worker.result","worker.stderr","active.jsonl","previous.jsonl","admission.json","acceptance.json"};
+  for(unsigned i=0;i<6;++i)b<<","<<jsonString(names[i])<<":"<<jsonString(recordTail(state+"/"+names[i],i<2?16384:65536));
+  b<<",\"failed_request_bytes\":"<<jsonString(std::string(lease.failedRequest.begin(),lease.failedRequest.end()))<<",\"failed_reply_bytes\":"<<jsonString(std::string(lease.failedReply.begin(),lease.failedReply.end()))<<"}\n";
+  bool ok=true;std::string first=root+"/fault-first.json";
+  if(access(first.c_str(),F_OK))ok=durableRecord(first,b.str());
+  char name[32];snprintf(name,sizeof(name),"/fault-recent-%u.json",evidenceSlot++%4);
+  if(!durableRecord(root+name,b.str()))ok=false;
+  if(!ok){fprintf(stderr,"persistent fault evidence write failed; automatic resume blocked\n");lease.fault("persistent fault evidence unavailable");retryAfter=~uint64_t(0);}
+  lastEvidence=stamp;lastEvidenceKey=key;
+ }
  void reap(){if(!child)return;int status=0;pid_t got=waitpid(child,&status,WNOHANG);if(got<=0)return;child=0;std::ifstream f((state+"/worker.result").c_str());std::string text((std::istreambuf_iterator<char>(f)),std::istreambuf_iterator<char>());
-  bool clean=text.find("\"cleanup_verified\":true")!=std::string::npos;
-  cleanupProven=WIFEXITED(status)&&clean;
-  bool expected=text.find("\"reason\":\"factory_navigation_request\"")!=std::string::npos||text.find("\"reason\":\"admission_denied\"")!=std::string::npos||text.find("\"reason\":\"disabled\"")!=std::string::npos;
-  bool retryable=WIFEXITED(status)&&clean&&(text.find("\"reason\":\"rpm_transport:")!=std::string::npos||text.find("\"reason\":\"RPM stale\"")!=std::string::npos);
+  lastWaitStatus=status;WorkerOutcome outcome=workerOutcome(text);
+  bool exited=WIFEXITED(status)&&(WEXITSTATUS(status)==0||WEXITSTATUS(status)==2),clean=outcome.valid&&outcome.clean;
+  cleanupProven=exited&&clean;
+  bool expected=outcome.valid&&(outcome.reason=="factory_navigation_request"||outcome.reason=="admission_denied"||outcome.reason=="disabled"||((quit||stopped)&&outcome.reason=="signal"));
+  bool retryable=exited&&inputRecovery(outcome);
   if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else {ioRetries=4;retryAfter=now()+30000;}}
-  else if(!WIFEXITED(status)||!clean||!expected)lease.fault("worker exit/cleanup uncertain");
+  else if(!exited||!clean||!expected)lease.fault(WIFEXITED(status)&&!exited?"worker unexpected exit code":unexpectedExit(outcome,exited));
+  // Capture BEFORE another worker can truncate the RAM result/journal.
+  if(retryable||lease.failed())evidence("worker_exit",lease.failed());
   saveText(state+"/last-result",text);
  }
  bool stop(){if(!child||cleanAck)return true;if(!admitted){cleanAck=true;++cleanStops;return true;}bool ok=controlStop(state+"/active.jsonl.handoff");if(!ok)lease.fault("worker handoff not CLEAN");cleanAck=ok;if(ok)++cleanStops;return ok;}
@@ -110,12 +130,15 @@ struct Resident {
   bool bootOnly=lease.failed()&&(lease.reason()=="clean I/O retry budget exhausted"||lease.reason()=="factory transport closed")&&!child&&cleanupProven;
   if(!lease.failedRequest.empty())saveText(state+"/failed-factory-request.bin",std::string((const char*)&lease.failedRequest[0],lease.failedRequest.size()));
   if(!lease.failedReply.empty())saveText(state+"/failed-factory-reply.bin",std::string((const char*)&lease.failedReply[0],lease.failedReply.size()));
-  if(lease.failed()&&!bootOnly)saveText(root+"/disabled",lease.reason()+"\n");
+  if(lease.failed())evidence("resident_terminal",true);
+  if(lease.failed()&&!bootOnly&&!durableRecord(root+"/disabled",lease.reason()+"\n"))fail("persistent disable write");
   std::string terminal=lease.failed()?std::string(bootOnly?"BOOT_INHIBITED: ":"QUARANTINED: ")+lease.reason()+"\n":"STOPPED\n";
   saveText(state+"/resident.status",terminal);
   saveText(root+"/last-resident.status",terminal+std::string("cleanup_proven=")+(cleanupProven?"true\n":"false\n"));
  }
 };
+
+#ifndef SUPRA_RESIDENT_NO_MAIN
 int main(int argc,char** argv){
  if(argc==2&&!strcmp(argv[1],"--sync-state")){sync();puts("STATE_SYNCED");return 0;}
  if(argc==3&&!strcmp(argv[1],"--stop")){signal(SIGPIPE,SIG_IGN);int fd=unixConnect(std::string(argv[2])+"/factory.sock");if(fd<0)return 2;replyText(fd,"STOPAPP1");char b[6];bool ok=readAll(fd,(unsigned char*)b,6,3000)&&!memcmp(b,"CLEAN\n",6);close(fd);if(ok)puts("CLEAN");return ok?0:2;}
@@ -126,3 +149,5 @@ int main(int argc,char** argv){
   Resident r(argv[1],argv[2]);r.capture(argv[3]);r.bindServer();r.heartbeat();saveText(state+"/ready","CAPTURE_READY\n");r.loop();return r.lease.failed()?2:0;
  }catch(const std::exception& e){fprintf(stderr,"resident: %s\n",e.what());try{if(privateDir(argv[1]))saveText(std::string(argv[1])+"/last-resident.status",std::string("STARTUP_OR_RUNTIME_EXCEPTION: ")+e.what()+"\n");}catch(...){}return 2;}
 }
+
+#endif

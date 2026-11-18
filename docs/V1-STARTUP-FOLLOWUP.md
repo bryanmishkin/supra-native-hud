@@ -106,3 +106,8 @@ Evidence is deliberately separated: installation receipts establish exact binary
 Accepted application source is commit `74dd185`; subsequent commits update documentation only. Worker SHA-256 `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`; resident SHA-256 `42071e048e9b32434fd52e3fe9f5496a2baa4daae2b6ab7778a89f8d5bd601fa`. The private archive preserves the exact installed kit, manifest, rollback configurations, install receipts, source snapshot and offline test reports. The historical `v1.0.0-gold-master` tag is unchanged; this accepted repair supersedes its runtime for the reference vehicle.
 
 The owner further confirmed that the cable-free drive included first gear, high RPM and gear changes, with the tach staying visible throughout. This is visual continuity confirmation; exact RPM accuracy at high engine speeds was not independently measured.
+
+
+## 18 November: extended driving failure reopened
+
+A later drive failed under reported hard acceleration. The engine-off capture found a persistent clean-but-unrecognized-exit quarantine; RAM-only detail was gone overnight. The exact initiating cause cannot be recovered. See [persistent fault evidence and recovery candidate](PERSISTENT-FAULT-RECORDS.md). The candidate is not installed; previous short-drive acceptance is retained as bounded historical evidence.

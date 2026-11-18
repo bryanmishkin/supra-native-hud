@@ -1,5 +1,7 @@
 # Verified application status
 
+**18 November update:** a later acceleration-associated dropout left a persistent lockout after a clean but unrecognized worker exit. Detailed RAM evidence was lost overnight. A permanent-evidence and recovery-classification candidate is prepared offline, not installed. See [current behavior and validation](docs/PERSISTENT-FAULT-RECORDS.md).
+
 **Current status (17 November):** parked acceptance did not establish road readiness. Movement caused background-display handoffs and a factory text-removal error to disable the tach. The installed movement correction passed an owner-observed drive with ENET connected: the tach held. The owner subsequently confirmed automatic startup with ENET completely unplugged and a drive with the tach staying on. This is one owner-observed cable-free shutdown/start-and-drive pass; no post-drive machine-log continuity or overnight/endurance claim is made. Do not recommend the original Gold Master as road-validated. See [evidence and exact build](docs/V1-STARTUP-FOLLOWUP.md).
 **Startup reliability reopened:** a subsequent cold start was blocked by a reproduced false startup-watchdog quarantine. See [current findings and correction](docs/V1-STARTUP-FOLLOWUP.md). The earlier acceptance below records one passed cycle.
 
