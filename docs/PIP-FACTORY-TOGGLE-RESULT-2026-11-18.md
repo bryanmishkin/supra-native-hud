@@ -36,3 +36,21 @@ The trace contains real V1 B006 bitmap uploads and updates (slots 8/9), demonstr
 The display-1 difference from the checkbox experiment is only its `counter` field (2125 to 2220), not a changed viewport/geometry. A suspected VLAN-filter exclusion was investigated but not confirmed: the retrieved resident startup trace contained 10,583 untagged IPv4 Ethernet records, and the third recording sees V1 drawing. Do not attribute the missing PiP binding to VLAN filtering on this evidence.
 
 Owner also reports the entertainment/radio setting can remove/re-add those controls. No additional radio-toggle test was performed. Final owner check: rectangle gone, V1 normal, Navigation checked. Final installed hashes match and permanent fault records remain unchanged. The larger-image routing question is still unresolved; this session did not demonstrate a custom larger pixel surface.
+
+## Offline follow-up: subscription is present even without a new selection event
+
+The new `tools/audit_pip_discovery.py` decodes the known B009 UDP SD subscription/ACK shapes, separately from the TCP selection-event decoder. All three complete captures replay successfully:
+
+| Window | TTL-3 subscriptions | TTL-3 ACK packets | TTL-zero unsubscribe |
+| --- | ---: | ---: | ---: |
+| Original/navigation-off | 113 | 226 | 0 |
+| Restored/guidance-stop | 61 | 122 | 1 |
+| Height overlay/V1 running | 0 | 0 | 0 |
+
+Counts are packets, not a proof that each ACK corresponds to a distinct negotiation. The factory endpoint is HU `160.48.199.119:65497`; cluster SD is `.96:30490`. The unsubscribe timestamp is 1795040615.521259 on the vehicle clock, before the owner's guidance-stopped/V1-returned confirmation at host 1795040637.987526. The separately sampled vehicle-minus-host offset interval is approximately -0.572 to +0.452 seconds. That supports the guidance-stop association but does not timestamp the user's physical click exactly.
+
+**Correction to a possible interpretation:** absence of a new TCP DisplaySink selection event does not mean the factory had no DisplaySink subscription. It was renewing and receiving acknowledgments through the first checkbox experiment. The checkbox did not force a fresh decoded destination selection. The height overlay occurred in a window without B009 subscription renewals, while V1 drawing traffic was present. This weakens the idea that the height rectangle itself demonstrates the active PiP path; it does not prove where the rectangle is rendered.
+
+B003/8002 payloads in these captures begin with NMEA text such as `$GLGSV`; they must not be mistaken for image frames merely because they are large or frequent. Contents remain private because the stream may contain positioning data. The restored capture also contains V1 bitmap traffic after its return; the earlier `events: []` result concerns only the narrow native-PiP binding decoder, not all B006 activity.
+
+The next implementation requirement remains receiver-selected destination plus a demonstrable pixel association. Reusing a factory subscription endpoint or inventing a HUD selection is not justified by these observations. No additional car session is requested by this offline review.
