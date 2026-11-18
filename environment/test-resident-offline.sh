@@ -20,3 +20,5 @@ python3 tests/resident_integration.py "$OUT/resident" "$OUT/worker" "$PROFILE" "
 python3 tests/resident_startup_deadline.py "$OUT/resident" "$OUT/worker" "$PROFILE" "$OUT/startup-watchdog.json"
 
 python3 tests/pool_retry_integration.py "$OUT/resident" "$OUT/worker" "$PROFILE" "$OUT/pool-retry.json"
+
+python3 tests/factory_bitmap_coexistence.py "$OUT/worker" "$PROFILE" "$OUT/factory-coexistence.json"

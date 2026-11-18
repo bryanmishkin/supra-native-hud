@@ -7,7 +7,7 @@ resident,worker,profile,out=map(Path,sys.argv[1:])
 with tempfile.TemporaryDirectory() as tmp:
  root=Path(tmp)/'release';state=Path(tmp)/'ram';root.mkdir(mode=0o700)
  shutil.copy(worker,root/'supra-standalone-parked-qnx');shutil.copy(profile,root/'supra-profile.bin')
- server=Servers('normal',Path(tmp)/'trigger');sentinel=b'factory-owned-image';server.resources[0x01000000]=sentinel;server.start()
+ server=Servers('normal',Path(tmp)/'trigger');sentinel=b'factory-owned-image';server.resources[0x01000008]=sentinel;server.start()
  proc=subprocess.Popen([str(resident.resolve()),str(root),str(state),'test-only'],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
  def command(header,payload=b''):
   with socket.socket(socket.AF_UNIX) as s:
@@ -28,11 +28,11 @@ with tempfile.TemporaryDirectory() as tmp:
  try:
   wait(lambda:(state/'ready').exists());lane(0,True);lane(1,True)
   wait(lambda:(state/'worker.starts').exists() and int((state/'worker.starts').read_text())>=3,6)
-  assert server.uploads==0 and server.resources=={0x01000000:sentinel}
+  assert server.uploads==0 and server.resources=={0x01000008:sentinel}
   assert all(m==2 for m,b in server.requests),server.requests
   evidence=json.loads((root/'fault-first.json').read_text());assert json.loads(evidence['worker.result'])['reason']=='bitmap pool in use'
   assert not (root/'disabled').exists() and proc.poll() is None
-  lane(0,False);del server.resources[0x01000000];time.sleep(4.5);assert server.uploads==0
+  lane(0,False);del server.resources[0x01000008];time.sleep(4.5);assert server.uploads==0
   lane(0,True);wait(lambda:server.uploads>=4,6)
   assert not (root/'disabled').exists();assert command(b'STOPAPP1')==b'CLEAN\n';proc.communicate(timeout=6)
   assert proc.returncode==0 and not server.resources and not server.errors

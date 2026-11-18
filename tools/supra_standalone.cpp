@@ -215,7 +215,9 @@ static int workerMain(int argc,char** argv){
   ric.monitor.listenControl(argv[8]);
   connectTo(ric.connection,argv[5],30502,0,now()+2000);sockaddr_in address;socklen_t len=sizeof(address);if(getsockname(ric.connection.fd,(sockaddr*)&address,&len))fail("local port");ric.monitor.open(argv[6],argv[5],ntohs(address.sin_port),ntohl(address.sin_addr.s_addr));
   acquireAdmission(ric.monitor);heartbeatCheck();
-  for(unsigned id=0x01000000;id<=0x01000009;++id)if(ric.check(id,2000))fail("bitmap pool in use");
+  // Only the two resources this worker may create/remove must be free.
+  // Factory images in slots 0..7 do not grant or revoke model ownership.
+  for(unsigned id=0x01000008;id<=0x01000009;++id)if(ric.check(id,2000)){fprintf(stderr,"occupied tach bitmap: 0x%08x; no images created\n",id);fail("bitmap pool in use");}
   uint64_t stamp;double rpm=rpmSample(argv[3],argv[4],stamp,ric.monitor);Bytes image=frame(rpm,stamp);checkpoint(ric);owned[1]=true;ric.empty(3,bitmapBody(visible,image),DRAW_ACK_MS);if(!ric.check(visible,DRAW_ACK_MS))fail("upload absent");fresh(stamp);
   for(unsigned i=0;i<profile.setup.size();++i){fresh(stamp);checkpoint(ric);graph=true;ric.empty(profile.setup[i].method,profile.setup[i].body,DRAW_ACK_MS);}++frames;
   uint64_t deadline=continuous?~uint64_t(0):now()+seconds*1000;
