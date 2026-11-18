@@ -29,3 +29,5 @@ All **15** installed-component/startup comparisons matched the exact V1 baseline
 Use the captured native-window metadata and display descriptions to trace why the advertised PiP resource has no active local window output in this session. Compare the B009 exchanges with model updates and source-window registration. The evidence does not justify writing window 1056, borrowing factory buffers, changing coding, or enlarging V1's bitmap. No larger V2 surface is proven yet.
 
 Private evidence includes packet capture/reassembled streams, phase manifests, log snapshots, native window/display metadata, both sampled PiP buffers, before/after V1 records and a SHA-256 inventory. OEM data and route-related contents are excluded from GitHub.
+
+Offline follow-up: [per-connection pixel-path analysis](PIP-PIXEL-PATH-2026-11-18.md) separates all V1 bitmap uploads from factory model traffic and records the native-display and command-ring findings.
