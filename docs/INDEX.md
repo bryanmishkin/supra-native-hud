@@ -2,6 +2,8 @@
 
 ## V2 development
 
+- [PiP marker car result: arrow only; V1 restored](PIP-MARKER-RESULT-2026-11-18.md)
+
 - [30-second larger PiP marker experiment and V1 recovery](PIP-MARKER-TEST.md)
 
 - [Native G30 PiP implementation, author credit and Supra comparison](PIP-G30-REFERENCE-2026-11-18.md)
