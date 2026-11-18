@@ -1,6 +1,6 @@
 # Pre-drawing bitmap-pool retry — 18 November 2026
 
-Installed on the reference car; restart/live-drive verification pending. Supervisor SHA-256 `7396aaaf9ddfd58011c5cde875f8f4df332a41bdbad1a1cb984aa7a590446595`. Worker remains `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`. Hooks, layout, profile and startup configuration are unchanged.
+Installed on the reference car; restart passed; next live-drive verification pending. Supervisor SHA-256 `7396aaaf9ddfd58011c5cde875f8f4df332a41bdbad1a1cb984aa7a590446595`. Worker remains `91191ffed2d15f566bafcf916054cff0c0910c74c88f69c4337b6a87dafe3217`. Hooks, layout, profile and startup configuration are unchanged.
 
 ## Captured cause
 
@@ -19,3 +19,5 @@ Permanent first/recent failure records remain enabled and survive retry. Repeate
 The real supervisor and existing worker passed a loopback test with an occupied factory image: zero uploads or deletions while busy, bounded retries, no drawing while the factory lane is active, return after free+idle admission, clean stopping and retained permanent evidence. Existing handoff/return and lost-ACK quarantine regression cases passed. Strict outcome tests reject retry when frames are nonzero, cleanup is false, or monitor/factory flags are set. 253 Python tests passed. The QNX supervisor compiled and passed captured-runtime import/dependency checks.
 
 On the head unit: exact prior baseline matched, all ten slots empty in two independent checks, replacement readback matched, rollback retained and read-only filesystem restored. No factory images were removed by the installation. Live acceptance is pending; this is not yet proof that all possible driving dropouts are resolved.
+
+Owner restarted iDrive and confirmed tach visible. Read-only post-restart checks matched all 15 installed files/configurations, showed one running worker with no quarantine, no input retries and no pool retries. The original permanent failure record remained byte-identical after replacement and restart. Next drive remains pending.
