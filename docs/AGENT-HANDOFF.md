@@ -1,5 +1,7 @@
 # Pick up this project
 
+**Owner direction:** no author outreach. [Own exploration and current HUD Gauges inspection](PIP-OWN-EXPLORATION.md) contains the next controlled factory-route experiment and the new offline pixel-binding timeline. The package uses MOST; do not install it as a Supra PiP fix. Active test-kit assembly is still required before calling the next experiment ready.
+
 **Current PiP limit:** [receiver evidence audit](PIP-RECEIVER-EVIDENCE-2026-11-18.md). The latest upstream G30 branch still pauses video for HUD selection. No matching Supra receiver implementation or complete windshield pixel-routing contract has been established. HU selector tests are not a substitute. No larger-display candidate is ready; keep the failed runner retired and V1 intact. Older candidate descriptions below are historical, not permission to run them.
 
 **Latest routing trace:** [exact HUD type selection](PIP-HUD-TYPE-SELECTION-2026-11-18.md). Forty captured-ARM execution cases resolve exact candidate pairs and preference-dependent selection; the previous range description is corrected. These are HU producer predicates, not receiver delivery proof. No actual larger-display fix or new car candidate is ready; V1 unchanged.

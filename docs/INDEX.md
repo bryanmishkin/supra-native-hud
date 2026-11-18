@@ -2,6 +2,8 @@
 
 ## V2 development
 
+- [Own PiP exploration, HUD Gauges inspection and binding timeline](PIP-OWN-EXPLORATION.md)
+
 - [Current receiver-binding evidence limit; no larger-display candidate ready](PIP-RECEIVER-EVIDENCE-2026-11-18.md)
 
 - [PiP marker car result: arrow only; V1 restored](PIP-MARKER-RESULT-2026-11-18.md)
