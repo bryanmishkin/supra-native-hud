@@ -103,7 +103,7 @@ class DisplaySink {
                 selected_=false;
                 const uint8_t tail[17]={1,1,2,0,0x3f,0xf0,0,0,0,0,0,0,1,0xcc,0,0xed,1};
                 if(size!=29 || get16(input_)!=0xb009 || get16(input_+2)!=0x8001 ||
-                   get32(input_+8)!=0 || memcmp(input_+12,tail,sizeof(tail))) return false;
+                   get16(input_+8)!=0 || memcmp(input_+12,tail,sizeof(tail))) return false;
                 if(pending_) return false;
                 pending_=true; // UDP ACK and TCP event can arrive in either order.
             }

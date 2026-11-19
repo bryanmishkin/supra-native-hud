@@ -85,6 +85,17 @@ class Transport(unittest.TestCase):
         self.udp.sendto(acknowledgment(self.sub),self.sender)
         self.conn.settimeout(2);self.assertEqual(self.receive_exact(18),completion(1))
         self.conn.shutdown(socket.SHUT_RDWR);self.unsubscribe()
+    def test_captured_nonzero_notification_session(self):
+        self.udp.sendto(acknowledgment(self.sub),self.sender)
+        captured=bytes.fromhex('b0098001000000150000002d010102003ff000000000000001cc00ed01')
+        self.conn.sendall(captured)
+        self.assertEqual(self.receive_exact(18),completion(1))
+        self.conn.shutdown(socket.SHUT_RDWR);self.unsubscribe()
+    def test_wrong_notification_client_rejected(self):
+        self.udp.sendto(acknowledgment(self.sub),self.sender)
+        bad=bytearray(event());bad[9]=1
+        self.conn.sendall(bad)
+        self.assertEqual(self.receive_exact(18),b'');self.unsubscribe()
     def test_negative_ack_closes(self):
         self.udp.sendto(acknowledgment(self.sub,0),self.sender)
         self.assertEqual(self.receive_exact(18),b'');self.unsubscribe()

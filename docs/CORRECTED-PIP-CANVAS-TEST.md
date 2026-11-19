@@ -1,3 +1,5 @@
+> Executed: see [19 November live results](CORRECTED-CANVAS-LIVE-2026-11-19.md). Custom native pixels appeared in the cluster, not the windshield. Prepared helper below is superseded by the session-counter fix.
+
 # Corrected native HUD-profile canvas experiment
 
 Prepared offline on 19 November 2026. This is an executable, bounded experiment; it is not yet evidence that V2 can occupy the larger windshield area. V1 is unchanged. No Hz tests or paid firmware access are required.

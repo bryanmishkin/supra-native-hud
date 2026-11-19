@@ -99,6 +99,11 @@ def run(s,a,producer,record,go_producer,stop_producer):
             except subprocess.TimeoutExpired:
                 child.kill();child.communicate();result['local_cleanup']=False
         if child is not None and child.stdout is not None:child.stdout.close()
+        # An early admission failure may still report clean native teardown.
+        ends=[line for line in output.splitlines() if line.startswith(b'PRODUCER_END ')]
+        if len(ends)==1:
+            fields=dict(x.split(b'=',1) for x in ends[0].split()[1:] if b'=' in x)
+            result['local_cleanup']=fields.get(b'local_cleanup')==b'1' and fields.get(b'unsubscribe_sent')==b'1'
         result['producer_output']=output.decode('utf-8','replace')[-65536:]
         if result['graph_attempted']:
             for m,b in withdrawal(a):

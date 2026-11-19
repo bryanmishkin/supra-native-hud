@@ -1,3 +1,11 @@
+## Latest live result — corrected native PiP reaches the cluster (19 November 2026)
+
+Read [live results](CORRECTED-CANVAS-LIVE-2026-11-19.md). The owner saw our277×160 rectangle/cross in the gauge cluster; the windshield showed a factory arrow. Native pixels now demonstrably reach the cluster. Larger windshield rendering remains unproven. Both inline detailed-picture switch-distance cases showed only a roundabout, no custom marker; do not repeat them as untested.
+
+Live parser fix: accept nonzero notification session counters while retaining client0 and exact service/method/payload checks. Captured session45 replay and invalid-client rejection pass. Current experimental helper hash81f8531bbb1476a4da561b7b9126472aa7c3e39e56a297b0920a62e92385d641 supersedes the prepared5fe803… helper. V1 is unrelated and unchanged.
+
+All test cleanup passed. Owner confirmed V1 after restart; final readback verified15 pre/post files identical, advancing liveRPM, healthy supervisor, no lockout, empty secondaryoutput. Both captures zero drops. User told to unplug. Next offline target is cluster-to-windshield image forwarding, not generic PiP transport or Hz tests.
+
 ## Current state — native metadata correction and detailed-picture test (19 November 2026)
 
 V1 remains unchanged and owner-confirmed working after the last recovery. No vehicle connection occurred during this offline work. The exact current supervisor is pinned in `V1-CURRENT-RECOVERY.json`; do not restore the older baseline supervisor or the intermediate recovery candidate.
