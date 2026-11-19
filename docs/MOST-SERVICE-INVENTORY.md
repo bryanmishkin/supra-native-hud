@@ -54,3 +54,42 @@ Offline navigation binary review identified `HUDTerminal.ImageAddPolygonCall` an
 **MOST exists and is accessible on this Supra, as proven by live RPM. A separate direct MOST HUD drawing service is not yet proven and the expected FBlock 0x82/00 was not seen.** Current evidence more strongly supports an active Ethernet KOMBI graphics path. This may reflect hardware topology or runtime coding, not firmware removing a capability. The actual reason is not yet established.
 
 _Last checked against public source and current repo evidence: 2026-11-18._
+
+
+## Completed forensic inventory from the actual private capture archive (18 November 2026)
+
+**Status: offline analysis completed. No vehicle connection, transmission, or change to installed V1.** This section supersedes the earlier statement that the full registry had not yet been decoded. The three exact schema-2 outputs were recovered from the owner's private \`Supra-HUD-Diagnostics-2026-11-16.zip\` archive, under \`car-session-validation-2026-11-16/discovery-{baseline,radio,navigation}.log\`. The archived lines contain a DSI loader preamble followed by one observer JSON object. The data were parsed offline; the raw source and full address/headers report remain **private**, not committed.
+
+| Capture | Registered FBlock/instance keys | Distinct FBlocks | Messages | Distinct header patterns | RPM status \`0x05/00:0x0CD0\` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Normal HUD | 112 | 52 | 1,927 | 99 | 148 |
+| Radio selector | 112 | 52 | 2,998 | 143 | 148 |
+| Navigation guidance | 112 | 52 | 1,953 | 108 | 148 |
+
+All 112 registry service-to-node mappings matched **exactly** in all three windows. Each recorder reported zero sent HUD commands, zero dropped headers/snapshots and no captured message payloads. This is a strong *bounded* observation, not proof of comprehensive boot-time enumeration.
+
+### Concrete cross-checks
+
+- **Verified EngineSpeed2:** registry key \`0x0500\` (Vehicle FBlock \`0x05\`, instance 0) maps to provider node \`0x5000\` in all three captures. Each capture includes 148 outgoing factory \`STATUS\` messages with function \`0x0CD0\`, from \`0x5000\` to \`0x2021\`. The separately tested installed worker asks read-only GET \`0x0CD0\` from \`0x5000\` and decodes unsigned big-endian quarter RPM. The \`EngineSpeed2\` name and numeric binding are grounded in the captured HMI object/vtable analysis and our car's runtime, **not a claimed universal published BMW MOST definition**.
+- **Other Vehicle functions observed but not named:** \`0x0622\`, \`0x0623\`, \`0x0624\`, \`0x0CA1\`, \`0x0CA2\`, \`0x050C\`, \`0x0628\`, \`0x021F\`, \`0x0902\`, and more. These are **not** evidence that boost pressure is exposed over MOST. Their names, units, conversion, and source samples are **unknown** without separate code/payload attribution. Do not query guessed IDs.
+- **Other advertised services:** \`0x1502\`, \`0x150C\`, \`0x2000\`, \`0x4001\` and \`0x5200\` are all in the registry. Upstream NBT-AAD source identifies \`0x1502\` as an MFL control interface and \`0x2000\` as AudioMaster on its targets; this car's exact function semantics require correlation. Radio interactions increased observed \`0x4001\` traffic, but that correlation alone does not identify a protocol.
+- **HUDTerminal:** neither \`0x8200\` nor \`0x8202\` was advertised; no messages with FBlock byte \`0x82\` were seen. Note that the observer's JSON \`"fblock":82\` is **decimal 82, hexadecimal \`0x52\`**, which **is** registered at \`0x2021\`. Do not misread this as a discovered HUDTerminal.
+- **BOOST is not yet mapped to MOST:** SAE J1979/OBD service 01 PIDs \`0x0B\` (manifold absolute pressure), \`0x33\` (barometric pressure), \`0x70\` (boost pressure control) and \`0x87\` (intake manifold absolute pressure) are distinct **ECU diagnostic identifiers**, not MOST function codes. Support and units must be checked on the reference vehicle before considering a display feed. Factory engine pressure can be measured at different physical locations, so calling any one pressure “boost PSI” requires a defined gauge-pressure calculation.
+
+### Archived observations, source hashes
+
+| Window | SHA-256 of **entire log**, including DSI preamble |
+| --- | --- |
+| baseline | \`ca39b260ab40f1cd0aa07c2012731b70c93648db81cffd732bfb5c9a95700944\` |
+| radio | \`de1b651ede019c26c0727343d8b7d8e504992e5b7c28f310df74eca106cb72a0\` |
+| navigation | \`1b1f550a39773a39702fa856f1dfe4762f0082614a1836788a26a78685bd59d6\` |
+
+A reusable **offline-only**, validated \`most_service_mapper.py\` and the complete private CSV and Markdown maps were produced for the owner in the 2026-11-18 analysis artifact. The script accepts exact schema-2 observer logs/ZIP; it does not open a socket, send commands, probe an ECU, or install anything. Any distribution of the raw archive/report should be deliberate, as source logs may contain vehicle identifiers and proprietary data.
+
+### Prioritized follow-up without sending commands
+
+1. **Use the full inventory first:** We now know all advertised FBlocks from these windows. Correlate the \`0x05/00\` observed function IDs to names in existing captured HMI/runtime code before considering another car session. Avoid broad blind GET scanning.
+2. **Separate read-only discovery channels:** To identify additional telemetry, use passive observation of factory functions and/or narrowly allowlisted, source-backed GETs against registered providers. New on-car observations must be separately reviewed, bounded and hashed. Never spray functions, query nonexistent providers, or send a mutable setter/actuator/graphics command as “discovery”.
+3. **Boost:** Independently validate any DME/OBD absolute pressure signal and atmospheric reference, including sensor location, while parked under controlled conditions. No boost value is enabled for V1 and no on-car pressure query was executed as part of this analysis.
+4. **HUD drawing:** The missing \`0x82\` registry remains meaningful. A MOST-based polygon sender is not authorized by this inventory. Continue offline trace of factory transport selection and bound display providers; preserve V1 factory handoff and cleanup rules.
+
