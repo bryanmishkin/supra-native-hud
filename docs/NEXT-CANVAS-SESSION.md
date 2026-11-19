@@ -1,45 +1,51 @@
-# Next session: combined bitmap and canvas tests
+# Next session: locate usable V2 drawing areas
 
-Owner requested these cases in the next trip on 19 November 2026. Keep installed V1 intact; temporary tests only, parked outdoors. Allow about 45 minutes, including recovery and V1 verification; this is an estimate, not a deadline guarantee. Announce WATCH NOW only after posting succeeds. Canvas windows are30seconds; rate confirmations are120seconds.
+**No Hz tests. V1 stays installed unchanged.** The purpose is to fill the [whole HUD capability map](HUD-CAPABILITY-MAP.md): actual image placement, usable extent, scaling/clipping, display destination and cleanup. Main HUD ownership remains a separate target; a widget result must not be called fullscreen access.
 
-## Before drawing
+## Offline package now available
 
-1. Confirm V1 updating, route guidance stopped, radio/phone/voice overlays closed, HUD Navigation checked. Verify V1 baseline hashes and recovery method.
-2. Obtain this boot's B00E profile, idle focus, and full factory Carousel model0x6d snapshot. Save exact source capture. Do not use an old research snapshot or invent admission flags. If a brief ordinary menu action is needed, begin recording first, capture the actual Carousel update, then return to idle. A radio/voice model is not a substitute.
-3. Pause V1 cleanly using V2-CAR-TEST.md; verify test bitmap absence. Record admission from current evidence. If the current Carousel restoration snapshot is unavailable, B00E cases stay blocked; tell the owner immediately, before repeated drawing attempts.
+- Corrected Carousel runner replaces one content reference, not the separate icon. Both content fields have a factory bitmap-producing path.
+- Entertainment codec replays 180 actual factory models exactly. The same bounded runner supports model0x66/type0x16 with an explicit table row/content column.
+- 36,64,96,128 square cross and IU fixtures for both models. Thirty seconds per visible case, counted after acknowledged posting. Independent cases do not stop merely because another layout is blank; uncertain cleanup always stops further drawing.
+- Original snapshot, exact candidate bytes, upload/presence replies, focus, commits, restoration, disposal and final absence are retained.
+- Fixture snapshots are historical offline inputs. They never satisfy next-session admission.
 
-## Ordered cases
+## One session, priority order
 
-| Order | Path / item | Image | Bitmap size | Proceed only if |
-|---|---|---|---|---|
-| 1 | Known B006 road-icon path | White border/cross | 150×36 | V1 paused; existing runner admission passes |
-| 2 | Same B006 path | IU trident | 150×36 | Case1 visible and cleanly removed |
-| 3 | B00E Carousel icon field | White border/cross | 36×36 | Current-session snapshot/admission and pool checks pass |
-| 4 | Same B00E item | IU trident | 36×36 | Case3 custom pixels visible and cleanup passes |
-| 5 | Same B00E item, maximum advertised bitmap | White border/cross | 128×128 | Case4 visible and cleanup passes |
-| 6 | Same B00E item | IU trident | 128×128 | Case5 visible without concerning clipping and cleanup passes |
+1. Verify installed V1 baseline/runtime and collect existing startup/fault evidence before resets. Record the main interface/provider/advertised-model inventory from this same boot; compare against saved data rather than redownloading unchanged binaries.
+2. Start a bounded passive recorder before owner actions. Capture the full source Carousel using MODE, then the station-list Entertainment model. Save successful focus/commit and idle withdrawal for each. Read and validate both exact bodies immediately. Do not treat only a source menu as coverage of both layouts.
+3. Pause V1 cleanly. Verify factory overlays closed, idle focus committed, snapshots from this boot, bitmap pool available, and known recovery. No changes to startup, enabled tokens or installed workers.
+4. **Binding block:** Carousel selected content field1 then field2; Entertainment content column1 then column2 at an explicitly identified visible table row. Use distinct36×36 cross and IU images to distinguish rendered pixels from a factory frame. Preserve all other model content/state. A historical row0 fixture does not prove row0 is currently visible; first correlate the exact factory table with the displayed labels. Blank output on an unlocated row is inconclusive.
+5. **Area block:** For each working placement, try64,96,128 with a complete border/cross. If128clips after64works,96bounds the transition. Do not repeat a failed binding at larger sizes. Record natural scaling versus fixed physical extent, aspect ratio, missing border edges, widget bounds and location relative to speed/limit. Use the same fixed camera view where practical; photographs measure apparent proportions, not native HUD resolution.
+6. Confirm the IU at the largest unclipped size. Record windshield and cluster separately, colors and whether the factory icon/text remains. Do not infer transparency from opaque black backgrounds; alpha behavior is unverified and not part of this opaque-image package.
+7. Withdraw focus, restore each exact current factory model, then remove only the tracked bitmap and check absence. Once all tests finish, restart normally, verify unchanged V1 files/configuration and advancing RPM/heartbeat, and confirm V1 visible before unplugging.
 
-Between cases2and3, run the [Hz validation sweep](HUD-HZ-VALIDATION.md) on the known B006 path. This is a separate measurement block:30-second numbered-frame steps, then120-second confirmations near the measured boundary. High-frame-rate video is required to verify visible Hz; absent usable video, do not claim a visible maximum.
+Start with binding and the first working area's size ladder. Extra size cases are conditional, not mandatory repetitions. Budget depends on observed results; do not spend the session on throughput or unrelated radio/navigation endurance campaigns.
 
-These compare two established protocol paths/item types; they do not assert two independently usable windshield canvases. Size means bitmap dimensions. Actual windshield extent, scaling and clipping are measurements from this session.
+## Main windshield surface: data question, not another blank-image attempt
 
-For each case record: exact source pixel hash; request/response journal; posting time; windshield/cluster/both/neither; full border visible or clipped; apparent size compared with V1; image absence after removal; restore/dispose ACKs and final presence=false. Ask the owner to distinguish custom trident/cross from factory arrows. Save a stationary photo/video if the owner supplies one; it is optional.
+The source/entertainment cases above map two receiver-rendered widget placements. They do not address arbitrary x/y, root resolution or z-order. During the same session, retain all services and provider metadata in the existing passive recordings, plus complete existing startup configuration replies. Main HUD controls traced offline include ControlHUD2, StatusHUD2 and ControlHUD2KOMBI registration values410/411/415. These values are **not authorization to send guessed requests** and their current network route is not verified.
 
-Do not automatically chain cases. Obtain visual removal confirmation before the next. If the small B00E custom image is absent, an arrow appears instead, or upload/binding is rejected, save the exact result and stop the dependent size ladder. Do not repeat the same failure at larger sizes. Uncertain cleanup takes priority over further tests.
+Before any main-surface drawing test, identify the receiving implementation/API, accepted image or primitive format, dimensions/placement contract and reversible removal. No root-canvas sender exists in this kit. The main surface, speed/limit, warning and alignment regions remain explicitly unresolved in the capability map; do not declare the whole investigation complete after a content-cell success. Existing height/door/voice/phone recordings must be analyzed before requesting repeats.
 
-## Commands and assets
+## Commands
 
-- Generate fixtures: `python3 tools/prepare_bitmap_test_set.py NEW_DIRECTORY`.
-- Cases1/2 use `tools/run_shared_roadicon_trial.py` with existing verified session arguments, `--guidance-stopped --graph-variant empty-direction-zero --window-seconds 30 --bitmap-bgra` pointing to the matching150×36 file. Do not feed a square fixture to this runner.
-- Cases3–6 use `tools/b00e_bitmap_trial.py`; exact current-admission contract is in B00E-EXECUTABLE-TEST.md. Refresh admission before each case. Pass `--size 36` or `--size 128` and the matching BGRA fixture. Existing verified loopback SSH forward required. No persistent installation or new factory instance.
-- Prepared fixtures are in the private `b00e-binding-deep-2026-11-19/markers` output directory and accompanying Drive archive. Public source regenerates them identically.
+Offline generation, from repository root:
 
-Phone, voice, entertainment-list bitmap substitution and PiP expansion are **not** additional drawing cases in this trip: no complete executable binding/restoration contract exists for them. Existing captures remain available for offline work. Do not turn this session into open-ended discovery.
+```sh
+python3 tools/prepare_canvas_binding_tests.py \
+  --snapshot /absolute/path/current-or-historical-carousel-model.bin \
+  --entertainment-snapshot /absolute/path/entertainment-model.bin \
+  --output /absolute/path/new-offline-kit
+```
 
-## Exit condition
+Live invocation only after current admission and verified local forwarding:
 
-Withdraw the final test, restore the exact factory Carousel snapshot, remove only the tracked bitmap, and verify absence. Restore V1 with the established restart procedure, verify unchanged baseline files and smooth live RPM, and obtain visual confirmation that both displays are normal. Preserve all journals and owner observations, then tell the owner they can unplug. Push derived findings/source to GitHub and archive private evidence to Drive.
+```sh
+python3 tools/b00e_bitmap_trial.py --execute --port "$VERIFIED_LOCAL_PORT" \
+  --admission "$CURRENT_ADMISSION" --bitmap-bgra "$MARKER_BGRA" \
+  --size 36 --content-field 1 --output "$NEW_CASE"
+# Entertainment: use that model's admission and --row R --column C instead.
+```
 
-## Canvas-agent final review
-
-The canvas agent reviewed this combined plan on19November2026 and confirmed all six supported executable cases are included.64×64 and96×96 are not prerequisites. If36×36 passes but128×128 fails or clips, record those tested bounds; do not claim an exact size limit. Phone, voice and PiP drawing remain excluded. Current-session admission is still mandatory before B00E execution. The Hz probe measures its stated test path; a verified hardware-wide maximum must not be inferred from a host-limited rate.
+Admission uses `restore_model_body_hex` (legacy `restore_carousel_body_hex` remains accepted), the exact recognized B00E configuration and the existing current-session assertions. A snapshot must contain no tracked test RID in any original resource reference. Entertainment rows are transmitted-array indices, not guessed selected station numbers. Columns start at1 for content; column0 is the separate icon and rejected.

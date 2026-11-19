@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Bounded shared-carousel experiment. Offline by default; never modifies V1.
+"""Bounded shared-widget content experiment. Offline by default; never modifies V1.
 
 Requires a current-session factory Carousel snapshot to restore. A generated
 bitmap or protocol acknowledgment alone does not establish windshield display.
 """
 import argparse,hashlib,json,signal,socket,struct,time
 from pathlib import Path
-from b00e_carousel import decode,encode
+from b00e_carousel import decode,encode,replace_selected_content
+import b00e_entertainment as entertainment
 from b00e_resource_lifecycle import check_body,check_reply,dispose_resource_body
 from ric_resource import encode_bitmap_body
 from ric_rle32 import encode_bgra,decode_bgra
@@ -22,15 +23,32 @@ def focus(mid):
     payload=struct.pack('>IBI',0x65,0x2e,mid)
     return struct.pack('>IIBII',HANDLE,0x65,0x2e,len(payload),3)+payload
 
-class Trial:
-    def __init__(self,exchange,restore,record,observe):
+def prepare_binding(restore,content_field=1,row=None,column=None):
+    if len(restore)<9:raise ValueError('Short model snapshot')
+    typ=restore[8]
+    if typ==0x1c:
+        if row is not None or column is not None:raise ValueError('Carousel does not use table coordinates')
         original=decode(restore)
-        if (original['handle'],original['model_id'],original['model_type'])!=(100,0x6d,0x1c):raise ValueError('Expected factory Carousel snapshot')
-        if any(RID in row for row in original['elements']):raise ValueError('Restoration snapshot references the test slot')
+        if any(RID in item for item in original['elements']):raise ValueError('Restoration snapshot references the test slot')
+        candidate=replace_selected_content(restore,RID,content_field)
+        return candidate,0x6d,dict(content_field=content_field)
+    if typ==0x16:
+        original=entertainment.decode(restore)
+        refs=[original['header_reference']]+original['trailing_references']+[cell[0] for item in original['rows'] for cell in item]
+        if RID in refs:raise ValueError('Restoration snapshot references the test slot')
+        candidate=entertainment.replace_content_cell(restore,RID,row,column)
+        return candidate,0x66,dict(row=row,column=column)
+    raise ValueError('Only traced Carousel and Entertainment models supported')
+
+class Trial:
+    def __init__(self,exchange,restore,record,observe,content_field=1,row=None,column=None):
+        self.candidate,self.model_id,binding=prepare_binding(restore,content_field,row,column)
         self.exchange,self.restore,self.record,self.observe=exchange,restore,record,observe
         self.seq=0;self.uploaded=False;self.model_attempted=False;self.cleaning=False
         self.result=dict(journal=[],cleanup=[],visual_pass=False,shared_factory_session=True,
-                         exclusive_ownership=False,status='prepared')
+                         exclusive_ownership=False,status='prepared',
+                         binding='captured-content-cell',model_id=self.model_id,cell=binding,
+                         candidate_body_sha256=hashlib.sha256(self.candidate).hexdigest())
     def req(self,method,body,empty=True):
         self.seq+=1
         if method not in (2,3,4,8,9,11):raise ValueError('Forbidden method')
@@ -51,7 +69,7 @@ class Trial:
         except Exception as e:row['error']=str(e)
         self.record(self.result);return row['ok']
     def run(self,raw,width,height):
-        if (width,height) not in ((36,36),(128,128)):raise ValueError('Unsupported bounded candidate')
+        if (width,height) not in ((36,36),(64,64),(96,96),(128,128)):raise ValueError('Unsupported bounded candidate')
         if len(raw)!=width*height*4 or any(a!=255 for a in raw[3::4]):raise ValueError('Expected opaque BGRA')
         image=encode_bgra(raw)
         if decode_bgra(image,width*height)!=raw:raise ValueError('Encoding mismatch')
@@ -65,10 +83,10 @@ class Trial:
             self.uploaded=True # Intent before send: lost ACK may still mean allocated.
             self.req(3,encode_bitmap_body(100,RID,1,[width,height],image))
             if not self.present(RID):raise ValueError('Upload not present')
-            # Same item layout as observed Carousel; only image reference and text absence differ.
-            candidate=encode(100,0x6d,0x1c,0,[[RID,ABSENT,ABSENT,ABSENT]],bytes.fromhex('000100'))
+            # Preserve the factory model; replace only one traced bitmap-capable cell.
+            candidate=self.candidate
             self.model_attempted=True
-            self.req(11,candidate);self.req(9,focus(0x6d));self.req(4,struct.pack('>I',100))
+            self.req(11,candidate);self.req(9,focus(self.model_id));self.req(4,struct.pack('>I',100))
             self.result['status']='observing';self.record(self.result)
             self.observe(self) # 30s; read-only resource checks keep transport drained.
             self.result['status']='window_finished'
@@ -80,7 +98,7 @@ class Trial:
             if self.model_attempted:
                 # Restore full captured factory model before deleting our image.
                 for label,m,b in [('withdraw focus',9,focus(ABSENT)),('commit withdrawal',4,struct.pack('>I',100)),
-                                  ('restore factory Carousel',11,self.restore),('commit restore',4,struct.pack('>I',100))]:
+                                  ('restore exact factory model',11,self.restore),('commit restore',4,struct.pack('>I',100))]:
                     ok=self.step(label,lambda m=m,b=b:self.req(m,b));detached=ok and detached
             if self.uploaded and detached:
                 self.step('dispose only test bitmap',lambda:self.req(8,dispose_resource_body(100,RID)))
@@ -97,10 +115,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--execute',action='store_true');p.add_argument('--port',type=int)
     p.add_argument('--admission',type=Path);p.add_argument('--bitmap-bgra',type=Path)
-    p.add_argument('--size',type=int,choices=[36,128]);p.add_argument('--output',type=Path)
+    p.add_argument('--size',type=int,choices=[36,64,96,128]);p.add_argument('--output',type=Path)
+    p.add_argument('--content-field',type=int,choices=[1,2],default=1)
+    p.add_argument('--row',type=int,help='Entertainment transmitted-array row, explicit')
+    p.add_argument('--column',type=int,help='Entertainment existing content column, explicit; never icon column 0')
     a=p.parse_args()
     if not a.execute:
-        print('Offline: B00E shared Carousel test; 30s; restore current factory snapshot; dispose/check only test bitmap. Requires fresh admission; no connection made.');return
+        print('Offline: B00E Carousel/Entertainment content test; 30s; restore current factory snapshot; dispose/check only test bitmap. Requires fresh admission; no connection made.');return
     if not all([a.port,a.admission,a.bitmap_bgra,a.size,a.output]):p.error('All live arguments are required')
     if not 1<=a.port<=65535:p.error('Invalid loopback forward port')
     admission=json.loads(a.admission.read_text())
@@ -109,14 +130,14 @@ def main():
     if any(admission.get(k) is not True for k in required):raise ValueError('Missing verified admission condition')
     config=bytes.fromhex(admission['configuration_body_hex'])
     if hashlib.sha256(config).hexdigest()!=CONFIG_SHA:raise ValueError('Unrecognized B00E profile')
-    restore=bytes.fromhex(admission['restore_carousel_body_hex'])
-    decode(restore) # Full identity validated by Trial before first request.
-    if any(RID in row for row in decode(restore)['elements']):raise ValueError('Restoration snapshot references the test slot')
+    restore=bytes.fromhex(admission.get('restore_model_body_hex') or admission['restore_carousel_body_hex'])
+    candidate,model_id,_=prepare_binding(restore,a.content_field,a.row,a.column)
     raw=a.bitmap_bgra.read_bytes()
     if len(raw)!=a.size*a.size*4 or any(v!=255 for v in raw[3::4]):raise ValueError('Invalid opaque marker')
     a.output.mkdir(parents=True,exist_ok=False)
     (a.output/'admission.json').write_text(json.dumps(admission,indent=2))
     (a.output/'restore-model.bin').write_bytes(restore)
+    (a.output/'candidate-model.bin').write_bytes(candidate)
     def record(r):
         t=a.output/'result.tmp';t.write_text(json.dumps(r,indent=2));t.replace(a.output/'result.json')
     def observe(t):
@@ -131,7 +152,7 @@ def main():
         raise KeyboardInterrupt('Operator cancellation')
     signal.signal(signal.SIGTERM,cancel);signal.signal(signal.SIGINT,cancel)
     with socket.create_connection(('127.0.0.1',a.port),timeout=2) as sock:
-        trial=Trial(TcpExchange(sock,a.output),restore,record,observe);active.append(trial)
+        trial=Trial(TcpExchange(sock,a.output),restore,record,observe,a.content_field,a.row,a.column);active.append(trial)
         r=trial.run(raw,a.size,a.size)
     print(json.dumps(r,indent=2))
     if not r['protocol_cleanup_ok'] or r['status']!='window_finished':raise SystemExit(2)

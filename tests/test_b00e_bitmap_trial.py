@@ -3,10 +3,11 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from b00e_bitmap_trial import Trial,RID
 from b00e_carousel import encode
+from b00e_entertainment import encode as encode_ent
 from ric_rle32 import marker_bgra
 RESTORE=encode(100,0x6d,0x1c,0,[[0x07000029,0xffffffff,0xffffffff,0xffffffff]],b'\0\1\0')
 class TrialTests(unittest.TestCase):
-    def run_case(self,fail_method=None,busy=False,interrupt=False):
+    def run_case(self,fail_method=None,busy=False,interrupt=False,restore=RESTORE,row=None,column=None):
         calls=[];allocated=False;failed=False
         def exchange(packet,timeout):
             nonlocal allocated,failed
@@ -20,8 +21,20 @@ class TrialTests(unittest.TestCase):
         def observe(t):
             if interrupt:raise KeyboardInterrupt()
             self.assertTrue(t.present(RID))
-        r=Trial(exchange,RESTORE,lambda r:None,observe).run(marker_bgra(36,36),36,36)
+        r=Trial(exchange,restore,lambda r:None,observe,row=row,column=column).run(marker_bgra(36,36),36,36)
         return r,calls
+    def test_entertainment_focus_and_exact_restore(self):
+        restore=encode_ent(100,0x66,0x16,[0]*6,0xffffffff,[[[0x07000001,0],[0x03000001,0]]],[0xffffffff]*4)
+        r,c=self.run_case(restore=restore,row=0,column=1)
+        self.assertTrue(r['protocol_cleanup_ok'])
+        self.assertEqual(r['model_id'],0x66)
+        focus_bodies=[b for m,b in c if m==9]
+        self.assertEqual(focus_bodies[0][-4:],struct.pack('>I',0x66))
+        self.assertLess(next(i for i,(m,b) in enumerate(c) if m==11 and b==restore),next(i for i,(m,b) in enumerate(c) if m==8))
+    def test_entertainment_requires_explicit_existing_cell(self):
+        restore=encode_ent(100,0x66,0x16,[0]*6,0xffffffff,[[[0x07000001,0],[0x03000001,0]]],[0xffffffff]*4)
+        with self.assertRaises(ValueError):self.run_case(restore=restore)
+        with self.assertRaises(ValueError):self.run_case(restore=restore,row=0,column=0)
     def test_exact_restore_before_delete(self):
         r,c=self.run_case();self.assertTrue(r['protocol_cleanup_ok']);self.assertFalse(r['visual_pass'])
         restore=next(i for i,(m,b) in enumerate(c) if m==11 and b==RESTORE)

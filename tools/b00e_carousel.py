@@ -33,3 +33,23 @@ def decode(body):
     elements=[list(struct.unpack('>IIII',b.take(16))) for _ in range(n//16)]
     trailing=b.take(3);b.finish()
     return dict(handle=handle,model_id=mid,model_type=typ,index=index,elements=elements,trailing=trailing)
+
+def replace_selected_content(body,resource_id,content_field):
+    """Change one selected content reference in an exact factory snapshot.
+
+    HMI 0x2586134/0x2586154 uses the bitmap-capable allocator for these
+    two fields. The icon and other content remain unchanged. Receiver geometry
+    and actual rendering still require visual verification.
+    """
+    if type(content_field) is not int or content_field not in (1,2):
+        raise ValueError('Only traced content fields 1 and 2 are supported')
+    model=decode(body)
+    if (model['handle'],model['model_id'],model['model_type'])!=(100,0x6d,0x1c):
+        raise ValueError('Expected captured factory Carousel')
+    if not model['elements'] or model['index']>=len(model['elements']):
+        raise ValueError('Snapshot has no addressable selected item')
+    u32(resource_id)
+    if resource_id==0xffffffff:raise ValueError('Expected an image reference')
+    if encode(**model)!=body:raise ValueError('Snapshot does not round-trip exactly')
+    model['elements'][model['index']][content_field]=resource_id
+    return encode(**model)
