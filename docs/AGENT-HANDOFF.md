@@ -1,3 +1,5 @@
+> Latest bitmap work: [prepared multi-item test set](BITMAP-TEST-SET.md). Six hashed marker fixtures can be reproduced offline; B006 static window supports 30 seconds. B00E carousel image-reference field is not yet proven. Do not treat the fixture set as a B00E live kit.
+
 > Owner-selected marker: [IU trident test](IU-TRIDENT-TEST.md). Parallel offline results: [posted resources](B00E-POSTED-GRAPHICS-2026-11-19.md) and [B00E advertised canvas limits](B00E-CANVAS-LIMITS-2026-11-19.md). 128×128 RLE32 capacity confirmed; image binding/ownership still unproven. V1 unchanged.
 
 > Latest decoded payloads: [B011 and B00E analysis](HUD-FACTORY-PAYLOADS-2026-11-19.md). B011 returns 81×81 check-control PNGs cluster→HU; radio/phone/voice use structured B00E models with exact focus withdrawal. Do not mistake either for a proven arbitrary canvas.

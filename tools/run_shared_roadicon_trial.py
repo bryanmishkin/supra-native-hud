@@ -16,7 +16,7 @@ parser.add_argument('--renderer',type=Path,help='Locally built native bitmap ren
 parser.add_argument('--graph-variant',choices=['control','no-detail','road-only','empty-detail','empty-direction-zero'],default='control',help='Control and empty-direction-zero live verified on this Supra; other variants experimental')
 parser.add_argument('--bitmap-bgra',type=Path,help='Optional 150x36 opaque BGRA test frame')
 parser.add_argument('--guidance-stopped',action='store_true',help='Operator confirmed guidance and selector stopped')
-parser.add_argument('--window-seconds',type=int,choices=range(1,16),default=15)
+parser.add_argument('--window-seconds',type=int,choices=range(1,31),default=15)
 parser.add_argument('--create-response',type=Path)
 parser.add_argument('--support-stream',type=Path)
 parser.add_argument('--ssh-socket',type=Path)
@@ -24,7 +24,7 @@ parser.add_argument('--head')
 parser.add_argument('--output',type=Path)
 args=parser.parse_args()
 if not args.execute:
- print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, 15 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
+ print('Offline plan: confirmed shared profile, free bitmap pool, RLE32 road-icon marker, bounded 1–30 seconds, withdraw references, delete only uploaded bitmap, check absence. Requires current verified SSH master and stopped guidance. Never disposes factory instance.');sys.exit(0)
 if not all((args.create_response,args.support_stream,args.ssh_socket,args.head,args.output)):parser.error('All file/connection/output arguments required')
 if (args.live_rpm_local or args.bitmap_bgra or args.graph_variant!='control') and not args.guidance_stopped:parser.error('Custom frames require --guidance-stopped')
 from ric_rle32 import swap_red_blue
