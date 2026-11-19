@@ -53,6 +53,12 @@ def parse_sd(someip):
             if len(b)==9:
                 opt.update(address='.'.join(str(x) for x in b[1:5]),transport=b[6],port=struct.unpack_from('>H',b,7)[0])
         opts.append(opt);at+=3+length
+    for entry in entries:
+        chosen=[]
+        for index,count in zip((entry['first_option_index'],entry['second_option_index']),entry['option_counts']):
+            if index+count>len(opts):raise ValueError('SD entry options out of bounds')
+            chosen.extend(opts[index:index+count])
+        entry['referenced_options']=chosen
     return dict(flags=flags,entries=entries,options=opts,message_type=typ,return_code=code)
 
 
@@ -93,13 +99,14 @@ def pcap_inventory(raw):
             key=(e['kind'],e['service_id'],e['instance_id'],src,e['major'],e['minor'])
             services[key]+=1
             examples[key]=e
-            offer_endpoints[key]=doc['options']
+            offer_endpoints[key]=e['referenced_options']
     offers=[]
     for (kind,service,instance,src,major,minor),count in sorted(services.items()):
         offers.append(dict(kind=kind,service_id=service,instance_id=instance,source_ip=src,
                            major=major,minor=minor,count=count,
                            options_seen=offer_endpoints[(kind,service,instance,src,major,minor)],
-                           endpoint_claim_proven=False))
+                           endpoint_claim_proven=False,
+                           options_associated_by_entry_indices=True))
     return dict(schema=1,sha256=hashlib.sha256(raw).hexdigest(),packets=packets,
                 someip_sd_packets=sd_packets,malformed_sd=malformed,
                 services=offers,service_count=len({(x['service_id'],x['instance_id']) for x in offers if x['kind']=='offer'}),
@@ -123,4 +130,3 @@ def main(argv=None):
         return 0
     except (OSError,ValueError) as e:ap.exit(2,str(e)+'\n')
 if __name__=='__main__':raise SystemExit(main())
-
