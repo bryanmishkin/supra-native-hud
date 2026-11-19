@@ -1,3 +1,5 @@
+> Next-session addition: [visible-Hz validation](HUD-HZ-VALIDATION.md), executable synthetic sequence probe. No verified maximum yet; video and repeated sustained runs required. Separate harness saturation from receiver limits.
+
 > Next car trip: [combined canvas session](NEXT-CANVAS-SESSION.md), six ordered cases with conditional progression, 30-second windows, current-session snapshot admission, and V1 restoration.
 
 > New: [B00E executable experiment and admission contract](B00E-EXECUTABLE-TEST.md). Exact Carousel icon field and shared factory model0x6d traced; 39 actual model bodies re-encoded. Runner exists but requires current-session snapshot/admission; custom bitmap acceptance remains the receiver test, not a proven feature.

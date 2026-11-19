@@ -7,6 +7,8 @@ from ric_live_trial import TcpExchange
 from ric_graph import decode_graph_body,encode_description_body
 parser=argparse.ArgumentParser(description='Live-verified shared road-icon marker test; requires stopped factory guidance.')
 parser.add_argument('--execute',action='store_true')
+parser.add_argument('--synthetic-hz',type=int,choices=[1,2,5,10,15,20,30,40,60],help='Experimental numbered-frame throughput test, no RPM sampling')
+parser.add_argument('--hz-seconds',type=int,choices=[30,120],default=30)
 parser.add_argument('--double-buffer',action='store_true',help='Experimental two-slot switch, no deliberate blank between frames')
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')
 parser.add_argument('--live-seconds',type=int,choices=[10,30],default=10)
@@ -32,7 +34,8 @@ def display_pixels(raw):return swap_red_blue(raw) if args.swap_red_blue else raw
 custom = args.bitmap_bgra.read_bytes() if args.bitmap_bgra else None
 if custom is not None and (len(custom)!=150*36*4 or any(x!=255 for x in custom[3::4])):parser.error('Expected exactly 150x36 opaque BGRA')
 if args.live_rpm_local and args.graph_variant in ('empty-detail','empty-direction-zero') and not args.double_buffer:parser.error('Empty-detail live test requires two-slot updates')
-if args.double_buffer and not args.live_rpm_local:parser.error('Double buffer requires live RPM')
+if args.synthetic_hz and (args.live_rpm_local or args.bitmap_bgra or not args.double_buffer or args.graph_variant!='empty-direction-zero' or not args.guidance_stopped):parser.error('Rate test requires double buffer, stopped guidance, empty-direction-zero, no live RPM or static bitmap')
+if args.double_buffer and not (args.live_rpm_local or args.synthetic_hz):parser.error('Double buffer requires live RPM or synthetic rate test')
 if args.live_rpm_local and (not args.renderer or args.bitmap_bgra or args.graph_variant not in ('control','empty-detail','empty-direction-zero')):parser.error('Live RPM requires renderer, supported graph and no static bitmap')
 import ipaddress
 ipaddress.IPv4Address(args.head)
@@ -99,10 +102,12 @@ f='127.0.0.1:%d:160.48.199.96:30502'%port
 r=subprocess.run(base+['-O','forward','-L',f,destination],capture_output=True);assert r.returncode==0,r.stderr
 report={}
 def record(r):
+ r['synthetic_hz']=args.synthetic_hz;r['hz_seconds']=args.hz_seconds
  r['renderer_style']=args.renderer_style;r['swap_red_blue']=args.swap_red_blue
  r['live_rpm']=bool(args.live_rpm_local);r['double_buffer']=args.double_buffer;r['graph_variant']=args.graph_variant
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
 def observe(phase,seconds):
+ if args.synthetic_hz:return synthetic_updates()
  if args.live_rpm_local:return live_updates()
  print('TEST WINDOW ACTIVE: %d seconds; keep factory guidance stopped. Ctrl-C withdraws the test.'%args.window_seconds,flush=True)
  time.sleep(args.window_seconds);return None
@@ -117,6 +122,10 @@ class BitmapSession(SharedSession):
   self._empty(3,encode_bitmap_body(self.handle,rid,typ,pair,image))
   if not self._check(rid,typ):raise RuntimeError('Uploaded bitmap not present')
  def upload_marker(self):
+  if args.synthetic_hz:
+   from hz_probe import frame
+   from ric_rle32 import encode_bgra
+   a=self.allocation;self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(frame(0)));return
   if args.live_rpm_local:
    raw=measured_frame();a=self.allocation
    from ric_rle32 import encode_bgra
@@ -185,6 +194,28 @@ def live_updates():
   return None
  except NavigationYield:
   stop_reason='factory_navigation_request';return None
+ finally:session.timeout=2
+
+def synthetic_updates():
+ from hz_probe import run,frame
+ from ric_rle32 import encode_bgra
+ session=live_session;rid=a['resource_id'];typ=a['resource_type']
+ print('WATCH NOW: numbered frames at requested %d Hz for %d seconds; video needed for visible-rate verification'%(args.synthetic_hz,args.hz_seconds),flush=True)
+ def publish(seq):
+  nonlocal rid
+  check_yield(root)
+  new_id=next(x for x in session.upload_ids if x!=rid)
+  session.upload_bitmap(new_id,typ,a['dimensions'],encode_bgra(frame(seq)))
+  check_yield(root)
+  nextroad=bytearray(road);nextroad[32:36]=struct.pack('>I',new_id)
+  session._empty(14,bytes(nextroad));posted=time.monotonic()
+  session._empty(8,struct.pack('>II',200,rid))
+  if session._check(rid,typ):raise RuntimeError('Previous rate-test bitmap still present')
+  del session.resources[rid];rid=new_id;return posted
+ (root/'hz-timing.json').write_text(json.dumps(dict(requested_hz=args.synthetic_hz,seconds=args.hz_seconds,synthetic=True,visible_hz_verified=False,scope='B006 host test harness, not native production worker maximum'),indent=2))
+ def save_rows(rows):
+  with (root/'hz-frames.jsonl').open('a') as log:log.write(json.dumps(rows[-1])+'\n')
+ try:return run(args.synthetic_hz,args.hz_seconds,publish,save_rows)
  finally:session.timeout=2
 
 def cleanup():signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)

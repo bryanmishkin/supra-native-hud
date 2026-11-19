@@ -1,6 +1,6 @@
 # Next session: combined bitmap and canvas tests
 
-Owner requested these cases in the next trip on 19 November 2026. Keep installed V1 intact; temporary tests only, parked outdoors. Allow about 30 minutes, including recovery and V1 verification; this is an estimate, not a deadline guarantee. Announce WATCH NOW only after posting succeeds. Every actual display window is 30 seconds.
+Owner requested these cases in the next trip on 19 November 2026. Keep installed V1 intact; temporary tests only, parked outdoors. Allow about 45 minutes, including recovery and V1 verification; this is an estimate, not a deadline guarantee. Announce WATCH NOW only after posting succeeds. Canvas windows are30seconds; rate confirmations are120seconds.
 
 ## Before drawing
 
@@ -18,6 +18,8 @@ Owner requested these cases in the next trip on 19 November 2026. Keep installed
 | 4 | Same B00E item | IU trident | 36×36 | Case3 custom pixels visible and cleanup passes |
 | 5 | Same B00E item, maximum advertised bitmap | White border/cross | 128×128 | Case4 visible and cleanup passes |
 | 6 | Same B00E item | IU trident | 128×128 | Case5 visible without concerning clipping and cleanup passes |
+
+Between cases2and3, run the [Hz validation sweep](HUD-HZ-VALIDATION.md) on the known B006 path. This is a separate measurement block:30-second numbered-frame steps, then120-second confirmations near the measured boundary. High-frame-rate video is required to verify visible Hz; absent usable video, do not claim a visible maximum.
 
 These compare two established protocol paths/item types; they do not assert two independently usable windshield canvases. Size means bitmap dimensions. Actual windshield extent, scaling and clipping are measurements from this session.
 
