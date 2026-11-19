@@ -1,3 +1,5 @@
+> Follow-up: the [guarded executable test](B00E-EXECUTABLE-TEST.md) and reproducible trident fixtures are now implemented. Current-session admission is mandatory; custom bitmap display acceptance is not yet vehicle-verified.
+
 # IU trident marker test — owner direction
 
 19 November 2026: use the Indiana University trident as the distinctive custom-image marker if the proposed B00E bitmap is bindable. Owner explicitly selected this marker. This records test intent, not vehicle readiness or permission to overwrite factory resources.
