@@ -93,6 +93,17 @@ python3 tools/canvas_stage_diff.py "$PRIVATE_OUTPUT"/baseline \
 
 The current probe **does not implement** network capture on its own. Run the existing recorder concurrently as above. The current probe also does **not** decode and live-send the 320 variant-3 PiP payload.
 
+
+## 320x320 drawing-test fixture prepared (offline only)
+
+`tools/canvas_pip320_marker.py` generates an **opaque 320x320 BGRA marker**, plus a PNG reference preview and SHA256 manifest. The marker is deliberately asymmetric: different-colored corner blocks, a five-pixel inset white border, central cross and calibration tick marks. It is suited to observing orientation, clipping, scaling, and placement once a separately validated type-2 PiP serializer/ICHUD binding exists.
+
+```bash
+python3 tools/canvas_pip320_marker.py --output "$PRIVATE_OUTPUT/pip320-reference"
+```
+
+**Important:** The generated BGRA bytes are *not* a valid B006 PiP variant-3 payload by themselves. The new tool does **not** upload/draw anything and will not be substituted for an unreviewed on-car sender. Before the first trip, a 320 test is permitted only after variant-3 content encoding, on-screen binding, factory priority and verified cleanup pass the previously described gates. Otherwise take the read-only presence evidence and defer live drawing. The second-trip design can use the same marker across other supported surfaces after each contract is established.
+
 ## First-trip evidence acceptance matrix
 
 | Question | Required evidence | If missing |
