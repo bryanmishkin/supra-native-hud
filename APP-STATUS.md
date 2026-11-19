@@ -1,5 +1,7 @@
 # Verified application status
 
+**19 November update:** the extended drive exposed a clean pre-drawing factory-event lockout. A corrected supervisor is installed; restart acceptance is pending. The worker and startup wrappers remain the 18 November versions. See [recovery evidence](docs/V1-ADMISSION-RECOVERY-2026-11-19.md). The earlier drive below remains historical evidence.
+
 Current V1: **`v1-baseline-2026-11-18`**, installed and enabled on the reference Supra. [Exact component hashes, private package and limits](docs/V1-BASELINE.md) are authoritative.
 
 | Item | Current evidence |

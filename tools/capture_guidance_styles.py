@@ -9,6 +9,7 @@ from consolidated_capture import Session
 from capture_output_driver import snapshot, BASELINE, audit
 
 ROOT = '/opt/nav/eceusa/bin'
+CONFIG = '/mnt/share/nav/nav_styles.ini'
 DIRECTORIES = (ROOT + '/gvStyleDB_ID5_NBTEvo_BMW_USA_1025', ROOT + '/style_config')
 
 
@@ -45,7 +46,7 @@ def run(args):
             for path in paths:
                 if session.file(path) is None:
                     missing.append(path)
-        if session.file(ROOT + '/nav_styles.ini') is None:
+        if session.file(CONFIG) is None:
             missing.append('nav_styles.ini')
     finally:
         after = snapshot(session, 'v1-after', expected)
@@ -72,7 +73,7 @@ def main():
     args = parser.parse_args()
     if not args.execute:
         print(json.dumps({'network':False,'remote_writes':False,'drawing':False,
-            'directories':DIRECTORIES,'configuration':ROOT+'/nav_styles.ini',
+            'directories':DIRECTORIES,'configuration':CONFIG,
             'collection':'Regular files only; double-read verification and local SHA256 manifest',
             'limits':'2048 files/directory, 64 MiB/file, 512 MiB transfer, 20 minutes',
             'preservation':'15 V1 baseline hashes and permanent fault records before/after',

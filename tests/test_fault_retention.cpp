@@ -10,7 +10,16 @@ int main(){
  r.evidence("worker_exit",false);assert(r.evidenceSlot==1);
  saveText(state+"/worker.result",terminal("invalid/stale RPM"));r.evidence("worker_exit",false);assert(r.evidenceSlot==2);assert(recordTail(root+"/fault-recent-1.json",1000000).find("invalid/stale RPM")!=std::string::npos);
  assert(recordTail(root+"/fault-first.json",1000000)==first);
- unlink((state+"/worker.result").c_str());unlink((state+"/active.jsonl").c_str());assert(!rmdir(state.c_str()));assert(recordTail(root+"/fault-first.json",1000000)==first);
+ // Replay the saved zero-frame factory race through the real reap path.
+ for(unsigned variant=0;variant<4;++variant){
+  Resident race(root.c_str(),state.c_str());
+  std::string result="{\"reason\":\"factory_activity_quiesced\",\"frames\":"+std::string(variant==1?"1":"0")+",\"cleanup_verified\":"+(variant==2?"false":"true")+",\"factory_activity\":true,\"monitor_unknown\":"+(variant==3?"true":"false")+",\"automatic_resume\":false,\"shared_instance_preserved\":true}\n";
+  saveText(state+"/worker.result",result);race.child=fork();assert(race.child>=0);if(!race.child)_exit(2);
+  for(unsigned n=0;race.child&&n<1000;++n){race.reap();usleep(1000);}assert(!race.child);
+  if(!variant){assert(!race.lease.failed()&&race.cleanupProven&&race.retryAfter>now());race.spawn();assert(!race.child);assert(!race.lease.available());}
+  else assert(race.lease.failed());
+ }
+ unlink((state+"/last-result").c_str());unlink((state+"/worker.result").c_str());unlink((state+"/active.jsonl").c_str());assert(!rmdir(state.c_str()));assert(recordTail(root+"/fault-first.json",1000000)==first);
  Resident next(root.c_str(),state.c_str());next.evidence("resident_terminal",true);assert(recordTail(root+"/fault-first.json",1000000)==first);
  Resident unavailable((root+"/missing").c_str(),state.c_str());unavailable.evidence("worker_exit",false);assert(unavailable.lease.failed()&&unavailable.retryAfter==~uint64_t(0));
  for(unsigned i=0;i<4;++i){char p[32];snprintf(p,sizeof(p),"/fault-recent-%u.json",i);unlink((root+p).c_str());}unlink((root+"/fault-first.json").c_str());rmdir(root.c_str());rmdir(tmp);

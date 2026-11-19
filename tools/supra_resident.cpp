@@ -61,12 +61,13 @@ struct Resident {
   cleanupProven=exited&&clean;
   bool expected=outcome.valid&&(outcome.reason=="factory_navigation_request"||outcome.reason=="admission_denied"||outcome.reason=="disabled"||((quit||stopped)&&outcome.reason=="signal"));
   bool busy=exited&&poolRecovery(outcome);
+  bool admissionRace=exited&&factoryAdmissionRecovery(outcome);
   bool retryable=exited&&inputRecovery(outcome);
   if(retryable){if(now()-started>=30000)ioRetries=0;if(++ioRetries<=3)retryAfter=now()+1000*(1U<<(ioRetries-1));else {ioRetries=4;retryAfter=now()+30000;}}
-  else if(busy){if(++busyRetries>4)busyRetries=4;retryAfter=now()+(busyRetries<4?1000*(1U<<(busyRetries-1)):30000);}
+  else if(busy||admissionRace){if(++busyRetries>4)busyRetries=4;retryAfter=now()+(busyRetries<4?1000*(1U<<(busyRetries-1)):30000);}
   else if(!exited||!clean||!expected)lease.fault(WIFEXITED(status)&&!exited?"worker unexpected exit code":unexpectedExit(outcome,exited));
   // Capture BEFORE another worker can truncate the RAM result/journal.
-  if(retryable||busy||lease.failed())evidence("worker_exit",lease.failed());
+  if(retryable||busy||admissionRace||lease.failed())evidence("worker_exit",lease.failed());
   if(exited&&clean&&outcome.frames>0)busyRetries=0;
   saveText(state+"/last-result",text);
  }
