@@ -1,3 +1,5 @@
+> Next car trip: [combined canvas session](NEXT-CANVAS-SESSION.md), six ordered cases with conditional progression, 30-second windows, current-session snapshot admission, and V1 restoration.
+
 > New: [B00E executable experiment and admission contract](B00E-EXECUTABLE-TEST.md). Exact Carousel icon field and shared factory model0x6d traced; 39 actual model bodies re-encoded. Runner exists but requires current-session snapshot/admission; custom bitmap acceptance remains the receiver test, not a proven feature.
 
 > Latest bitmap work: [prepared multi-item test set](BITMAP-TEST-SET.md). Six hashed marker fixtures can be reproduced offline; B006 static window supports 30 seconds. B00E carousel image-reference field is not yet proven. Do not treat the fixture set as a B00E live kit.
