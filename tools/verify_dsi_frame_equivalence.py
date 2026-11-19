@@ -13,11 +13,11 @@ MOCCA = '140ee2e9816b91b58f6b0d81df6a609e533035892710c54c4e520147a548ff15'
 COLIBRY = 'adec5e17c4f4f4826de2eeee2aa2f3c5bf27de7e8edc3e107b79fa2ca6a88c10'
 
 
-def frame(path, sha, mocca, payload, request, sequence):
+def frame(path, sha, mocca, payload, request, sequence, request_type=0x100):
     c=cpu_for(path,sha)
     owner,buffer,descriptor,socket=BASE+0x1000,BASE+0x2000,BASE+0x3000,BASE+0x4000
     header=struct.pack('<IHHIIIIIIII',0x200,4,0,1,2,3,4,7,1,0,0)
-    prefix=struct.pack('<IIII',0,0x100,request,sequence)
+    prefix=struct.pack('<IIII',0,request_type,request,sequence)
     captured=[]
     if mocca:
         c.mem_write(buffer+40,prefix+payload)
@@ -64,11 +64,11 @@ def frame(path, sha, mocca, payload, request, sequence):
 def verify(mocca,colibry):
     colibry_sha=COLIBRY
     rows=[]
-    for request,payload in [(3,struct.pack('<II',0,0x0300206d)),(3,struct.pack('<II',0xfffffffe,0x030020d2)),(7,b'')]:
-        a=frame(mocca,MOCCA,True,payload,request,37)
-        b=frame(colibry,colibry_sha,False,payload,request,37)
+    for request,payload,kind in [(3,struct.pack('<II',0,0x0300206d),0x100),(3,struct.pack('<II',0xfffffffe,0x030020d2),0x100),(7,b'',0x100),(0x80000004,b'',0x105),(0x80000004,b'',0x106),(6,b'',0x100)]:
+        a=frame(mocca,MOCCA,True,payload,request,37,kind)
+        b=frame(colibry,colibry_sha,False,payload,request,37,kind)
         assert a==b
-        rows.append({'method':request,'frame_hex':a.hex(),'identical':True})
+        rows.append({'event_id':request,'request_type':kind,'frame_hex':a.hex(),'identical':True})
     return {'mocca_sha256':MOCCA,'colibry_sha256':colibry_sha,'cases':rows,
       'limitation':'Actual native unfragmented send/flush with equal synthetic route IDs and request prefix. memcpy and socket send boundaries intercepted. Does not establish live service registration, response semantics, identity ownership, attachment or windshield rendering.',
       'vehicle_contact':False,'receiver_acceptance_proven':False}

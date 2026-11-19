@@ -1,6 +1,12 @@
-## Active offline continuation: owned PiP session (2026-11-19)
+## Current offline state: owned renderer output and registry handshake (2026-11-19)
 
-See [PIP-OWNED-SESSION-2026-11-19.md](PIP-OWNED-SESSION-2026-11-19.md). Native method-3 payload, identical MOCCA/Colibry frame boundaries, picture permission enabled, and asynchronous unregister traced. Selected external guidance-style directory contents remain uncaptured. Read-only exact-directory collector prepared; no live execution. No larger windshield image is proven. V1 unchanged. Work continues on service binding and reply correlation.
+Read [owned-session contract](PIP-OWNED-SESSION-2026-11-19.md) and [renderer capability map](GUIDANCE-RENDERER-MAP.md) first. V1 is owner-confirmed restored and was not contacted or changed during this offline continuation. Older restoration-pending notices below are historical.
+
+The actual broker export is ManeuverView.DNAVIManeuverView version32.0. Owned type-1 bitmap output is traced through graphics readback, shared memory and Data notification. Creation requires framework request0x105/event80000004 followed by method4 using the SAME owned registration sequence; convenience setNotification is not equivalent. Targeted release uses0x106 then method6 with that sequence. Guidance method7 is a different disposal. Native proof scripts and Python/C++98 request codecs are committed; ARM QNX codec checker builds. These are offline components, not an admitted live drawing runner.
+
+Data firstword is userId, not allocated displayableID; remaining fields are name,maneuverId,guidanceType,bytecount,sequence. Raw bitmap output includes a12-byte native mutex/sequence header; pixels are top-down RGBA. Producer waits for sequence-2 before another write. Owned snapshot decoder rejects foreign/stale/wrong-size data. Do not write or acknowledge factory shared memory.
+
+Still missing: selected external style definitions/resources, then actual source-to-receiver binding. The exact-directory read-only collector is prepared for gvStyleDB_ID5_NBTEvo_BMW_USA_1025, style_config and nav_styles.ini. This is an identified missing file input, not a request for another Hz/menu-cell trial. No larger windshield custom-pixel area is proven; do not equate local800×480, receiver320×320 resource limits,460×237Kombi selection or Height outlines. Keep retired failed live runners retired. No V1 installation update is needed for file collection.
 
 ## PiP geometry and resource correlation — 19 November continuation
 
