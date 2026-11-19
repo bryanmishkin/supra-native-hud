@@ -4,6 +4,7 @@ No vehicle connection by default. The historical kit model is never transmitted.
 """
 import argparse,hashlib,json,subprocess,sys
 from pathlib import Path
+from canvas_geometry import validate_size
 
 def command(kit,case_id,port,admission,output,row=None):
  manifest=json.loads((kit/'manifest.json').read_text())
@@ -16,8 +17,9 @@ def command(kit,case_id,port,admission,output,row=None):
  if Path(name).name!=name:raise ValueError('Fixture must be in kit')
  asset=kit/name
  if hashlib.sha256(asset.read_bytes()).hexdigest()!=c['hashes'][name]:raise ValueError('Pixel fixture changed')
- if c['seconds']!=30 or c['size'][0]!=c['size'][1] or c['size'][0] not in (36,64,96,128):raise ValueError('Unsupported bounded case')
- args=[sys.executable,str(Path(__file__).with_name('b00e_bitmap_trial.py')),'--execute','--port',str(port),'--admission',str(admission),'--bitmap-bgra',str(asset),'--size',str(c['size'][0]),'--output',str(output)]
+ if c['seconds']!=30:raise ValueError('Unsupported observation duration')
+ validate_size(*c['size'])
+ args=[sys.executable,str(Path(__file__).with_name('b00e_bitmap_trial.py')),'--execute','--port',str(port),'--admission',str(admission),'--bitmap-bgra',str(asset),'--width',str(c['size'][0]),'--height',str(c['size'][1]),'--output',str(output)]
  if c.get('model_id')==0x66:
   if type(row) is not int or row<0:raise ValueError('Entertainment requires explicit currently visible transmitted-array row')
   args+=['--row',str(row),'--column',str(c['column'])]

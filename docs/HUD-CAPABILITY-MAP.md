@@ -59,3 +59,7 @@ See [the concrete next-session matrix](NEXT-CANVAS-SESSION.md) and [the producer
 ## Main renderer follow-up
 
 The next trace identifies `CDevCarHUDRueKo` and two signed−10..10 adjustment setters with a21-row conversion table. The shared helper preserves the other status byte and submits scalar settings to ControlHUD2. This is a concrete device-control path, not a discovered pixel surface. See [exact control trace](MAIN-HUD-CONTROL-TRACE.md) and [retained service audit](MAIN-HUD-RENDERER-STATUS.md). Root framebuffer dimensions, allocation, position and layer composition remain unresolved.
+
+## Pixel representation and rectangular geometry follow-up
+
+[The captured factory getter and executed dimension branch](CANVAS-PIXEL-PATH-2026-11-19.md) now establish type8 as RLE32 and independent width/height bounds. The executable kit includes asymmetric square/wide/tall rulers for the traced B00E content bindings. This advances the image contract and geometry test, not root framebuffer access. Additional HUD terminal/external-display proxy dispatchers were inspected as documented there.

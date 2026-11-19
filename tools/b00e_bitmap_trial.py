@@ -11,6 +11,7 @@ import b00e_entertainment as entertainment
 from b00e_resource_lifecycle import check_body,check_reply,dispose_resource_body
 from ric_resource import encode_bitmap_body
 from ric_rle32 import encode_bgra,decode_bgra
+from canvas_geometry import validate_size
 from ric_live_trial import TcpExchange
 
 # Full retained create-body hash. Exact profile gate, not a claim of ownership.
@@ -69,7 +70,7 @@ class Trial:
         except Exception as e:row['error']=str(e)
         self.record(self.result);return row['ok']
     def run(self,raw,width,height):
-        if (width,height) not in ((36,36),(64,64),(96,96),(128,128)):raise ValueError('Unsupported bounded candidate')
+        validate_size(width,height)
         if len(raw)!=width*height*4 or any(a!=255 for a in raw[3::4]):raise ValueError('Expected opaque BGRA')
         image=encode_bgra(raw)
         if decode_bgra(image,width*height)!=raw:raise ValueError('Encoding mismatch')
@@ -116,14 +117,17 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--execute',action='store_true');p.add_argument('--port',type=int)
     p.add_argument('--admission',type=Path);p.add_argument('--bitmap-bgra',type=Path)
-    p.add_argument('--size',type=int,choices=[36,64,96,128]);p.add_argument('--output',type=Path)
+    p.add_argument('--size',type=int,choices=[36,64,96,128],help='Legacy square image size');p.add_argument('--width',type=int);p.add_argument('--height',type=int);p.add_argument('--output',type=Path)
     p.add_argument('--content-field',type=int,choices=[1,2],default=1)
     p.add_argument('--row',type=int,help='Entertainment transmitted-array row, explicit')
     p.add_argument('--column',type=int,help='Entertainment existing content column, explicit; never icon column 0')
     a=p.parse_args()
     if not a.execute:
         print('Offline: B00E Carousel/Entertainment content test; 30s; restore current factory snapshot; dispose/check only test bitmap. Requires fresh admission; no connection made.');return
-    if not all([a.port,a.admission,a.bitmap_bgra,a.size,a.output]):p.error('All live arguments are required')
+    if a.size is not None and (a.width is not None or a.height is not None):p.error('Use size OR width/height')
+    width,height=(a.size,a.size) if a.size is not None else (a.width,a.height)
+    validate_size(width,height)
+    if not all([a.port,a.admission,a.bitmap_bgra,a.output]):p.error('All live arguments are required')
     if not 1<=a.port<=65535:p.error('Invalid loopback forward port')
     admission=json.loads(a.admission.read_text())
     if not 0<=time.time()-admission['verified_at_unix']<=120:raise ValueError('Admission must be current (120s)')
@@ -134,7 +138,7 @@ def main():
     restore=bytes.fromhex(admission.get('restore_model_body_hex') or admission['restore_carousel_body_hex'])
     candidate,model_id,_=prepare_binding(restore,a.content_field,a.row,a.column)
     raw=a.bitmap_bgra.read_bytes()
-    if len(raw)!=a.size*a.size*4 or any(v!=255 for v in raw[3::4]):raise ValueError('Invalid opaque marker')
+    if len(raw)!=width*height*4 or any(v!=255 for v in raw[3::4]):raise ValueError('Invalid opaque marker')
     a.output.mkdir(parents=True,exist_ok=False)
     (a.output/'admission.json').write_text(json.dumps(admission,indent=2))
     (a.output/'restore-model.bin').write_bytes(restore)
@@ -154,7 +158,7 @@ def main():
     signal.signal(signal.SIGTERM,cancel);signal.signal(signal.SIGINT,cancel)
     with socket.create_connection(('127.0.0.1',a.port),timeout=2) as sock:
         trial=Trial(TcpExchange(sock,a.output),restore,record,observe,a.content_field,a.row,a.column);active.append(trial)
-        r=trial.run(raw,a.size,a.size)
+        r=trial.run(raw,width,height)
     print(json.dumps(r,indent=2))
     if not r['protocol_cleanup_ok'] or r['status']!='window_finished':raise SystemExit(2)
 if __name__=='__main__':main()

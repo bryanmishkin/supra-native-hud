@@ -10,9 +10,11 @@
 - Original snapshot, exact candidate bytes, upload/presence replies, focus, commits, restoration, disposal and final absence are retained.
 - Fixture snapshots are historical offline inputs. They never satisfy next-session admission.
 
-## Receiver identity first
+## Receiver identity already captured
 
-The exact missing receiver build identification is now packaged as a five-read, no-SSH capture. See [receiver identity capture](RECEIVER-IDENTITY-CAPTURE.md). Collect it before any reset; it does not require stopping V1. This is separate from the widget geometry cases below.
+The ECU60 identity was collected and repeated byte-identically on19November; do not repeat it. Firmware acquisition is not a prerequisite for these producer-backed pixel-binding tests. See [new pixel-path and geometry execution](CANVAS-PIXEL-PATH-2026-11-19.md).
+
+The updated kit adds asymmetric rulers and128×36,128×64,64×128 rectangles within the measured resource limits. Start with distinct36×36 pixels, then128×36 and128×128 on each working binding; use intermediate sizes conditionally. The60 available cases are not60 mandatory tests.
 
 ## One session, priority order
 

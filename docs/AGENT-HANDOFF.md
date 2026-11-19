@@ -1,3 +1,5 @@
+> Latest offline work: [factory RLE32 pixel path and executable rectangular canvas batch](CANVAS-PIXEL-PATH-2026-11-19.md). Receiver identity is already captured. Do not require a paid firmware subscription to run these bounded content-binding experiments. No Hz tests; no V1 changes. Root framebuffer access remains unproven.
+
 > Current offline state: [exact firmware targets and access evidence](RECEIVER-FIRMWARE-MATCH.md). ECU60 identity is complete; class07 is FLSL. Missing input is matching firmware files, not another car measurement. Official subscription tier confirmed; exact package versions not confirmed.
 
 > Receiver identity captured: [19 November exact ECU60 inventory](RECEIVER-IDENTITY-RESULT-2026-11-19.md). Two identical positive F101 replies; HWEL476d, BTLD5ab0, software5ffa–5ffe. Do not repeat the missing-identity request below: it is historical. Matching receiver firmware/code is the next offline target. V1 unchanged.

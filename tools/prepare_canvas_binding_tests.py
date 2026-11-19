@@ -8,6 +8,7 @@ from b00e_carousel import decode,replace_selected_content
 import b00e_entertainment as entertainment
 from ric_rle32 import marker_bgra,encode_bgra,decode_bgra
 from prepare_bitmap_test_set import trident,png
+from canvas_geometry import SIZES,ruler
 
 def build(snapshot,out,entertainment_snapshot=None):
  original=snapshot.read_bytes();model=decode(original)
@@ -43,10 +44,27 @@ def build(snapshot,out,entertainment_snapshot=None):
       fn=name+'.'+ext;(out/fn).write_bytes(data);files[fn]=hashlib.sha256(data).hexdigest()
      rows.append(dict(case=name,model_id=0x66,row=0,column=column,size=[size,size],seconds=30,hashes=files,live_admitted=False,
       prerequisite='Current full Entertainment snapshot and visibly identified row; offline row0 is not a selection assertion'))
+ # Add geometry rulers for each distinct evidenced binding. Rectangular pairs
+ # separate aspect-ratio behavior from simple square-image acceptance.
+ templates=[r for r in rows if r['case'].endswith('36x36-cross')]
+ for template in templates:
+  prefix=template['case'].rsplit('36x36-cross',1)[0]
+  body=(out/next(n for n in template['hashes'] if n.endswith('.model.bin'))).read_bytes()
+  for width,height in SIZES:
+   raw=ruler(width,height);rle=encode_bgra(raw)
+   if decode_bgra(rle,width*height)!=raw:raise ValueError('Ruler encoding differs')
+   name=f'{prefix}{width}x{height}-ruler';files={}
+   for ext,data in [('bgra',raw),('rle32',rle),('png',png(raw,width,height)),('model.bin',body)]:
+    fn=name+'.'+ext;(out/fn).write_bytes(data);files[fn]=hashlib.sha256(data).hexdigest()
+   row={k:v for k,v in template.items() if k not in ('case','size','hashes','prerequisite')}
+   row.update(case=name,size=[width,height],hashes=files,
+    prerequisite='Distinct 36x36 content image first; size/aspect cases conditional on verified cleanup and visible binding')
+   rows.append(row)
  result=dict(schema=1,scope='Offline fixtures only; no vehicle connection or V1 changes',
   snapshot_sha256=hashlib.sha256(original).hexdigest(),entertainment_snapshot_sha256=entertainment_hash,selected_index=model['index'],
   binding='Only one selected content cell replaced; icon/other cells/items/flags unchanged',
   no_hz_tests=True,visual_geometry_verified=False,cases=rows,
+  geometry_edges={'top':'cyan','bottom':'orange','left':'green','right':'magenta','tick_spacing_source_pixels':8},
   run_order=['Known B006 control only if observation pipeline needs checking',
    'Content1 36 cross then IU; content2 36 cross then IU',
    'Entertainment content columns1/2 at explicit visible row; first distinct36x36 markers',
