@@ -67,6 +67,43 @@ Each variant constructor stores its tag as an ARM immediate before invoking a ty
 
 The **remaining unknown is inside the PiP-specific variant-3 payload and how it is referenced by the ICHUD models**. We now have concrete function addresses for a narrow offline trace. This finding contradicts the earlier suggestion that PiP might require an unrelated network upload path; do not repeat generic interface discovery.
 
+
+## Larger graphics spaces: exact saved-data routing audit (18 Nov 2026)
+
+**Evidence reviewed:** private Supra-HUD-Diagnostics-2026-11-16.zip (actual cluster profile create response, three sets of retained GVCommand ring buffers, continuous SOME/IP recordings, captured NavNBTEvoController and NavigationFully). This is an offline evidence audit, not a new car experiment.
+
+### Local producer/receiver and encoded sizes
+
+- NavigationFully generates local GVCommand buffers, and NavNBTEvoController receives/decodes the modern 0x700xx command chunks before processing RIC models.
+- First number in GVCommand_ID_slot filename is a local **displayable ID**; the next is its ring-buffer slot. These are not the B006 image resource IDs.
+- GVCommand_11_1_5132.0.bin has first chunk 0x70008 (HGPictureInPicture), size 12, data hex 0002e001af01000102000000. Little-endian fields: u16 512, **480, 431**, 256; u32 2.
+- GVCommand_9_1_5132.0.bin has the same 0x70008 chunk, data hex 00022003e001000102000000. Fields: u16 512, **800, 480**, 256; u32 2.
+- The .0/.1 retained copies are paired duplicates; 52 stored PIP first-chunk copies do NOT mean 52 fresh PIP rendering events. Five different first-chunk payloads were retained. Each checked command buffer had reusable/free sequence 0xfffffffe, so presence during stopped, radio or navigation snapshots is not proof that frame had just been rendered.
+- **Provisional:** 800x480 may be CID-family and 480x431 may be ICHUD-family geometry. Neither displayable ID has been bound to a specific physical destination by the retained bytes. These values are not verified full HUD panel geometry. Separately captured center HMI LayerManager is 1280x480.
+
+### Targeting mechanisms found in actual NavNBTevoController firmware strings
+
+- **ICHUD family:** highCCPPictureIC.getCenterPosition[0/1], PIPICSizeX/Y, setPIPElementForICHUD, sendAttachToCommandPIPICHUD, RIC_CRicDisplyableSessionForPiPComICHUD.
+- **CID family:** highCCPPictureCID.getCenterPosition[0/1], RIC_PIP_SIZE_CID/_PAD[0/1], setPIPElementForCID, sendAttachToCommandPIPCID, RIC_CRicDisplyableSessionForPiPComCID.
+- These are clear evidence that the factory PiP implementation has per-destination positioning and sizing paths. Exact numerical coordinates, placement rules, and the link from displayable ID 9/11 to those paths are still unverified.
+
+### Same network/resource framework as V1, but different typed binding
+
+- Working V1 uses 160.48.199.119 -> 160.48.199.96:30502 SOME/IP B006, shared handle 200; type-1 RLE32 bitmap 150x36, method 3 variant 2, reference through method 14 model type 40. Resource release/absence and factory priority are verified.
+- The **actual same handle-200 create response** advertised PiP configuration tag 35, resource type 2, five IDs 0x02000000..0x02000004 and two 320 maximum-resolution values. A negotiated range is not five free or privately owned rendering surfaces.
+- Captured ARM control flow shows PiP resource variant 3 and V1 bitmap variant 2 call a **common resource sender** at 0xAB3934, compatible with the B006 method-3 envelope. PiP type-specific serialization is at 0xBB51E8/0xBB5158, while bitmap uses 0xBB63E8/0xBB6350.
+- Continuous factory recordings have **six** B006 method-3 upload requests, all type-3/variant-4, **zero type-2/variant-3 PiP uploads**. Thus the actual display-attachment network transaction is not in the saved recording.
+- B009 DisplaySink is a separate port 30503 interface. Factory routing trace assigns selection 0=HUD, 1=Kombi for navigation. It does not grant an arbitrary PiP surface or identify CID.
+
+### Precise next offline work (do not repeat registry discovery)
+
+1. Decode the 0x70008 12-byte chunk using its NavigationFully producer and NavNBTevoController consumer. Find the actual displayable-ID-to-ICHUD/CID binding.
+2. Trace sendPiPElement -> setPIPElementForICHUD -> sendAttachToCommandPIPICHUD to the exact B006 model method and resource reference, including center position and size.
+3. Complete variant-3 typed payload decoding from 0xBB51E8 and negotiated depth/packing. Compare against the V1 typed bitmap sender rather than assuming identical bytes.
+4. Prepare a **separate disabled-by-default** parked proof only after a checked type-2 slot, exact reference/removal contract and factory priority are established. Do not overwrite bitmap slots 8/9, factory PiP or current V1 deployment.
+
+The manually repositioned factory HUD-height adjustment rectangle observed by the owner on November 18 is **not** the November 16 custom rectangle/cross; these raw November 16 buffer snapshots do not yet establish which software path drew the height-adjustment rectangle.
+
 ## Existing source links
 
 - [V1 known-good wire encoder](../src/standalone_wire.cpp)
