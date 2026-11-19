@@ -58,3 +58,9 @@ The observer process and RAM files are removed. All 15 installed V1 comparisons 
 The candidate receiver's reported link-local endpoint refused SSH, HTTP and HTTPS connections. A parameterless UDS ReadMemoryByAddress probe returned `7f2313`; a single-byte format/access probe at address zero returned `7f2372` and no bytes. Neither response supplies a memory map or proves that all possible readback mechanisms are unavailable. No diagnostic session change, security-key attempt, upload/programming sequence, reset or firmware write was made. A subsequent F101 response had the unchanged SHA-256 `4406c00b629b281dba5556e98dee448fafbf368a51e8556f99063efb03259af4`.
 
 **Matching cluster/HUD receiver executable firmware remains uncaptured.** The boot IFS, HMI/controller/navigation/driver files and newly preserved NBTCarHU, MOST and CSI_NBT executables belong to the head unit. They must never be relabeled as the cluster receiver dump. The private head-unit boot package is saved to Drive; full live-session preservation continues.
+
+## V1 restoration fault — recovery pending
+
+The first owner restart did not restore V1. Its resident recorded `capture began midstream`, zero worker starts and `cleanup_proven=true`, then wrote a persistent disabled token. All 15 installed payload/configuration hashes matched the baseline. The next restart correctly honored that token; neither resident nor worker ran. Asking for that second restart before inspecting the persistent token was an operator error.
+
+Both boot records and the first startup PCAP were preserved. The diagnosed token was archived as `disabled.before-canvas-restoration-20261119`; its contents were verified, state synced, and the existing persistent enabled token verified. No binaries or factory startup files were replaced. A fresh owner restart is pending; restoration is not yet verified. Do not clear a future disabled token without inspecting its distinct fault and cleanup evidence.
