@@ -10,6 +10,10 @@
 - Original snapshot, exact candidate bytes, upload/presence replies, focus, commits, restoration, disposal and final absence are retained.
 - Fixture snapshots are historical offline inputs. They never satisfy next-session admission.
 
+## Receiver identity first
+
+The exact missing receiver build identification is now packaged as a five-read, no-SSH capture. See [receiver identity capture](RECEIVER-IDENTITY-CAPTURE.md). Collect it before any reset; it does not require stopping V1. This is separate from the widget geometry cases below.
+
 ## One session, priority order
 
 1. Verify installed V1 baseline/runtime and collect existing startup/fault evidence before resets. Record the main interface/provider/advertised-model inventory from this same boot; compare against saved data rather than redownloading unchanged binaries.

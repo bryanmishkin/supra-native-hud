@@ -1,3 +1,5 @@
+> Immediate missing measurement: [actual receiver identity capture](RECEIVER-IDENTITY-CAPTURE.md), five read-only requests, no SSH/reset/V1 pause. Retained inventories contain no cluster build. Main-root test is not yet admitted; corrected larger widget tests are separately executable.
+
 > Current receiver work: [root scanout reference and target-match boundary](RECEIVER-ROOT-SCANOUT.md). No Hz tests. Prior Hz/session notices below are historical and superseded by the canvas-only scope.
 
 > Main-renderer follow-up: [CDevCarHUDRueKo scalar-control chain](MAIN-HUD-CONTROL-TRACE.md), [service inventory and receiver boundary](MAIN-HUD-RENDERER-STATUS.md). Canvas-only named-case launcher and evidence-based results reporter are available; neither claims root-surface access.

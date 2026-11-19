@@ -8,7 +8,7 @@ The target is the **whole windshield rendering system**, including the parent su
 
 | Service | Evidence interpretation |
 |---|---|
-| B001 | Other captured service traffic; not established as a drawing surface |
+| B001 | Retained8004 bodies contain cellular-operator text from a different endpoint; not HUD geometry |
 | B003 | Retained telemetry includes NMEA; not pixel frames by size/frequency alone |
 | B006 | Known guidance model/resource path; 150×36 custom image demonstrated |
 | B009 | DisplaySink selection/handshake; receiver pixel association unresolved |
@@ -33,3 +33,7 @@ See [whole-system capability map](HUD-CAPABILITY-MAP.md), [main control trace](M
 ## Receiver-side source follow-up
 
 [Root scanout review](RECEIVER-ROOT-SCANOUT.md) traces a concrete BO03 receiver reference through separate HUD output, framebuffer mapping, pitch and pixel decoding. It is not a matched Supra receiver or a working network pixel binding. This advances the receiver architecture evidence without claiming root access.
+
+## Concrete target-identity gap
+
+[Receiver identity audit and executable capture](RECEIVER-IDENTITY-CAPTURE.md) records the exhausted saved software inventory, ELF-header audit and exact five read-only requests needed next. No main-root sender is claimed.
