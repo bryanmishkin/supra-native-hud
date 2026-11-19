@@ -1,3 +1,5 @@
+> 19 November: owner selected **our existing MOST/DSI tools**. Built bounded observer and prepared [HUD canvas diagnostics](HUD-CANVAS-DIAGNOSTICS.md); the prior tool-selection question below is historical.
+
 # MOST diagnostic preparation
 
 18 November 2026. Offline preparation only. No vehicle connection, installation, diagnostic requests or factory changes performed. Owner requested preparation for a MOST diagnostic tool; exact tool choice is awaiting clarification.
