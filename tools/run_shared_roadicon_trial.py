@@ -215,7 +215,9 @@ def synthetic_updates():
  (root/'hz-timing.json').write_text(json.dumps(dict(requested_hz=args.synthetic_hz,seconds=args.hz_seconds,synthetic=True,visible_hz_verified=False,scope='B006 host test harness, not native production worker maximum'),indent=2))
  def save_rows(rows):
   with (root/'hz-frames.jsonl').open('a') as log:log.write(json.dumps(rows[-1])+'\n')
- try:return run(args.synthetic_hz,args.hz_seconds,publish,save_rows)
+ try:
+  run(args.synthetic_hz,args.hz_seconds,publish,save_rows)
+  return None
  finally:session.timeout=2
 
 def cleanup():signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)
