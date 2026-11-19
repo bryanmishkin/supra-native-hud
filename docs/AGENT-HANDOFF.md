@@ -1,3 +1,7 @@
+> Current connected session: full-HUD height control matched to live E0/01 / 0xCA6 and raw payloads captured; receiver firmware readback returned no bytes. See [live inspection](CANVAS-BINDING-LIVE-2026-11-19.md). V1 installation unchanged, but V1 remains paused and restoration is PENDING. No larger custom canvas has rendered.
+
+> Live result: [corrected canvas bindings did not render custom pixels](CANVAS-BINDING-LIVE-2026-11-19.md). Both factory controls rendered; Entertainment replacements blanked the exact target text. All four image removals passed. Do not repeat these candidates or claim a larger canvas; consult final session restoration evidence for V1.
+
 > Latest offline work: [factory RLE32 pixel path and executable rectangular canvas batch](CANVAS-PIXEL-PATH-2026-11-19.md). Receiver identity is already captured. Do not require a paid firmware subscription to run these bounded content-binding experiments. No Hz tests; no V1 changes. Root framebuffer access remains unproven.
 
 > Current offline state: [exact firmware targets and access evidence](RECEIVER-FIRMWARE-MATCH.md). ECU60 identity is complete; class07 is FLSL. Missing input is matching firmware files, not another car measurement. Official subscription tier confirmed; exact package versions not confirmed.
