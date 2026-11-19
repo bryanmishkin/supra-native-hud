@@ -1,3 +1,7 @@
+## PiP geometry and resource correlation — 19 November continuation
+
+Read [PIP-GEOMETRY-TRACE-2026-11-19.md](PIP-GEOMETRY-TRACE-2026-11-19.md). Native dimension check does not resize; serializer preserves explicit dimensions. Retained GV chunks contain800×480 and480×431 packing1, but all are reusable snapshots, not active windshield proof. Exact reversed-flow packet correlation finds only our PiP existence transactions (absent→present→absent), no factory PiP checks. Descriptor existence did not bind visible pixels. Dedicated HG→SetPiPElement4ICHUD→model+0x1018 path must not be conflated with generic PiP model+0x1318. Native connected/change-vector/job-attachment gates are under trace. No larger-display live runner admitted; no V1 changes, no Hz tests. Older connected-session status below is historical.
+
 ## Native PiP transport — 19 November continuation
 
 Read [PIP-NATIVE-HANDSHAKE-2026-11-19.md](PIP-NATIVE-HANDSHAKE-2026-11-19.md). Native owned-socket subscription/selection/completion/renewal/unsubscribe implemented and locally tested, with ARM QNX compile. No vehicle drawing runner admitted: receiver endpoint-to-pixel/windshield association remains unproven. Retired PiP execution stays retired. V1 was owner-confirmed returned before unplugging; old “restoration pending” notices below are historical, not current status. No V1 source/config/installed changes in this continuation.
