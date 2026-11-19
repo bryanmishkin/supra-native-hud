@@ -43,6 +43,22 @@ class Transport(unittest.TestCase):
             p,_=self.udp.recvfrom(2048)
             if discovery(p)['ttl']==0:return
         self.fail('missing unsubscribe')
+    def test_45_second_bound_accepted(self):
+        p=subprocess.Popen([str(self.exe),str(self.tcp.getsockname()[1]),str(self.udp.getsockname()[1]),'45'],stdout=subprocess.PIPE,text=True)
+        c,_=self.tcp.accept()
+        try:
+            # Peer closure ends immediately; no need to wait the maximum lifetime.
+            c.shutdown(socket.SHUT_RDWR)
+            out,_=p.communicate(timeout=3)
+            self.assertEqual(p.returncode,0);self.assertIn('TRANSPORT_CLOSED',out)
+        finally:
+            c.close()
+            if p.poll() is None:p.kill();p.communicate()
+
+    def test_46_second_bound_rejected_before_connection(self):
+        p=subprocess.run([str(self.exe),str(self.tcp.getsockname()[1]),str(self.udp.getsockname()[1]),'46'],capture_output=True,timeout=2)
+        self.assertEqual(p.returncode,3)
+
     def test_fragmentation_renewal_and_peer_disconnect(self):
         self.udp.sendto(acknowledgment(self.sub),self.sender)
         cookie=bytes.fromhex('ffff800000000008deadbeef01010200')

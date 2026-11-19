@@ -64,7 +64,7 @@ class DisplaySink {
         p[23]=16;p[24]=6;p[27]=0x10;put16(p+28,0xb009);
         p[31]=p[32]=1;p[35]=ttl;p[39]=1;p[43]=12;p[45]=9;p[46]=4;
         memcpy(p+48,&local_.sin_addr,4);p[53]=6;memcpy(p+54,&local_.sin_port,2);
-        // A bounded 30-second session cannot wrap this counter.
+        // A bounded 45-second session cannot wrap this counter.
         ++sequence_;
         ssize_t n=sendto(udp_,p,sizeof(p),0,reinterpret_cast<sockaddr*>(&peer_),sizeof(peer_));
         if(n!=sizeof(p)) return false;
@@ -118,7 +118,7 @@ public:
     // No default addresses; no SO_REUSE*, factory port reuse, or address setup.
     // Caller must independently establish producer identity/ownership before deployment.
     bool open(const char* producer,const char* receiver,unsigned sink_port,unsigned sd_port,unsigned seconds) {
-        if(attempted_ || tcp_>=0 || udp_>=0 || failed_ || !seconds || seconds>30 ||
+        if(attempted_ || tcp_>=0 || udp_>=0 || failed_ || !seconds || seconds>45 ||
            !sink_port || sink_port>65535 || !sd_port || sd_port>65535) return false;
         attempted_=true;
         if(now()<0) return fail();
