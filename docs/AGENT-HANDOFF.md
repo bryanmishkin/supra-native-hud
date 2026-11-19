@@ -1,3 +1,5 @@
+> Owner-selected marker: [IU trident test](IU-TRIDENT-TEST.md). Parallel offline results: [posted resources](B00E-POSTED-GRAPHICS-2026-11-19.md) and [B00E advertised canvas limits](B00E-CANVAS-LIMITS-2026-11-19.md). 128×128 RLE32 capacity confirmed; image binding/ownership still unproven. V1 unchanged.
+
 > Latest decoded payloads: [B011 and B00E analysis](HUD-FACTORY-PAYLOADS-2026-11-19.md). B011 returns 81×81 check-control PNGs cluster→HU; radio/phone/voice use structured B00E models with exact focus withdrawal. Do not mistake either for a proven arbitrary canvas.
 
 > Latest live session: [19 November MOST and HUD canvas captures](MOST-CANVAS-LIVE-2026-11-19.md). Five factory transitions captured, V1 preserved; B011 door-window lead, B00E radio/phone/voice, navigation B009 handshake. No larger custom surface proven.
