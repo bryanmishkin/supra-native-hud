@@ -54,3 +54,8 @@ This narrows the main-surface investigation: trace these control callers and the
 - Record width/height limits separately from visible extent, aspect ratio, scaling, clipping, color, transparency, display destination and factory priority.
 
 See [the concrete next-session matrix](NEXT-CANVAS-SESSION.md) and [the producer-to-content trace](B00E-CONTENT-BINDING.md). The main surface remains an explicit research target, not omitted or declared inaccessible.
+
+
+## Main renderer follow-up
+
+The next trace identifies `CDevCarHUDRueKo` and two signed−10..10 adjustment setters with a21-row conversion table. The shared helper preserves the other status byte and submits scalar settings to ControlHUD2. This is a concrete device-control path, not a discovered pixel surface. See [exact control trace](MAIN-HUD-CONTROL-TRACE.md) and [retained service audit](MAIN-HUD-RENDERER-STATUS.md). Root framebuffer dimensions, allocation, position and layer composition remain unresolved.

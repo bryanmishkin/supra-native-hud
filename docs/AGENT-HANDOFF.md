@@ -1,3 +1,5 @@
+> Main-renderer follow-up: [CDevCarHUDRueKo scalar-control chain](MAIN-HUD-CONTROL-TRACE.md), [service inventory and receiver boundary](MAIN-HUD-RENDERER-STATUS.md). Canvas-only named-case launcher and evidence-based results reporter are available; neither claims root-surface access.
+
 > Current offline priority: **the entire windshield rendering system**, not B00E alone. Start with [HUD-CAPABILITY-MAP.md](HUD-CAPABILITY-MAP.md) and the rewritten [canvas-only session matrix](NEXT-CANVAS-SESSION.md). No more Hz tests. Bitmap-producing Carousel content fields and Entertainment cells are now traced; the original icon substitution was the wrong experiment for that producer path. Main surface ownership/geometry remains unresolved.
 
 > Next-session addition: [visible-Hz validation](HUD-HZ-VALIDATION.md), executable synthetic sequence probe. No verified maximum yet; video and repeated sustained runs required. Separate harness saturation from receiver limits.

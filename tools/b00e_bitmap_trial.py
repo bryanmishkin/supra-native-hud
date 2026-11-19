@@ -74,6 +74,7 @@ class Trial:
         image=encode_bgra(raw)
         if decode_bgra(image,width*height)!=raw:raise ValueError('Encoding mismatch')
         self.result['pixel_sha256']=hashlib.sha256(raw).hexdigest()
+        self.result['bitmap_dimensions']=[width,height]
         try:
             # Conservative initial admission. No write if any advertised slot is in use.
             states={hex(r):self.present(r) for r in range(0x01000000,0x0100000a)}

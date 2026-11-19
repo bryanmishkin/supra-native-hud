@@ -49,3 +49,24 @@ python3 tools/b00e_bitmap_trial.py --execute --port "$VERIFIED_LOCAL_PORT" \
 ```
 
 Admission uses `restore_model_body_hex` (legacy `restore_carousel_body_hex` remains accepted), the exact recognized B00E configuration and the existing current-session assertions. A snapshot must contain no tracked test RID in any original resource reference. Entertainment rows are transmitted-array indices, not guessed selected station numbers. Columns start at1 for content; column0 is the separate icon and rejected.
+
+## Named-case launcher and measurement output
+
+The batch now has a launcher that verifies the named pixel fixture's SHA-256 and dispatches one bounded case using **current admission**, never the historical model in the kit:
+
+```sh
+python3 tools/run_canvas_case.py --kit "$KIT"  # offline case list
+python3 tools/run_canvas_case.py --execute --kit "$KIT" \
+  --case content-1-36x36-cross --port "$VERIFIED_LOCAL_PORT" \
+  --admission "$CURRENT_ADMISSION" --output "$NEW_CASE"
+# For Entertainment cases, additionally specify --row for the currently visible
+# transmitted-array row. The row0 fixture name is historical, not admission.
+```
+
+Do not infer permission to advance a size ladder from a successful return code. Save `observation.json` per case with separately observed Boolean fields `distinct_custom_pixels`, `all_border_edges_visible`, `windshield`, and `cluster`; leave an unobserved field absent. Also retain notes about size, location relative to speed/limit, clipping, aspect ratio, color and visible removal. A factory outline alone means custom pixels are unverified.
+
+```sh
+python3 tools/summarize_canvas_results.py "$SESSION_OUTPUT" --output "$CAPABILITY_RESULTS"
+```
+
+The reporter includes a tested bitmap size only when distinct custom pixels, all border edges, windshield destination and complete protocol cleanup are all confirmed. It never translates bitmap dimensions into native HUD resolution or grants root-surface access. Original photos/video remain the evidence for optical measurements. This batch is canvas-only; throughput cases are not included.
