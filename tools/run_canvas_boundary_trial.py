@@ -123,9 +123,9 @@ f='127.0.0.1:%d:160.48.199.96:30502'%port
 r=subprocess.run(base+['-O','forward','-L',f,destination],capture_output=True);assert r.returncode==0,r.stderr
 report={}
 def record(r):
- r['canvas_boundary_test']={'candidate_dimensions':a['dimensions'],'known_verified_dimensions':[150,36],
-                            'pi_p_test':False,'full_canvas_proven':False,
-                            'interpretation':'Protocol acceptance plus owner-confirmed windshield pixels only; failed acceptance does not rule out other display routes.'}
+ r.setdefault('canvas_boundary_test',{'candidate_dimensions':a['dimensions'],'known_verified_dimensions':[150,36],
+                                       'pi_p_test':False,'full_canvas_proven':False,
+                                       'interpretation':'Protocol acceptance plus owner-confirmed windshield pixels only; failed acceptance does not rule out other display routes.'})
  r['renderer_style']=args.renderer_style;r['swap_red_blue']=args.swap_red_blue
  r['live_rpm']=bool(args.live_rpm_local);r['double_buffer']=args.double_buffer;r['graph_variant']=args.graph_variant
  p=root/'result.tmp';p.write_text(json.dumps(r,indent=2));p.replace(root/'result.json')
@@ -158,14 +158,6 @@ class BitmapSession(SharedSession):
   dimensions=self.allocation['dimensions'];raw=marker_bgra(*dimensions)
   self.upload_bitmap(self.allocation['resource_id'],self.allocation['resource_type'],dimensions,encode_bgra(display_pixels(raw)))
   return
-  if args.live_rpm_local:
-   raw=measured_frame();a=self.allocation
-   from ric_rle32 import encode_bgra
-   self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(raw));return
-  if custom is None:return super().upload_marker()
-  from ric_rle32 import encode_bgra
-  a=self.allocation
-  self.upload_bitmap(a['resource_id'],a['resource_type'],a['dimensions'],encode_bgra(display_pixels(custom)))
 latest_sample=None
 live_session=None
 live_rows=[]
