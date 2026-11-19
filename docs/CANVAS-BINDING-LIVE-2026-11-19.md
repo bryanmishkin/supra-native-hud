@@ -59,8 +59,12 @@ The candidate receiver's reported link-local endpoint refused SSH, HTTP and HTTP
 
 **Matching cluster/HUD receiver executable firmware remains uncaptured.** The boot IFS, HMI/controller/navigation/driver files and newly preserved NBTCarHU, MOST and CSI_NBT executables belong to the head unit. They must never be relabeled as the cluster receiver dump. The private head-unit boot package is saved to Drive; full live-session preservation continues.
 
-## V1 restoration fault — recovery pending
+## V1 restoration fault — owner confirmed return
 
 The first owner restart did not restore V1. Its resident recorded `capture began midstream`, zero worker starts and `cleanup_proven=true`, then wrote a persistent disabled token. All 15 installed payload/configuration hashes matched the baseline. The next restart correctly honored that token; neither resident nor worker ran. Asking for that second restart before inspecting the persistent token was an operator error.
 
 Both boot records and the first startup PCAP were preserved. The diagnosed token was archived as `disabled.before-canvas-restoration-20261119`; its contents were verified, state synced, and the existing persistent enabled token verified. No binaries or factory startup files were replaced. A fresh owner restart is pending; restoration is not yet verified. Do not clear a future disabled token without inspecting its distinct fault and cleanup evidence.
+
+After that fresh restart, the owner initially reported no tach, then reported “tac is back” and disconnected ENET. This establishes visible return after the diagnosed lockout was archived, not a measured startup latency or post-return runtime verification. No further connection is required solely to repeat that visual confirmation. All 15 installed file comparisons had matched before recovery; no binaries or startup configuration were modified during recovery.
+
+Recovery lesson: inspect both RAM runtime and persistent `disabled`/gate records before requesting another restart. A persistent lockout survives iDrive restarts. Preserve the specific fault, worker-start count and cleanup evidence first; never treat repeated restarts as clearing it. The captured midstream fault remains an offline investigation item; do not claim the parser defect is fixed.
