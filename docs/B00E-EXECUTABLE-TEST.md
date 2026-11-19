@@ -1,3 +1,5 @@
+> **19 November result:** this historical trial matrix ran and did not display custom pixels. See [the live results](CANVAS-BINDING-LIVE-2026-11-19.md) and [packet audit](HUD-PACKET-DEEP-DIVE-2026-11-19.md). It is not a corrected or newly ready larger-canvas test.
+
 > Superseded binding assumption: the 19 November first-icon-field experiment showed only a frame. The current runner uses traced bitmap-capable content fields and also supports exact Entertainment snapshots. See [current binding evidence](B00E-CONTENT-BINDING.md), [whole HUD map](HUD-CAPABILITY-MAP.md), and [current session plan](NEXT-CANVAS-SESSION.md). The original first-icon candidate description below is historical, not the current command behavior.
 
 # B00E IU trident experiment: executable and admission contract

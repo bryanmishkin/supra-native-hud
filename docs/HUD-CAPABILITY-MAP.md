@@ -23,8 +23,8 @@ B006/B00E terminate at the measured cluster endpoint; their visibility in the wi
 |---|---|---|---|
 | Main windshield surface | Speed, limits, warning graphics and widgets visibly coexist | No arbitrary root-surface drawing API established | Full resolution, origin, clipping, layers, receiver implementation and access remain unresolved |
 | B006 guidance road image | V1 and cross/IU seen in windshield and cluster; removal verified | Arbitrary opaque RLE32 image in proven road-image slot | 150×36 tested; factory positioning; no free x/y or z-order demonstrated |
-| B00E Carousel | Factory source menu renders in windshield; exact restoration verified | Producer-backed candidates for two content cells; not yet visually verified | Bitmap ceiling 128×128; 36/64/96/128 tests prepared; actual scaling/clipping unknown |
-| B00E Entertainment | Station list captured; factory allocator can supply bitmap IDs to content cells | Exact table codec and bounded content-cell runner prepared; not yet visually verified | Same instance bitmap ceiling; explicit row/column, no guessed selection metadata |
+| B00E Carousel | Factory source menu renders in windshield; exact restoration verified | Content-word and icon substitutions tested: no custom pixels visible | Bitmap ceiling 128×128; 36×36 binding failed; larger size trials are not ready |
+| B00E Entertainment | Station list captured; factory allocator can supply bitmap IDs to content cells | Selected frequency/name fields went blank; no custom pixels visible | Same instance bitmap ceiling; explicit row/column, no guessed selection metadata |
 | B00E voice | Captured model and focus/withdrawal; factory graphic observed | No verified custom bitmap binding | Zero advertised inherited dimension pair is not zero visible area |
 | Phone/call models | Factory phone widget observed, structured model captured | No verified custom bitmap-producing field | Geometry/receiver rules unknown; no fabricated image sender |
 | Warning/door B011 | 81×81 PNG retrieval travels cluster→HU | No upload canvas from that exchange | Asset retrieval is separate from warning composition and placement |
@@ -63,3 +63,7 @@ The next trace identifies `CDevCarHUDRueKo` and two signed−10..10 adjustment s
 ## Pixel representation and rectangular geometry follow-up
 
 [The captured factory getter and executed dimension branch](CANVAS-PIXEL-PATH-2026-11-19.md) now establish type8 as RLE32 and independent width/height bounds. The executable kit includes asymmetric square/wide/tall rulers for the traced B00E content bindings. This advances the image contract and geometry test, not root framebuffer access. Additional HUD terminal/external-display proxy dispatchers were inspected as documented there.
+
+## Latest captured-data audit
+
+See [the 46-recording deep dive](HUD-PACKET-DEEP-DIVE-2026-11-19.md). Failed PiP recordings contain offers but no DisplaySink subscription/selection exchange; all retained factory selections are Kombi 460×237/1. Eleven surface-1056 snapshots are unbound and unchanged while factory windshield graphics appear. Failed B00E requests contain valid image bytes and match native serialization, so another dimension-prefix/field-size guess is not an established fix. V1 restoration was owner-confirmed after a diagnosed persistent lockout was archived; installed binaries remained unchanged.
