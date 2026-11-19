@@ -49,7 +49,7 @@ def run(a):
                 r=s.call('pidin ar',cleanup=True);(s.root/'processes-after.txt').write_bytes(r.stdout)
                 report['process_absent']=r.returncode==0 and (remote+'/observer').encode() not in r.stdout
                 if report['process_absent']:
-                    r=s.call('rm -f '+remote+'/observer && rmdir '+remote+' && test ! -e '+remote,cleanup=True)
+                    r=s.call('rm -f '+remote+'/observer && rm -r '+remote+' && test ! -e '+remote,cleanup=True)
                     report['ram_removed']=r.returncode==0
             except Exception as e:report['cleanup_error']=str(e)
         try:

@@ -1,3 +1,5 @@
+> Latest live session: [19 November MOST and HUD canvas captures](MOST-CANVAS-LIVE-2026-11-19.md). Five factory transitions captured, V1 preserved; B011 door-window lead, B00E radio/phone/voice, navigation B009 handshake. No larger custom surface proven.
+
 > Next prepared diagnostic scope: [MOST/DSI and HUD canvas](HUD-CANVAS-DIAGNOSTICS.md). Offline-only preparation; V1 untouched. Start recordings before factory session transitions; no general MOST bus-sniffing or complete canvas proof claimed.
 
 > Latest live evidence: [factory HUD checkbox result](PIP-FACTORY-TOGGLE-RESULT-2026-11-18.md). Checkbox hides navigation and owner reports tach too; no PiP binding decoded. V1 unchanged, cleanup verified. Capture timing limitations are explicit.
