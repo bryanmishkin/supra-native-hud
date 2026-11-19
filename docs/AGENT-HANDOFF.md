@@ -1,3 +1,7 @@
+## Active offline continuation: owned PiP session (2026-11-19)
+
+See [PIP-OWNED-SESSION-2026-11-19.md](PIP-OWNED-SESSION-2026-11-19.md). Native method-3 payload, identical MOCCA/Colibry frame boundaries, picture permission enabled, and asynchronous unregister traced. Selected external guidance-style directory contents remain uncaptured. Read-only exact-directory collector prepared; no live execution. No larger windshield image is proven. V1 unchanged. Work continues on service binding and reply correlation.
+
 ## PiP geometry and resource correlation — 19 November continuation
 
 Read [PIP-GEOMETRY-TRACE-2026-11-19.md](PIP-GEOMETRY-TRACE-2026-11-19.md). Native dimension check does not resize; serializer preserves explicit dimensions. Retained GV chunks contain800×480 and480×431 packing1, but all are reusable snapshots, not active windshield proof. Exact reversed-flow packet correlation finds only our PiP existence transactions (absent→present→absent), no factory PiP checks. Descriptor existence did not bind visible pixels. Dedicated HG→SetPiPElement4ICHUD→model+0x1018 path must not be conflated with generic PiP model+0x1318. Native connected/change-vector/job-attachment gates are under trace. No larger-display live runner admitted; no V1 changes, no Hz tests. Older connected-session status below is historical.
