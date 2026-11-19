@@ -16,7 +16,7 @@ class ReceiverIdentityTests(unittest.TestCase):
     def test_unknown_version_retains_raw_in_caller(self):
         with self.assertRaises(ValueError):decode_inventory(bytes.fromhex('62f10102010000')+bytes(13))
     def test_only_identity_reads(self):
-        for did in (0xf197,0xf187,0xf189,0xf101,0x3f07):
+        for did in (0xf197,0xf187,0xf189,0xf101,0x3f07,0xf19e,0xf191,0xf192,0xf194,0x172a):
             self.assertEqual(request_bytes(did),b'\x22'+did.to_bytes(2,'big'))
         for did in (0xf190,0x1003,0x1101,0x2701,0x2e00):
             with self.assertRaises(ValueError):request_bytes(did)

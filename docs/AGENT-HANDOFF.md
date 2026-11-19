@@ -1,3 +1,5 @@
+> Receiver identity captured: [19 November exact ECU60 inventory](RECEIVER-IDENTITY-RESULT-2026-11-19.md). Two identical positive F101 replies; HWEL476d, BTLD5ab0, software5ffa–5ffe. Do not repeat the missing-identity request below: it is historical. Matching receiver firmware/code is the next offline target. V1 unchanged.
+
 > Immediate missing measurement: [actual receiver identity capture](RECEIVER-IDENTITY-CAPTURE.md), five read-only requests, no SSH/reset/V1 pause. Retained inventories contain no cluster build. Main-root test is not yet admitted; corrected larger widget tests are separately executable.
 
 > Current receiver work: [root scanout reference and target-match boundary](RECEIVER-ROOT-SCANOUT.md). No Hz tests. Prior Hz/session notices below are historical and superseded by the canvas-only scope.

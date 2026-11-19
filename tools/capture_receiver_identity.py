@@ -14,6 +14,7 @@ import struct
 import time
 
 DIDS = (0xF197, 0xF187, 0xF189, 0xF101)
+EXTRA_DIDS = (0xF19E, 0xF191, 0xF192, 0xF194, 0x172A)
 CLASSES = {1:'HWEL',2:'HWAP',4:'GWTB',5:'CAFD',6:'BTLD',8:'SWFL',13:'SWFK'}
 
 
@@ -37,7 +38,7 @@ def decode_inventory(reply):
 
 
 def request_bytes(did):
-    if did not in DIDS + (0x3F07,):
+    if did not in DIDS + EXTRA_DIDS + (0x3F07,):
         raise ValueError('DID outside read-only identity allowlist')
     return b'\x22' + did.to_bytes(2,'big')
 
@@ -96,11 +97,13 @@ def read_one(gateway, source, interface, ecu, did):
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--execute',action='store_true')
+    p.add_argument('--extended',action='store_true',help='Also read standard ODX/HW/SW identifiers and IP configuration; no writes')
     p.add_argument('--gateway');p.add_argument('--source-ip');p.add_argument('--interface')
     p.add_argument('--ecu',type=lambda s:int(s,16),help='Explicit candidate diagnostic address in hex; no scanning')
     p.add_argument('--output',type=Path)
     a=p.parse_args()
-    plan=dict(reads=['gateway10:223f07']+['candidate:'+request_bytes(x).hex() for x in DIDS],
+    selected = DIDS + EXTRA_DIDS if a.extended else DIDS
+    plan=dict(reads=['gateway10:223f07']+['candidate:'+request_bytes(x).hex() for x in selected],
               candidate_address='not selected' if a.ecu is None else f'{a.ecu:02x}',
               no_hz_tests=True,no_v1_changes=True,identity_not_yet_verified=True,
               limits='Gateway list framing is unverified on this Supra; preserve raw. No inferred cluster firmware match.')
@@ -111,7 +114,7 @@ def main():
     a.output.mkdir(parents=True,exist_ok=False)
     (a.output/'plan.json').write_text(json.dumps(plan,indent=2)+'\n')
     rows=[]
-    for index,(ecu,did) in enumerate([(0x10,0x3f07)]+[(a.ecu,x) for x in DIDS]):
+    for index,(ecu,did) in enumerate([(0x10,0x3f07)]+[(a.ecu,x) for x in selected]):
         row=read_one(a.gateway,a.source_ip,a.interface,ecu,did);rows.append(row)
         # Each completed query survives an interruption of subsequent queries.
         (a.output/f'{index:02d}-{ecu:02x}-{did:04x}.json').write_text(json.dumps(row,indent=2)+'\n')

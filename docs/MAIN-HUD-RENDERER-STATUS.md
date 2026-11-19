@@ -1,3 +1,5 @@
+> Update: [actual ECU60 firmware identity](RECEIVER-IDENTITY-RESULT-2026-11-19.md) is now captured and repeated byte-for-byte. Earlier missing-inventory statements below are historical. Matching receiver implementation and main-root contract remain the offline targets.
+
 # Main HUD renderer investigation — 19 November 2026
 
 The target is the **whole windshield rendering system**, including the parent surface beneath navigation/menu widgets and the speed, speed-limit, warning and alignment regions. No arbitrary root drawing interface is established yet. This status distinguishes new evidence from that unresolved outcome.

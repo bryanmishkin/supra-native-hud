@@ -1,3 +1,5 @@
+> Completed on19November: [actual response and verification](RECEIVER-IDENTITY-RESULT-2026-11-19.md). This preparation document is retained for reproducibility; the missing identity is no longer a reason for another trip.
+
 # Exact next receiver measurement
 
 19 November 2026. Offline work reached a missing **target identity**, not a demonstrated root-canvas API. Keep installed V1 unchanged. No Hz tests and no speculative root-memory writes.
