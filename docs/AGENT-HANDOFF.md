@@ -1,3 +1,7 @@
+## Native PiP transport — 19 November continuation
+
+Read [PIP-NATIVE-HANDSHAKE-2026-11-19.md](PIP-NATIVE-HANDSHAKE-2026-11-19.md). Native owned-socket subscription/selection/completion/renewal/unsubscribe implemented and locally tested, with ARM QNX compile. No vehicle drawing runner admitted: receiver endpoint-to-pixel/windshield association remains unproven. Retired PiP execution stays retired. V1 was owner-confirmed returned before unplugging; old “restoration pending” notices below are historical, not current status. No V1 source/config/installed changes in this continuation.
+
 ## 19 November offline packet deep dive
 
 Read [HUD-PACKET-DEEP-DIVE-2026-11-19.md](HUD-PACKET-DEEP-DIVE-2026-11-19.md) before proposing another canvas session. Audit covers 46 unique PCAPs with one continuity exclusion, plus 281 direct test transactions. Failed B00E image bytes are nonempty and native-serializer-equivalent; no factory B00E bitmap sample exists in parsed traffic. Failed PiP tests show offers but no observed subscription/selection handshake; factory selections are 460×237/Kombi1. Surface1056 is unbound in all eleven relevant snapshots. No new larger canvas is ready. Firmware analysis is delegated using REA/Ghidra and must be reconciled with these packet facts. V1 is owner-confirmed visible after lockout recovery; no installed binary/config changed.
