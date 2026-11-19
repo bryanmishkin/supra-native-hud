@@ -1,0 +1,11 @@
+{
+  "baseline": "v1-baseline-2026-11-18",
+  "supervisor_override_sha256": "78d463e60e399c299aaf38d608d3fd64593c0863cfd7ea88492eba730bc4e0c3",
+  "worker_and_startup_unchanged": true,
+  "installed": true,
+  "target_readback_before_restart": true,
+  "owner_restart_visible_and_updating": true,
+  "post_restart_ssh_verified": false,
+  "extended_drive_verified": false,
+  "details": "V1-ADMISSION-RECOVERY-2026-11-19.md"
+}

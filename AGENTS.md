@@ -2,7 +2,8 @@
 
 This repository contains a working vehicle-specific persistent HUD tachometer and substantial earlier research. Start with [APP-STATUS.md](APP-STATUS.md), [docs/AGENT-HANDOFF.md](docs/AGENT-HANDOFF.md), [docs/APP-ARCHITECTURE.md](docs/APP-ARCHITECTURE.md), and [PERSISTENT-INSTALL.md](PERSISTENT-INSTALL.md).
 
-- Current installed baseline: `v1-baseline-2026-11-18`; read docs/V1-BASELINE.md and docs/V1-BASELINE.json first. Final worker uses factory EngineSpeed2 and only tach slots 8/9; supervisor retains bounded retries and permanent logging.
+- 19 November installed supervisor correction: read docs/V1-CURRENT-RECOVERY.json and docs/V1-ADMISSION-RECOVERY-2026-11-19.md first. Owner confirmed V1 visible and updating after restart; extended-drive validation remains open. Worker/startup unchanged.
+- Prior installed baseline: `v1-baseline-2026-11-18`; read docs/V1-BASELINE.md and docs/V1-BASELINE.json first. Final worker uses factory EngineSpeed2 and only tach slots 8/9; supervisor retains bounded retries and permanent logging.
 - Exact final build passed restart and one owner-confirmed no-visible-loss drive. Six clean factory handoffs occurred; no new permanent fault records. Repeated final-build cold starts/endurance remain unverified.
 - Read COMPATIBILITY.md before proposing another vehicle installation. Hard-coded network, model, resource and ABI values are not universal configuration defaults. Do not bypass failed identity, hash, ACK or admission checks.
 - For an accepted persistent install, leave it running when requested. Do not automatically roll back at the end of a successful session.
