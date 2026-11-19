@@ -39,3 +39,7 @@ Phone, voice, entertainment-list bitmap substitution and PiP expansion are **not
 ## Exit condition
 
 Withdraw the final test, restore the exact factory Carousel snapshot, remove only the tracked bitmap, and verify absence. Restore V1 with the established restart procedure, verify unchanged baseline files and smooth live RPM, and obtain visual confirmation that both displays are normal. Preserve all journals and owner observations, then tell the owner they can unplug. Push derived findings/source to GitHub and archive private evidence to Drive.
+
+## Canvas-agent final review
+
+The canvas agent reviewed this combined plan on19November2026 and confirmed all six supported executable cases are included.64×64 and96×96 are not prerequisites. If36×36 passes but128×128 fails or clips, record those tested bounds; do not claim an exact size limit. Phone, voice and PiP drawing remain excluded. Current-session admission is still mandatory before B00E execution. The Hz probe measures its stated test path; a verified hardware-wide maximum must not be inferred from a host-limited rate.
