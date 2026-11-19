@@ -79,3 +79,11 @@ The dedicated job stages `SetPiPElement4ICHUD` before notifying attachment/switc
 HG pictureID is the resource's original identity. IC conversion0xaacac4 allocates a converted identity from the model's PiP pool+0x1330, stores it at resource+0x14, and records its association with the original identity. There is no demonstrated `base+pictureID` formula. This is a controller-local association; the inspected B006 descriptor carries the converted resource identity, not an extra original-picture field.
 
 The render context picture counter itself does increment: CGVView0x61e384 loads this+0xa8, adds1 and calls0x7de30c. This is render-context+0x54, also used by HG and metadata. Therefore incrementing the old marker's picture value is not, by itself, a demonstrated fault; exact update cadence and receiver association still require tracing.
+
+## Attachment identity is not the B006 handle
+
+The attach observer0xa9f094 emits `[maneuverID,guidanceSessionID]`. Manager handler0xa7644c uses that session and current maneuver to request attachment through its IC display session. The command-job status handler accepts only the matching outstanding notification object before copying the returned guidance-session identity. B006 handle200 is not that identity.
+
+Observer construction0xaa0120/0xaa00c8 and registration0xa9f59c use an existing in-process maneuver object pointer and typed-event interface. No standalone SOME/IP CreateSession operation is established by this trace. Hardcoding a captured session number or sending an invented attach packet would skip the actual owner/correlation contract. The available native DisplaySink handshake cannot by itself manufacture that object or session.
+
+Native publication verification (`tools/verify_pip_publication_gate.py`) executes all four connected/nonempty combinations. Only connected plus nonempty dedicated changes dispatches publication. The other three release the event. The native vector helper executes unchanged; the tool stops before downstream dispatch/release rather than substituting their behavior. See [attachment ownership](PIP-ATTACH-OWNERSHIP-2026-11-19.md) for the exact internal observer, session and dynamic identity allocation.
