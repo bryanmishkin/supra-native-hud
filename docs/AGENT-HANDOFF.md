@@ -1,4 +1,5 @@
 ## Current offline state: owned renderer output and registry handshake (2026-11-19)
+Native metadata follow-up: [style-dependent PiP record](PIP-METADATA-STYLE-BINDING-2026-11-19.md). Complete native record construction matches32 cases; HUD group8 differs at record byte7. Actual upload is GL_RGBA. Final framebuffer conversion/receiver attachment remain unproven; fixed G30 template is not universal.
 Latest corpus coverage: [saved-capture review](CAPTURE-CORPUS-REVIEW-2026-11-19.md). Local archives, loose PCAPs, standalone protocol recordings and original Drive diagnostics reconciled. No newly observed HUD PiP destination; no live attachment fix established. V1 unchanged.
 
 Read [owned-session contract](PIP-OWNED-SESSION-2026-11-19.md) and [renderer capability map](GUIDANCE-RENDERER-MAP.md) first. V1 is owner-confirmed restored and was not contacted or changed during this offline continuation. Older restoration-pending notices below are historical.
