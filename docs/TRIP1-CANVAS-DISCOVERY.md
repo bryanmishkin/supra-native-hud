@@ -26,6 +26,26 @@ For Trip 1 the most important evidence is **time-aligned physical HUD state**, l
 4. **PiP DRAWING GATE**: the test is *not yet executable* merely because slot presence reads work. Decode and review the exact PiP method-3 **variant-3** payload, generated from the captured ARM serializer `0xBB51E8 -> 0xBB5158`; decode the visible `setPIPElementForICHUD`/`sendAttachToCommandPIPICHUD` method and explicit reference/position/size fields; determine the bounded rollback/clearing sequence; host-test valid/invalid/cancel/timeout response handling. Only then build a new **separate default-disabled PiP marker sender** with operator confirmation. No V1 code changes. **If any gate fails, do the five method-2 presence checks only and label the first-trip PiP draw `NOT RUN`, without guessing.**
 5. Bring the **already built, audited QNX ARM** `supra-continuous-capture-qnx` and its verified SHA256. This source-only kit does not contain or substitute that OEM/target executable, SDK, private kit or authorization credentials. Preserve existing PCAP validation and no-drop gates. Do not compile C code for the first time while connected to the car.
 
+
+## Additional discovery already recovered offline from raw PCAPs
+
+New offline, bounded decoder: `tools/canvas_sd_inventory.py`. It reads the PCAP records and the SOME/IP-SD UDP 30490 messages, checks all packet/entry/option boundaries, associates each service to referenced endpoint options, and emits service/instance/host/port inventories. It transmits **nothing**. The live recorder already retains these UDP messages, so there is no need to build a separate network service scanner.
+
+- **Engine-start**: 5,610 PCAP packets, **3,539** SOME/IP-SD packets, **127 advertised service/instance pairs**, zero malformed.
+- **Navigation-cycle**: **3,828** SOME/IP-SD packets, the **same 127 advertised service/instance/host combinations**, zero malformed.
+- Advertised B006 guidance at 160.48.199.96:30502; B009 DisplaySink at 160.48.199.96:30503; B00E list at 160.48.199.96:30502. These confirm known V1 endpoints against independent service advertisements.
+- Other cluster-side services advertised at **160.48.199.96**: B00A and B011. Other services at **160.48.199.97**: B001, B002, B003 and B007. Another B00C is hosted on the **head unit .119**. Interface names/graphics capabilities are unverified for these entries. **Do not transmit arbitrary SOME/IP calls or call any service a drawable canvas from advertisement alone.**
+- Trip 1 should preserve this broader service inventory for *every* PCAP, check for new/different offers under alternate factory modes, and correlate only relevant changes with synchronized visual observations. Do not repeat the 127-service decoding effort by hand.
+
+Offline command for an existing or newly recorded PCAP:
+
+```bash
+python3 tools/canvas_sd_inventory.py "$PRIVATE_OUTPUT/recording/traffic.pcap" \
+  --output "$PRIVATE_OUTPUT/recording/someip-sd-inventory.json"
+```
+
+The current recorder's known-peer TCP/UDP filter and service discovery multicast are sufficient to observe these advertisements, **but not guaranteed to capture arbitrary unknown unicast graphics protocols on different peers**. New networks/interfaces found by `ifconfig` or service metadata require a separately reviewed wider passive capture, not silent firewall/routing changes.
+
 ## First-trip operator sequence (parked, no driving)
 
 - Park safely. Ensure V1 is healthy and normal speed/limit/radio/HUD output is observable. If V1 has a fault, collect existing persistent diagnostics first and avoid experimental drawing.
