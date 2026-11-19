@@ -7,7 +7,7 @@ from ric_live_trial import TcpExchange
 from ric_graph import decode_graph_body,encode_description_body
 parser=argparse.ArgumentParser(description='Live-verified shared road-icon marker test; requires stopped factory guidance.')
 parser.add_argument('--execute',action='store_true')
-parser.add_argument('--synthetic-hz',type=int,choices=[1,2,5,10,15,20,30,40,60],help='Experimental numbered-frame throughput test, no RPM sampling')
+parser.add_argument('--synthetic-hz',type=int,choices=range(1,61),help='Experimental numbered-frame throughput test, no RPM sampling')
 parser.add_argument('--hz-seconds',type=int,choices=[30,120],default=30)
 parser.add_argument('--double-buffer',action='store_true',help='Experimental two-slot switch, no deliberate blank between frames')
 parser.add_argument('--live-rpm-local',help='Explicit parked measured-RPM experiment')

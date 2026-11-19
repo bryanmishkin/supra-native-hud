@@ -17,7 +17,7 @@ def frame(sequence):
     return bytes(raw)
 
 def run(hz,seconds,publish,record,clock=time.monotonic,sleep=time.sleep):
-    if hz not in (1,2,5,10,15,20,30,40,60):raise ValueError('Unsupported staged rate')
+    if type(hz) is not int or not 1<=hz<=60:raise ValueError('Unsupported staged rate')
     if seconds not in (30,120):raise ValueError('Expected short sweep or confirmation window')
     origin=clock();rows=[];period=1/hz
     for seq in range(1,hz*seconds+1):

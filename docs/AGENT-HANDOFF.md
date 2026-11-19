@@ -69,3 +69,8 @@ The Drive baseline archive named in V1-BASELINE.md contains the exact installed 
 Preserve working V1. V2 remains separate and needs deliberate integration of final V1 fixes. Prepare and test candidate changes offline before asking for car time. On a new failure, collect permanent records and RAM state before resetting or re-enabling. Do not repeat unrelated navigation/radio tests to investigate a specific input/resource fault. For another vehicle, verify [compatibility](../COMPATIBILITY.md) and obtain its own originals; never reuse this car's rollback configurations blindly.
 
 Current operational docs: [status](../APP-STATUS.md), [architecture](APP-ARCHITECTURE.md), [installation/rollback](../PERSISTENT-INSTALL.md), [operations](OPERATIONS.md). Historical reports are evidence, not current activation instructions.
+
+
+## 19 November live canvas/Hz results
+
+See [the session results](CANVAS-HZ-RESULTS-2026-11-19.md). B006 cross and IU were visible in both displays. B00E custom36×36 images produced only a square, whereas the exact factory Carousel content rendered recognizable icons/text. Do not call B00E bitmap binding proven or run the dependent128×128 ladder without a new evidence-based fix. A30-Hz30-second host run passed; visible maximum is unverified pending video, and sustained trials had timing overruns. V1 restarted and passed installed-file/configuration, hook, worker, advancing-RPM/heartbeat and temporary-directory absence checks; owner confirmed visible and updating.
