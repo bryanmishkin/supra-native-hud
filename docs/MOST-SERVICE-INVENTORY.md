@@ -17,7 +17,7 @@ Derived from [actual-car validation](../CAR-VALIDATION.md), [renderer investigat
 | MOST FBlock / instance | Function or clue | Source / status | Evidence limit |
 | --- | --- | --- | --- |
 | `0x05/00` Vehicle | `EngineSpeed2`, function `0x0CD0`; registry provider `0x5000` | **Proven in installed V1** | Read-only 2-byte big-endian quarter-RPM GET/STATUS is live; this proves MOST telemetry, **not** HUD drawing. |
-| `0x40/01` | Radio-window traffic from source `0x1019` | **Observed header pattern** | Semantics, payload, destination and relationship to HUD are unverified. |
+| `0x40/01` AmFmTuner | Registered at `0x1019`; much more traffic in radio window | **Family ID matched to MOST standard** | Specific message functions/payloads have not been decoded. |
 | `0x15/02` | Radio-window traffic from source `0x5000` | **Observed header pattern** | Upstream NBT-AAD interprets `0x15/02` as steering-wheel messages on a J29; mapping **on this car** is not established by the historical headers alone. |
 | `0x82/00` HUDTerminal | Older BMW/MINI polygon/text/visibility drawing service | **Not advertised/observed** in the surveyed windows | 112-entry registry in baseline, radio and navigation windows had no `0x82/00`; broad header observer saw no `0x82`. Negative coverage is bounded to those windows/methods; does not prove no possible interface. |
 | `0x81/**` | Constructor field `0x81` in static shape-rendering code (meaning unknown) | **Not advertised/observed** in checked snapshots | Do not equate that field with a genuine FBlock ID without proof. |
@@ -93,3 +93,64 @@ A reusable **offline-only**, validated \`most_service_mapper.py\` and the comple
 3. **Boost:** Independently validate any DME/OBD absolute pressure signal and atmospheric reference, including sensor location, while parked under controlled conditions. No boost value is enabled for V1 and no on-car pressure query was executed as part of this analysis.
 4. **HUD drawing:** The missing \`0x82\` registry remains meaningful. A MOST-based polygon sender is not authorized by this inventory. Continue offline trace of factory transport selection and bound display providers; preserve V1 factory handoff and cleanup rules.
 
+
+
+## Documentation cross-reference: 18 November 2026
+
+Offline research completed. No vehicle connection, installation, or transmitted discovery commands were used. The full annotated 112-service registry and 350-row header dataset remain in the owner's private evidence package. This section supersedes earlier descriptions of the standard FBlocks as unidentified.
+
+### FBlock family names newly grounded by the MOST Cooperation documentation
+
+| FBlock ID | Standard or historically assigned name | Instances present on our Supra |
+| --- | --- | --- |
+| 0x02 | NetworkMaster | 00 |
+| 0x03 | ConnectionMaster | 00 |
+| 0x04 | PowerMaster | 00 |
+| 0x05 | Vehicle | 00 |
+| 0x06 | Diagnosis | 37, 63, F0, F2, FA |
+| 0x07 | DebugMessages | 11 |
+| 0x0F | EnhancedTestability | 00 |
+| 0x10 | Human Machine Interface | 01 |
+| 0x20 | AudioMaster | 00 |
+| 0x22 | AudioAmplifier | 02 |
+| 0x23 | HeadphoneAmplifier | 03 |
+| 0x24 | AuxIn / media | 0C, 0D, 0E, 0F, 26, 40, 41, 42, 50, 53, 60, 63, 70, 80, 90 |
+| 0x32 | ROM DiskPlayer | 01 |
+| 0x40 | AM/FM Tuner | 01 |
+| 0x44 | Satellite Radio | 01 |
+| 0x50 | Telephone | 01, 02, 03, 04 |
+| 0x51 | GeneralPhonebook | 01 |
+| 0x52 | NavigationSystem | 00 |
+| 0x54 | Bluetooth (historical ID assignment) | 00 |
+
+These names identify function-block families, not verified supported operations for each particular instance. The older MOST specification marks 0x70 through 0x9F as reserved for future use. BMW/MINI's separate HUDTerminal use of 0x82 on other vehicles is not a mandatory standard MOST function block. Neither 0x82/00 nor 0x82/02 appeared in our car's three registry captures.
+
+### BMW-specific function identifiers cross-referenced with NBT-AAD
+
+| MOST service / function | NBT-AAD or MOST definition | Actual status in our Nov 16 captures |
+| --- | --- | --- |
+| 05/00 : 0x0CD0 | EngineSpeed2 / quarter-RPM | **Observed and independently validated on our car** |
+| 15/02 : 0x0401 | Steering-wheel volume button | Observed headers; upstream supports identity |
+| 24/70 : 0x0434 | TrackInformation (general AuxIn semantics) | Observed; payload meaning unverified |
+| 52/00 : 0x0440 | Raw GNSS GPS position | Observed; upstream decodes on related Supra |
+| 52/00 : 0x0243 | Additional navigation position | Observed; source interpretation provisional |
+| CD/01 : 0x0C00 | GPS receiver/fix status | Observed; upstream decoder exists |
+| CD/01 : 0x0203 | Navigation heading/compass | Observed; upstream decoder exists |
+| CD/01 : 0x020B | Alternate navigation position, possibly map-matched | Observed; provisional interpretation |
+
+Other upstream-documented functions **not seen in these parked windows** include 05/00: 0x0621 CarSpeed2 (1/64 km/h), 0x0626 DrivingCondition2, 0x0228 gear, and 0x0CB5 parking brake; 15/02: 0x0511 media roller and 0x0512 voice; 20/00: 0x0C08 master volume. Do not infer these were not supported: a parked and header-only capture is insufficient to establish absence.
+
+Remaining observed high-rate Vehicle functions with **no documented attribution verified here**: 0x050C, 0x0622, 0x0623, 0x0624, 0x0628, 0x0CA1, 0x0CA2. Numerical proximity to known CarSpeed2 0x0621 is not evidence that the adjacent IDs are speed or other specific telemetry. No MOST boost pressure function has been established.
+
+The proprietary BMW families CD and E5 have some NBT-AAD source-level interpretation (navigation and controller input, respectively). Other C0/D1/E0 family instances remain system-specific and need exact firmware-level provenance. Because the observer captures retained headers but not message bodies, upstream payload decoders are not actual payload verification on our Supra.
+
+### References and follow-up
+
+- MOST Cooperation reference: https://www.mostcooperation.com/fileadmin/content_filestorage/most-book/MOST_Book_2.pdf (legacy general standard, not the car's OEM manifest).
+- ISO 21806-2 application layer: https://standards.iteh.ai/catalog/standards/iso/d9b43780-e21b-4983-bf3c-fc140248d3fd/iso-21806-2-2020
+- NBT-AAD car vehicle signals: https://github.com/Sq00ky/Supra-iDrive6-Android-Auto/blob/main/milestone-7/src/car/vehicle.hpp
+- NBT-AAD GPS/heading signals: https://github.com/Sq00ky/Supra-iDrive6-Android-Auto/blob/main/milestone-7/src/car/gps.hpp
+- NBT-AAD volume buttons and levels: https://github.com/Sq00ky/Supra-iDrive6-Android-Auto/blob/main/milestone-7/src/car/volume_level.hpp
+- NBT-AAD media/voice controls: https://github.com/Sq00ky/Supra-iDrive6-Android-Auto/blob/main/milestone-7/src/car/mfl.hpp
+
+Next: trace the remaining active Vehicle functions against already-captured exact target binaries, inspect existing source-backed payload evidence, and only then define any targeted, bounded read-only on-car diagnostics. Do not blind-scan providers, send mutable commands, or disturb the verified V1 installation.
