@@ -24,7 +24,10 @@ void FactoryStream::ethernet(const unsigned char* p,unsigned n,unsigned wire){
  // connection. An exact standalone cookie carries no model state and cannot
  // establish sequence tracking or grant admission. Tracked streams still consume it.
  const unsigned char* payload=p+tcp+thl;
- if(!flows_.count(key)&&incoming&&length==16&&u32(payload)==0xffff8000&&u32(payload+4)==8&&u32(payload+8)==0xdeadbeef&&payload[12]==1&&payload[13]==1&&(payload[14]==2||payload[14]==128)&&payload[15]==0)return;
+ bool exactCookie=length==16&&u32(payload+4)==8&&u32(payload+8)==0xdeadbeef&&payload[12]==1&&payload[13]==1&&payload[15]==0&&
+  ((incoming&&u32(payload)==0xffff8000&&(payload[14]==2||payload[14]==128))||
+   (outgoing&&u32(payload)==0xffff0000&&payload[14]==1));
+ if(!flows_.count(key)&&exactCookie)return;
  if(!flows_.count(key)&&!(flags&2)&&(!length||(flags&5)))return;
  if(!flows_.count(key)&&flows_.size()>=16){lease_.fault("flow limit");return;}
  Flow& f=flows_[key];

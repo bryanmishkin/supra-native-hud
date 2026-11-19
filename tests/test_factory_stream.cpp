@@ -18,6 +18,11 @@ int main(){
  FactoryLease repeated;FactoryStream rs(repeated);
  for(unsigned port=41000;port<41040;++port){feed(rs,frame(true,1,2,empty,port));feed(rs,frame(false,1,18,empty,port));rs.registerOwn(0xa030c777,port);feed(rs,frame(true,2,17,empty,port));feed(rs,frame(false,2,16,empty,port));feed(rs,frame(false,2,17,empty,port));feed(rs,frame(true,3,16,empty,port));assert(!repeated.failed());}
  FactoryLease idleCookie;FactoryStream cs(idleCookie);FactoryLease::Packet cookie(16,0);be(cookie,0,0xffff8000,4);be(cookie,4,8,4);be(cookie,8,0xdeadbeef,4);cookie[12]=cookie[13]=1;cookie[14]=2;feed(cs,frame(false,900,24,cookie));assert(!idleCookie.failed());assert(!idleCookie.available());cookie[8]=0;feed(cs,frame(false,916,24,cookie));assert(idleCookie.failed());
+ // Exact captured outgoing keepalive reply on a warm, untracked connection.
+ FactoryLease replyCookie;FactoryStream cr(replyCookie);FactoryLease::Packet reply(16,0);
+ be(reply,0,0xffff0000,4);be(reply,4,8,4);be(reply,8,0xdeadbeef,4);reply[12]=reply[13]=reply[14]=1;
+ feed(cr,frame(true,0x26605144,24,reply,65496));assert(!replyCookie.failed()&&!replyCookie.available());
+ reply[14]=0;feed(cr,frame(true,0x26605154,24,reply,65496));assert(replyCookie.failed());
  FactoryLease unused;FactoryStream us(unused);feed(us,frame(true,1,2,empty));feed(us,frame(true,1,4,empty));assert(!unused.failed());assert(!unused.available());
  FactoryLease used;FactoryStream usedStream(used);FactoryLease::Packet usedRequest=msg(0xb006,4,99,1);assert(used.before(usedRequest,0));feed(usedStream,frame(true,1,2,empty));feed(usedStream,frame(true,2,16,usedRequest));feed(usedStream,frame(false,5,4,empty));assert(used.failed());
  puts("factory stream tests passed");
