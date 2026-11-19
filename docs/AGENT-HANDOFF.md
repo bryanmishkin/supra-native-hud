@@ -1,3 +1,7 @@
+# Latest offline destination proof
+
+See [HUD selection and binding](HUD-SELECTION-BINDING-2026-11-19.md): native destination and completion execution, 82-capture comparison, and exact limits. Cluster pixels verified; no larger windshield test yet. V1 unchanged.
+
 ## Latest live result — corrected native PiP reaches the cluster (19 November 2026)
 
 Read [live results](CORRECTED-CANVAS-LIVE-2026-11-19.md). The owner saw our277×160 rectangle/cross in the gauge cluster; the windshield showed a factory arrow. Native pixels now demonstrably reach the cluster. Larger windshield rendering remains unproven. Both inline detailed-picture switch-distance cases showed only a roundabout, no custom marker; do not repeat them as untested.
