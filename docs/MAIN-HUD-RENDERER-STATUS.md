@@ -29,3 +29,7 @@ The new named-case launcher completes the executable **widget** portion of the b
 A fresh indexed-source search on19November did not produce a matching root-renderer implementation. The directly relevant [Supra Android Auto source documentation](https://github.com/Sq00ky/Supra-iDrive6-Android-Auto/blob/main/milestone-7/readme.md) describes the J29 B006 navigation graph for cluster/HUD arrows. That is consistent with our known structured guidance path; it is not a demonstrated whole-windshield drawing API. Search coverage is limited and is not proof no implementation exists. Credit Sq00ky/nanaisu and ryseek for their respective guidance and native-video reference work.
 
 See [whole-system capability map](HUD-CAPABILITY-MAP.md), [main control trace](MAIN-HUD-CONTROL-TRACE.md), and [canvas batch](NEXT-CANVAS-SESSION.md). V1 and its installation remain unchanged; no vehicle connection or Hz tests were performed.
+
+## Receiver-side source follow-up
+
+[Root scanout review](RECEIVER-ROOT-SCANOUT.md) traces a concrete BO03 receiver reference through separate HUD output, framebuffer mapping, pitch and pixel decoding. It is not a matched Supra receiver or a working network pixel binding. This advances the receiver architecture evidence without claiming root access.
