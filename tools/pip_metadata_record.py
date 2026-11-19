@@ -1,7 +1,7 @@
 """Native PiP metadata record builder; no sockets, Screen or vehicle operations.
 
 Inputs must come from the owned producer. A valid record is not proof of a
-receiver association. BGRA conversion is deliberately not inferred here.
+receiver association. Output conversion follows the captured WSEGL/IMG chain.
 """
 import struct
 from pip_metadata_strip import encode_record
@@ -31,3 +31,12 @@ def build_record(guidance_type, picture, maneuver_id, style_flag, option_zero=0)
 
 def build_cpu_upload(*args,**kwargs):
     return encode_record(build_record(*args,**kwargs))
+
+
+def build_bgra_framebuffer(*args,**kwargs):
+    """Captured little-endian framebuffer storage, before physical scanout."""
+    rgba=build_cpu_upload(*args,**kwargs)
+    result=bytearray(84)
+    for i in range(0,84,4):
+        result[i:i+4]=bytes((rgba[i+2],rgba[i+1],rgba[i],rgba[i+3]))
+    return bytes(result)
