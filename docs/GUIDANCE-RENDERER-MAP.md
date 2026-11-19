@@ -1,5 +1,7 @@
 # Guidance renderer map — 19 November 2026
 
+**Capture update:** the selected styles are now saved and 210 actual view lookups match native ARM execution. See [selected-style results](SELECTED-STYLE-RENDERING-2026-11-19.md). Earlier missing-file statements below describe the pre-capture state. No larger windshield binding is claimed.
+
 NavigationFully SHA256 `957528a9f37a026fd7737f59ca5f96247ed606d49deb2efe79400d624f439f4d`. Offline ARM factory and RTTI trace; no vehicle execution.
 
 Factory0x7de844 reads elementtype atrecord+8, subtracts1, and dispatches51table slots at0x7de860. **Seven slots explicitly return null**:19,22,23,24,27,31,45. Therefore there are44accepted typevalues, not51supported renderers. Several share animplementation.

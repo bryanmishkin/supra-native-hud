@@ -1,5 +1,7 @@
 # Owned guidance session and picture capability
 
+**Capture update:** the selected styles are now saved and 210 actual view lookups match native ARM execution. See [selected-style results](SELECTED-STYLE-RENDERING-2026-11-19.md). Earlier missing-file statements below describe the pre-capture state. No larger windshield binding is claimed.
+
 Offline trace against the captured controller, NavigationFully and MOCCA library. No vehicle contact; V1 files and runtime unchanged. This identifies concrete protocol and rendering dependencies, not a demonstrated larger windshield drawing test.
 
 ## Creation and identity
