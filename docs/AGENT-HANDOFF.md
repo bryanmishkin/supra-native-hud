@@ -1,4 +1,5 @@
 ## Current offline state: owned renderer output and registry handshake (2026-11-19)
+Latest corpus coverage: [saved-capture review](CAPTURE-CORPUS-REVIEW-2026-11-19.md). Local archives, loose PCAPs, standalone protocol recordings and original Drive diagnostics reconciled. No newly observed HUD PiP destination; no live attachment fix established. V1 unchanged.
 
 Read [owned-session contract](PIP-OWNED-SESSION-2026-11-19.md) and [renderer capability map](GUIDANCE-RENDERER-MAP.md) first. V1 is owner-confirmed restored and was not contacted or changed during this offline continuation. Older restoration-pending notices below are historical.
 
