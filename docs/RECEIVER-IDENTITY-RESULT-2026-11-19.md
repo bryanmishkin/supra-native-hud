@@ -11,7 +11,7 @@ The actual gateway's configured-ECU reply contains25 addresses, including60. Two
 | HWEL | `0000476d` | `2.2.0` |
 | BTLD | `00005ab0` | `7.1.1` |
 | SWFL | `00005ffb` | `8.0.0` |
-| Raw class07 — not assigned a name by this decoder | `00005ffa` | `7.1.1` |
+| FLSL (class07; identified in subsequent source review) | `00005ffa` | `7.1.1` |
 | SWFL | `00005ffc` | `8.0.0` |
 | SWFL | `00005ffd` | `8.0.0` |
 | SWFL | `00005ffe` | `8.0.0` |
@@ -38,3 +38,5 @@ No V1 files, startup state, resources, processes or drawing models were changed.
 ## Offline continuation
 
 The required vehicle identity input is complete. Match the HWEL/BTLD/SWFL versions to receiver firmware or documented compatible implementation, then trace resource/job lookup into the actual main composition target. The existing B00E content-field canvas tests remain separate executable widget experiments. Whole-HUD geometry and a root-pixel binding/removal API remain unproven; no additional vehicle identity visit is requested on the present evidence.
+
+Follow-up: [firmware matching and FLSL class attribution](RECEIVER-FIRMWARE-MATCH.md). Raw capture records are unchanged.

@@ -15,7 +15,7 @@ import time
 
 DIDS = (0xF197, 0xF187, 0xF189, 0xF101)
 EXTRA_DIDS = (0xF19E, 0xF191, 0xF192, 0xF194, 0x172A)
-CLASSES = {1:'HWEL',2:'HWAP',4:'GWTB',5:'CAFD',6:'BTLD',8:'SWFL',13:'SWFK'}
+CLASSES = {1:'HWEL',2:'HWAP',4:'GWTB',5:'CAFD',6:'BTLD',7:'FLSL',8:'SWFL',13:'SWFK'}
 
 
 def decode_inventory(reply):

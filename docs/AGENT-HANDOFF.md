@@ -1,3 +1,5 @@
+> Current offline state: [exact firmware targets and access evidence](RECEIVER-FIRMWARE-MATCH.md). ECU60 identity is complete; class07 is FLSL. Missing input is matching firmware files, not another car measurement. Official subscription tier confirmed; exact package versions not confirmed.
+
 > Receiver identity captured: [19 November exact ECU60 inventory](RECEIVER-IDENTITY-RESULT-2026-11-19.md). Two identical positive F101 replies; HWEL476d, BTLD5ab0, software5ffa–5ffe. Do not repeat the missing-identity request below: it is historical. Matching receiver firmware/code is the next offline target. V1 unchanged.
 
 > Immediate missing measurement: [actual receiver identity capture](RECEIVER-IDENTITY-CAPTURE.md), five read-only requests, no SSH/reset/V1 pause. Retained inventories contain no cluster build. Main-root test is not yet admitted; corrected larger widget tests are separately executable.
