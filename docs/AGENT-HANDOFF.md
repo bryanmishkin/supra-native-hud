@@ -1,3 +1,7 @@
+# Latest offline boundary trace
+
+Read [viewport boundary trace](HUD-VIEWPORT-BOUNDARY-2026-11-20.md). Native execution identifies model40 alignment 0=Left, 1=Right; all prior image-layout tests used Left. A boundary-only right-aligned ruler is implemented with the same owned slots and cleanup. This is an untested placement/clipping contrast, not proof of a larger viewport. No Hz/control repeats, no V1 changes. The per-image 150×36 limit is not a measured receiver viewport. User is disconnected; no vehicle commands were run.
+
 # Latest live result — two entries reach windshield with clipping
 
 Read [20November live layout results](ROAD-LIST-LIVE-2026-11-20.md). One-image control reached both displays; two icons in one entry appeared only in cluster; separate entries appeared side-by-side in both, with image2clipped. Close-up repeat passed cleanup. Owner confirmed final restart and V1 updating, then disconnected. Machine verification passed before the repeat; final post-repeat readback was not completed. V1 installed files unchanged. Preserve this distinction.

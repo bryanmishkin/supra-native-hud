@@ -7,9 +7,9 @@ from ric_road_list import encode
 
 def verify(path):
  results=[]
- for rows in [[],[[0x1000008]],[[0x1000008,0x1000009]],[[0x1000008],[0x1000009]]]:
+ for alignment,rows in [(a,r) for a in (0,1) for r in [[],[[0x1000008]],[[0x1000008,0x1000009]],[[0x1000008],[0x1000009]]]]:
   c=cpu_for(path,CTL);obj=BASE+0x1000;stream=BASE+0x2000;buf=BASE+0x8000;entries=BASE+0x3000
-  c.mem_write(obj,struct.pack('<IIIIIIII',0x27000004,40,0,0,0,entries,entries+24*len(rows),entries+24*len(rows)))
+  c.mem_write(obj,struct.pack('<IIIIIIII',0x27000004,40,0,alignment,0,entries,entries+24*len(rows),entries+24*len(rows)))
   for i,ids in enumerate(rows):
    data=BASE+0x4000+i*0x100
    c.mem_write(entries+i*24,struct.pack('<IIIIII',0,data,data+4*len(ids),data+4*len(ids),0,0))
@@ -29,9 +29,9 @@ def verify(path):
   except Exception as e:raise RuntimeError(f'PC {c.reg_read(UC_ARM_REG_PC):x}: {e}') from e
   assert c.reg_read(UC_ARM_REG_PC)==BASE
   end=struct.unpack('<I',c.mem_read(stream+4,4))[0];got=bytes(c.mem_read(buf,end-buf))
-  expected=encode(dict(handle=200,model_id=0x27000004,road_type=0,alignment=0,entries=[dict(resources=x,trailing_bytes=[0,0]) for x in rows]))[17:]
+  expected=encode(dict(handle=200,model_id=0x27000004,road_type=0,alignment=alignment,entries=[dict(resources=x,trailing_bytes=[0,0]) for x in rows]))[17:]
   assert got==expected,(got.hex(),expected.hex())
-  results.append(dict(rows=rows,wire_hex=got.hex(),match=True,callbacks=calls))
+  results.append(dict(alignment=alignment,rows=rows,wire_hex=got.hex(),match=True,callbacks=calls))
  return dict(sha256=CTL,entry='0xbbcd70',cases=results,limitation='Native model writer; only stream snapshot and bounded raw-write callbacks intercepted. Receiver acceptance/layout not proven.',vehicle_contact=False)
 if __name__=='__main__':
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('controller',type=Path);print(json.dumps(verify(p.parse_args().controller),indent=2))

@@ -11,7 +11,7 @@ from verify_current_v1_test_baseline import contract,verify
 
 def main():
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--case',choices=['control','two_icons_one_entry','one_icon_two_entries'],required=True)
+    p.add_argument('--case',choices=['control','two_icons_one_entry','one_icon_two_entries','right_boundary_ruler'],required=True)
     p.add_argument('--create-reply',type=Path,required=True);p.add_argument('--support-profile',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--execute',action='store_true')
     p.add_argument('--ssh-socket',type=Path);p.add_argument('--head');p.add_argument('--parked-overlays-closed-displays-clear',action='store_true')
@@ -45,7 +45,7 @@ def main():
     def begin_cleanup():
         signal.signal(signal.SIGINT,signal.SIG_IGN);signal.signal(signal.SIGTERM,signal.SIG_IGN)
     def observe(seconds):
-        print(f'WATCH NOW: {a.case}, numbered markers, full30seconds. Inspect windshield and cluster.',flush=True)
+        print(f'WATCH NOW: {a.case}, static markers, full30seconds. Inspect windshield and cluster.',flush=True)
         end=time.monotonic()+seconds
         while time.monotonic()<end:
             time.sleep(min(1,max(0,end-time.monotonic())))

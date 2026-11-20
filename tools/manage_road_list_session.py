@@ -7,28 +7,32 @@ from road_list_expansion_trial import profile_commands
 from prepare_road_list_expansion import limits
 from verify_current_v1_test_baseline import verify
 CASES=('control','two_icons_one_entry','one_icon_two_entries')
+BOUNDARY_CASES=('right_boundary_ruler',)
+ALL_CASES=CASES+BOUNDARY_CASES
 TOOLS=Path(__file__).resolve().parent
-SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py')
+SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py','road_boundary_ruler.py')
 
 def audit(root):
     state=json.loads((root/'state.json').read_text());missing=[]
-    for c in CASES:
+    for c in json.loads((root/'kit.json').read_text()).get('cases',CASES):
         row=state.get(c,{})
         if not row.get('passed'):missing.append(c+': protocol completion')
         if not row.get('observation',{}).get('clear'):missing.append(c+': visual clearance')
     if not state.get('restoration',{}).get('verified'):missing.append('V1 restoration/runtime verification')
-    return dict(complete=not missing,missing=missing,observations={c:state.get(c,{}).get('observation')for c in CASES})
+    return dict(complete=not missing,missing=missing,observations={c:state.get(c,{}).get('observation')for c in json.loads((root/'kit.json').read_text()).get('cases',CASES)})
 
 class Session(BaseSession):
     def __init__(self,a):
         kit=json.loads((a.output/'kit.json').read_text())
         for name,sha in kit['source_sha256'].items():
             if digest(TOOLS/name)!=sha:raise ValueError('Prepared source changed; rebuild kit: '+name)
+        self.cases=tuple(kit['cases'])
+        if self.cases not in (CASES,BOUNDARY_CASES):raise ValueError('Unsupported batch')
         super().__init__(a)
     def pause(self):
         if self.state.get('paused'):raise ValueError('Already paused')
         self.files('pre');self.snapshot('before')
-        stopped=self.remote('cat '+RAM+'/resident.status').strip()==b'STOPPED'
+        stopped=self.remote('if test -e '+RAM+'/resident.status; then cat '+RAM+'/resident.status; else printf MISSING; fi').strip()==b'STOPPED'
         if not stopped:
             (self.root/'stop-v1.txt').write_bytes(self.remote(V1+'/supra-resident-qnx --stop '+RAM,35))
         self.quiet();self.snapshot('paused');self.state['paused']=True;self.commit()
@@ -37,9 +41,9 @@ class Session(BaseSession):
         a=self.a;c=a.case
         if not c or c in self.state:raise ValueError('New named case required; never overwrite attempts')
         if not(self.state.get('paused')and a.displays_clear and a.guidance_closed):raise ValueError('Paused and visually clear, with overlays closed, required')
-        index=CASES.index(c)
+        index=self.cases.index(c)
         if index:
-            prior=self.state.get(CASES[index-1],{})
+            prior=self.state.get(self.cases[index-1],{})
             if not prior.get('passed') or not prior.get('observation',{}).get('clear'):raise ValueError('Prior case/visual cleanup incomplete')
             control=self.state.get('control',{}).get('observation',{})
             if not control.get('windshield_images',0):raise ValueError('Working windshield control not confirmed')
@@ -62,7 +66,7 @@ class Session(BaseSession):
         print('Protocol cleanup passed. Record separate windshield/cluster observations and visual clearance.')
     def finalize(self):
         if not self.a.v1_visible:raise ValueError('Owner confirmation of updating V1 after normal restart required')
-        if any(c in self.state and not self.state[c].get('observation',{}).get('clear')for c in CASES):raise ValueError('Attempted tests need visual clearance before final verification')
+        if any(c in self.state and not self.state[c].get('observation',{}).get('clear')for c in self.cases):raise ValueError('Attempted tests need visual clearance before final verification')
         label='post-'+str(time.time_ns());self.files(label);frames=[];heartbeats=[]
         for i in range(2):
             raw=self.remote('cat '+RAM+'/acceptance.json');(self.root/(label+'-health'+str(i)+'.json')).write_bytes(raw);h=json.loads(raw)
@@ -80,18 +84,19 @@ class Session(BaseSession):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['prepare','pause','case','observe','finalize','audit'])
     p.add_argument('--output',type=Path,required=True);p.add_argument('--create-reply',type=Path);p.add_argument('--support-profile',type=Path)
-    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=CASES)
+    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=ALL_CASES);p.add_argument('--boundary-only',action='store_true')
     p.add_argument('--displays-clear',action='store_true');p.add_argument('--guidance-closed',action='store_true');p.add_argument('--v1-visible',action='store_true')
     p.add_argument('--windshield-images',type=int,choices=[0,1,2]);p.add_argument('--cluster-images',type=int,choices=[0,1,2]);p.add_argument('--arrangement',choices=['none','single','side-by-side','stacked','overlap','clipped','other']);p.add_argument('--note',default='')
     a=p.parse_args()
     if a.command=='prepare':
         if not(a.create_reply and a.support_profile):p.error('Create reply and accepted support profile required')
         reply=a.create_reply.read_bytes();profile=a.support_profile.read_bytes();config=limits(reply)
-        plans={c:profile_commands(profile,c)for c in CASES};a.output.mkdir(parents=True,exist_ok=False)
+        selected=BOUNDARY_CASES if a.boundary_only else CASES
+        plans={c:profile_commands(profile,c)for c in selected};a.output.mkdir(parents=True,exist_ok=False)
         (a.output/'create-response.bin').write_bytes(reply);(a.output/'supra-profile.bin').write_bytes(profile)
         for c,(start,stop)in plans.items():save(a.output/(c+'-plan.json'),dict(setup=[(m,b.hex())for m,b in start],cleanup=[(m,b.hex())for m,b in stop]))
-        save(a.output/'kit.json',dict(sha256={f.name:digest(f)for f in a.output.iterdir()},source_sha256={n:digest(TOOLS/n)for n in SOURCES},cases=list(CASES),visible_seconds=30,limits=config,no_hz_tests=True,v1_writes=False))
-        save(a.output/'state.json',dict(paused=False,prepared_epoch=time.time()));print('Prepared all three cases offline. No vehicle connection.');return
+        save(a.output/'kit.json',dict(sha256={f.name:digest(f)for f in a.output.iterdir()},source_sha256={n:digest(TOOLS/n)for n in SOURCES},cases=list(selected),visible_seconds=30,limits=config,no_hz_tests=True,v1_writes=False))
+        save(a.output/'state.json',dict(paused=False,prepared_epoch=time.time()));print('Prepared '+', '.join(selected)+' offline. No vehicle connection.');return
     if a.command=='audit':print(json.dumps(audit(a.output),indent=2));return
     s=Session(a)
     if a.command=='observe':
