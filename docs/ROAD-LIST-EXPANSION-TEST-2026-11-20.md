@@ -48,3 +48,12 @@ Private kit: `outputs/road-image-expansion-2026-11-20/`; supporting native confi
 ## Scope boundary
 
 This measures a previously untested capability within an already working windshield route. It does not establish access to the full HUD compositor, the height-adjustment corner surface, or a free-positioned root framebuffer. PiP destination0 remains a separate unresolved attachment question. Do not label either candidate a production V2 layout before observing its footprint and factory coexistence.
+
+
+## Complete batch controller
+
+`tools/manage_road_list_session.py` now wraps the three cases with a resumable journal. Preparation pins the source files and inputs. Changed source is rejected before SSH. Pause can adopt an already-stopped V1 without issuing another stop. Each case must finish and have explicit visual clearance before the next; the control must show an image in the windshield. Attempts cannot be overwritten. Finalization verifies current V1 files, supervisor health, advancing frames/RPM samples and heartbeat, enabled/no-lockout state, and an empty secondary output. No test success is inferred from that restoration check.
+
+Four additional batch-gate tests pass: missing control, unclear/repeated case, source drift before SSH, and required restoration. Individual runner setup failures are recorded, and it requires an existing SSH control socket instead of silently opening a new login. A timed-out/cancelled child is asked to clean up; the batch waits for that result and never automatically kills it while drawing.
+
+Prepared session directory: `outputs/road-expansion-session-final-2026-11-20/`. It is unstarted. Its private `SESSION-COMMANDS.md` contains exact commands, observation fields and restoration steps. The remaining necessary measurement is physical image arrangement in the windshield and cluster; offline preparation cannot establish that.

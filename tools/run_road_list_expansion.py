@@ -24,7 +24,9 @@ def main():
     if not a.execute:print('Offline plan saved. No vehicle connection.');return 0
     if not(a.ssh_socket and a.head and a.parked_overlays_closed_displays_clear):p.error('Live run needs verified SSH master and parked, clear displays, closed factory overlays')
     ipaddress.IPv4Address(a.head)
-    base=['ssh','-S',str(a.ssh_socket.resolve()),'-o','BatchMode=yes','-o','ConnectTimeout=3'];destination='root@'+a.head
+    if not a.ssh_socket.is_socket():raise ValueError('Existing verified SSH master required')
+    base=['ssh','-S',str(a.ssh_socket.resolve()),'-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=3'];destination='root@'+a.head
+    subprocess.run(base+['-O','check',destination],check=True,capture_output=True,timeout=5)
     def command(cmd):
         r=subprocess.run(base+[destination,cmd],capture_output=True,timeout=5)
         if r.returncode:raise RuntimeError('Read-only admission command failed')
@@ -56,6 +58,10 @@ def main():
         with socket.create_connection(('127.0.0.1',port),timeout=2)as sock:
             session=SharedSession(TcpExchange(sock,a.output),allocation,double_buffer=True)
             result=run(session,profile,a.case,record,observe,begin_cleanup)
+    except (Exception,KeyboardInterrupt) as e:
+        if not result:
+            result=dict(status='failed_before_trial',error=str(e) or type(e).__name__,protocol_cleanup_passed=False,v1_restored=False)
+        raise
     finally:
         begin_cleanup()
         result['forward_removed']=False
