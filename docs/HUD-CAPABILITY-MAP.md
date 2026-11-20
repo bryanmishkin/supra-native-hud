@@ -1,8 +1,8 @@
 # Whole-windshield capability map for V2
 
-Latest20November: [destination-picture model49](DESTINATION-SURFACE-TEST-2026-11-20.md) is now an executable bounded attachment experiment, grounded in actual factory graph traffic and native serialization. It has no measured physical extent yet. The optional64-column RoadInfo tail remains separate. V1 was last owner-confirmed updating after the final restart; historical stopped-state notes below are superseded. No new vehicle contact.
+Latest 20 November: same-family SWFL 00005ffc **004_000_003** has now been extracted and its native receiver paths executed offline. This is older than installed **008_000_000**. It defines a separate **277×160 HUD PiP destination**, and rejects HUD metadata when its active destination is the cluster. Road-image bounds come from receiver scene nodes. See [receiver proof](SUPRA-RECEIVER-PIXEL-GATES-2026-11-20.md).
 
-Updated20 November2026: see [causal binding review](HUD-BINDING-CAUSAL-REVIEW-2026-11-20.md) for latest native and packet proofs. V1 restoration was deferred by the owner after the20November session; installed files unchanged, running state not verified.
+Destination-picture and narrow-tail tests are complete; neither established a taller custom canvas. V1 installed files are unchanged. Owner deferred runtime restoration at the latest session end; do not claim it is currently running. No repeat strip or Hz tests.
 
 19 November 2026. Scope is the entire HUD rendering system, not only B00E. This is an evidence map, not a claim that every renderer has been recovered. Installed V1 is unchanged. No Hz tests belong in the next canvas session.
 
@@ -15,7 +15,7 @@ flowchart LR
   HU -->|B009 DisplaySink negotiation| CL
   HU -->|HUD control/status proxies| CTRL[Vehicle display controls]
   CL --> W[Visible windshield graphics]
-  ROOT[Main HUD renderer / compositor: implementation not captured] -. ownership and layer mapping unresolved .-> W
+  ROOT[Same-family receiver renderer captured; installed version differs] -. ownership and layer mapping unresolved .-> W
   VEH[Speed, speed-limit and vehicle warning inputs] -. rendering owner unresolved .-> ROOT
 ```
 
@@ -25,7 +25,7 @@ B006/B00E terminate at the measured cluster endpoint; their visibility in the wi
 
 | Region/interface | What is established | What we can currently draw | Dimensions/placement and remaining gap |
 |---|---|---|---|
-| Main windshield surface | Speed, limits, warning graphics and widgets visibly coexist | No arbitrary root-surface drawing API established | Full resolution, origin, clipping, layers, receiver implementation and access remain unresolved |
+| Main windshield surface | Speed, limits, warning graphics and widgets visibly coexist | No arbitrary root-surface drawing API established | Older production initializer configures 480×240; no public root drawing API or installed-version geometry verified |
 | B006 guidance road image | V1 and cross/IU seen in windshield and cluster; removal verified | Arbitrary opaque RLE32 image in proven road-image slot | 150×36 tested; factory positioning; no free x/y or z-order demonstrated |
 | B00E Carousel | Factory source menu renders in windshield; exact restoration verified | Content-word and icon substitutions tested: no custom pixels visible | Bitmap ceiling 128×128; 36×36 binding failed; larger size trials are not ready |
 | B00E Entertainment | Station list captured; factory allocator can supply bitmap IDs to content cells | Selected frequency/name fields went blank; no custom pixels visible | Same instance bitmap ceiling; explicit row/column, no guessed selection metadata |
@@ -47,7 +47,7 @@ Captured HmiMain3D SHA `fe770d1957fdfcd250d1f8cf7fba0e9a7c25e8c053e59f04f3274055
 
 Constructor `0x22ea5e4` and initializer `0x22ea564` correlate those children with registration values `0x410`, `0x411`, `0x415`, respectively. These are code-level registration values; this work does not assert they are a verified live MOST route or safe command IDs for another vehicle. The control routines at `0x22ea070` and `0x22ea1a8` serialize bounded scalar arguments, while status dispatch at `0x22ea268` parses bounded scalar fields. No pixel pointer, surface dimensions, image array or root-layer API is established in these routines. The symbolic name HUDInterface must not be mistaken for a drawing API.
 
-This narrows the main-surface investigation: trace these control callers and the receiving component separately from B00E. Matching receiver code/firmware is not identified among the current artifacts. Absence from captured HU files does not prove no such interface exists.
+This narrows the main-surface investigation: trace these control callers and the receiving component separately from B00E. Same-family older receiver firmware is now available; see the current receiver proof above. Exact installed-version firmware is not yet available. Absence from captured HU files does not prove no such interface exists.
 
 ## V2 design decisions supported now
 

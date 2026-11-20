@@ -1,3 +1,7 @@
+# Current receiver-code evidence — 20 November 2026
+
+Read [same-family receiver pixel gates](SUPRA-RECEIVER-PIXEL-GATES-2026-11-20.md) first. Older receiver004_000_003 is now decoded; installed008 differs. Twelve native cases prove separate277×160 HUD selection0,460×237 cluster selection1, and rejection of mismatched metadata destinations. Five additional native cases establish PiP ancestor visibility and exclusive-owner gates. Road bounds come from bound runtime RoadName objects, not directly from the serialized leaf dimensions. Upstream desired-sink policy is being traced; numeric state-machine/data-event IDs are separate namespaces. No new live test is admitted yet. V1 installed files unchanged; runtime restoration last deferred by owner. No repeat strip or Hz tests.
+
 # Current task — full HUD viewport after completed strip tests
 
 Read [the latest photo/native evidence](HUD-FULL-VIEWPORT-2026-11-20.md) first. Destination and narrow-tail tests are COMPLETE; do not repeat as the next batch. The owner requests a taller/full canvas. Native mode/adjustment contract now executes offline and the two saved height SETs match its scalar arguments. No receiver clip setter or larger windshield attachment is yet proven. V1 installed files unchanged; owner explicitly deferred runtime restore at session end. No Hz tests.
