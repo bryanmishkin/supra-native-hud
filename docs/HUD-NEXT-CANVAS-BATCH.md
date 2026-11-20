@@ -23,3 +23,7 @@ Retain separate machine and visual outcomes. Do not erase a failed test, repeat 
 ## Offline coverage added before requesting a session
 
 [UDP service coverage and native mappings](HUD-ROOT-TRANSPORT-2026-11-20.md) now complement the earlier TCP corpus. Captured receiver offers, native image/model handlers, local map-window geometry and actual windshield destination are tracked separately. Missing receiver implementation cannot be replaced by treating head-unit source-window dimensions as receiver boundaries.
+
+## Receiver scene/control evidence
+
+The [scene/control trace](RECEIVER-SCENE-CONTROL-2026-11-20.md) establishes a separate 408×132 HUD test surface and verifies its internal input route offline. Its RGB/factory-pattern controls do not yet establish arbitrary bitmap attachment or an external activation endpoint. Keep it distinct from the road strip and from an admitted car test.

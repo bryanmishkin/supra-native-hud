@@ -196,3 +196,7 @@ Current operational docs: [status](../APP-STATUS.md), [architecture](APP-ARCHITE
 ## 19 November live canvas/Hz results
 
 See [the session results](CANVAS-HZ-RESULTS-2026-11-19.md). B006 cross and IU were visible in both displays. B00E custom36×36 images produced only a square, whereas the exact factory Carousel content rendered recognizable icons/text. Do not call B00E bitmap binding proven or run the dependent128×128 ladder without a new evidence-based fix. A30-Hz30-second host run passed; visible maximum is unverified pending video, and sustained trials had timing overruns. V1 restarted and passed installed-file/configuration, hook, worker, advancing-RPM/heartbeat and temporary-directory absence checks; owner confirmed visible and updating.
+
+## 20 November: named scene bounds and larger test surface
+
+[Receiver scene/control trace](RECEIVER-SCENE-CONTROL-2026-11-20.md) ties the road labels to 230×36, the PiP visibility actions to cluster nodes, and a distinct HUD test surface to 408×132. Native replay proves internal record 0x16e reaches local widget event 0xac unchanged. The surface uses RGB or factory assets; external activation and arbitrary uploaded imagery are not established. Four offline tools added. No car-test admission, V1 change, or vehicle connection. Continue at the external input/attachment boundary; do not repeat strips or send internal records to a guessed ENET endpoint.
