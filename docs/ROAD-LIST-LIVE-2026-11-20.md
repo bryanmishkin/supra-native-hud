@@ -25,3 +25,7 @@ Owner confirmed both test images gone, restarted iDrive, and confirmed V1 visibl
 ## Close-up photo evidence
 
 IMG_1998.JPG shows the complete cyan image1border and only the left portion of amber image2. Its top and bottom edges stop at a common vertical boundary through numeral2; the right border is absent. The cutoff is inside the photograph. This supports horizontal clipping rather than failed bitmap upload, but does not distinguish a receiver clip rectangle from the HUD optical viewing boundary. Roughly half of the second marker is visible; no calibrated width or new full-canvas dimension is established. Original photo and checksum are preserved privately.
+
+## Gauge-cluster photo evidence
+
+IMG_1984.jpg shows complete cyan 1 and amber 2 markers side-by-side, including both right borders. Thus the second marker asset can render in full on the cluster; its truncation in the windshield photo is not intrinsic to the marker artwork. This does not by itself distinguish a windshield layout/clip limit from an optical viewing limit. Both two-image trials produced cluster images, so this photograph is not assigned to a specific trial without timestamp correlation. Original and SHA-256 are preserved privately. V1 files remain unchanged.
