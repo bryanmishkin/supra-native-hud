@@ -8,9 +8,10 @@ from prepare_road_list_expansion import limits
 from verify_current_v1_test_baseline import verify
 CASES=('control','two_icons_one_entry','one_icon_two_entries')
 BOUNDARY_CASES=('right_boundary_ruler',)
-ALL_CASES=CASES+BOUNDARY_CASES
+EXTENT_CASES=('wide_tail_64',)
+ALL_CASES=CASES+BOUNDARY_CASES+EXTENT_CASES
 TOOLS=Path(__file__).resolve().parent
-SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py','road_boundary_ruler.py')
+SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py','road_boundary_ruler.py','road_extent_probe.py')
 
 def audit(root):
     state=json.loads((root/'state.json').read_text());missing=[]
@@ -27,7 +28,7 @@ class Session(BaseSession):
         for name,sha in kit['source_sha256'].items():
             if digest(TOOLS/name)!=sha:raise ValueError('Prepared source changed; rebuild kit: '+name)
         self.cases=tuple(kit['cases'])
-        if self.cases not in (CASES,BOUNDARY_CASES):raise ValueError('Unsupported batch')
+        if self.cases not in (CASES,BOUNDARY_CASES,EXTENT_CASES):raise ValueError('Unsupported batch')
         super().__init__(a)
     def pause(self):
         if self.state.get('paused'):raise ValueError('Already paused')
@@ -84,14 +85,15 @@ class Session(BaseSession):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['prepare','pause','case','observe','finalize','audit'])
     p.add_argument('--output',type=Path,required=True);p.add_argument('--create-reply',type=Path);p.add_argument('--support-profile',type=Path)
-    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=ALL_CASES);p.add_argument('--boundary-only',action='store_true')
+    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=ALL_CASES);p.add_argument('--boundary-only',action='store_true');p.add_argument('--extent-only',action='store_true')
     p.add_argument('--displays-clear',action='store_true');p.add_argument('--guidance-closed',action='store_true');p.add_argument('--v1-visible',action='store_true')
     p.add_argument('--windshield-images',type=int,choices=[0,1,2]);p.add_argument('--cluster-images',type=int,choices=[0,1,2]);p.add_argument('--arrangement',choices=['none','single','side-by-side','stacked','overlap','clipped','other']);p.add_argument('--note',default='')
     a=p.parse_args()
     if a.command=='prepare':
         if not(a.create_reply and a.support_profile):p.error('Create reply and accepted support profile required')
         reply=a.create_reply.read_bytes();profile=a.support_profile.read_bytes();config=limits(reply)
-        selected=BOUNDARY_CASES if a.boundary_only else CASES
+        if a.boundary_only and a.extent_only:p.error('Choose exactly one batch')
+        selected=EXTENT_CASES if a.extent_only else BOUNDARY_CASES if a.boundary_only else CASES
         plans={c:profile_commands(profile,c)for c in selected};a.output.mkdir(parents=True,exist_ok=False)
         (a.output/'create-response.bin').write_bytes(reply);(a.output/'supra-profile.bin').write_bytes(profile)
         for c,(start,stop)in plans.items():save(a.output/(c+'-plan.json'),dict(setup=[(m,b.hex())for m,b in start],cleanup=[(m,b.hex())for m,b in stop]))

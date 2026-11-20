@@ -40,7 +40,7 @@ def check(profile,reply):
         else:
             assert not any(m==8 for m,_ in calls),'Disposal after uncertain model detachment'
         return r,len(calls)
-    for case in ('control','two_icons_one_entry','one_icon_two_entries','right_boundary_ruler'):
+    for case in ('control','two_icons_one_entry','one_icon_two_entries','right_boundary_ruler','wide_tail_64'):
         clean,count=execute(case);assert clean['protocol_cleanup_passed'] and clean['status']=='window_finished'
         for i in range(1,count+1):execute(case,i)
         for rid in (0x01000008,0x01000009):execute(case,busy=rid)

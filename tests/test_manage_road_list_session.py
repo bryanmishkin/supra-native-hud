@@ -2,7 +2,7 @@ import json,sys,tempfile,unittest
 from pathlib import Path
 from types import SimpleNamespace
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
-from manage_road_list_session import Session,audit,CASES,BOUNDARY_CASES
+from manage_road_list_session import Session,audit,CASES,BOUNDARY_CASES,EXTENT_CASES
 class BatchGates(unittest.TestCase):
     def test_missing_control_blocks_before_vehicle_access(self):
         s=Session.__new__(Session);s.cases=CASES;s.state={'paused':True};s.a=SimpleNamespace(case=CASES[1],displays_clear=True,guidance_closed=True)
@@ -27,6 +27,15 @@ class BatchGates(unittest.TestCase):
             state={'right_boundary_ruler':{'passed':True,'observation':{'clear':True}},'restoration':{'verified':True}}
             (root/'state.json').write_text(json.dumps(state))
             self.assertTrue(audit(root)['complete'])
+    def test_extent_batch_has_no_alignment_or_hz_cases(self):
+        self.assertEqual(EXTENT_CASES,('wide_tail_64',))
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            (root/'kit.json').write_text(json.dumps({'cases':list(EXTENT_CASES)}))
+            state={'wide_tail_64':{'passed':True,'observation':{'clear':True}}}
+            (root/'state.json').write_text(json.dumps(state))
+            self.assertEqual(audit(root)['missing'],['V1 restoration/runtime verification'])
+
     def test_changed_source_rejected_before_ssh(self):
         with tempfile.TemporaryDirectory()as d:
             root=Path(d);(root/'kit.json').write_text(json.dumps({'source_sha256':{'manage_road_list_session.py':'wrong'}}))

@@ -20,6 +20,7 @@ def profile_commands(raw,case):
     candidates=two_image_candidates(road,0x01000008,0x01000009)
     if case=='control':chosen=road
     elif case in ('two_icons_one_entry','one_icon_two_entries'):chosen=candidates[case]
+    elif case=='wide_tail_64':chosen=candidates['one_icon_two_entries']
     elif case=='right_boundary_ruler':
         value=decode(candidates['one_icon_two_entries']);value['alignment']=1;chosen=encode(value)
     else:raise ValueError('Unknown structural case')
@@ -48,11 +49,17 @@ def run(session,profile,case,record,observe,begin_cleanup=lambda:None):
             if case=='control' and number==2:continue
             if session._check(rid,1):raise ValueError('Slot became occupied')
             tracked.append(rid);session.resources[rid]=1;save() # lost ACK remains tracked
-            if case=='right_boundary_ruler':
+            width,height=150,36
+            if case=='wide_tail_64':
+                from road_extent_probe import image
+                width,height,pixels=image(number-1)
+            elif case=='right_boundary_ruler':
                 from road_boundary_ruler import tile
                 pixels=tile(number-1)
             else:pixels=marker(number)
-            body=encode_bitmap_body(200,rid,1,[150,36],encode_bgra(swap_red_blue(pixels)))
+            result.setdefault('image_geometry',[]).append(dict(resource_id=rid,width=width,height=height,pixel_sha256=hashlib.sha256(pixels).hexdigest()))
+            save()
+            body=encode_bitmap_body(200,rid,1,[width,height],encode_bgra(swap_red_blue(pixels)))
             session._empty(3,body)
             if not session._check(rid,1):raise ValueError('Image upload absent')
             result['uploaded'].append(rid);save()

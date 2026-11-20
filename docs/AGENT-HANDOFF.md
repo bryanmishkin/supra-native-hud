@@ -1,3 +1,7 @@
+# New bounded extent candidate
+
+[wide_tail_64](HUD-WIDE-EXTENT-TEST-2026-11-20.md) changes the second resource from150x36 to64x36 while preserving the accepted two-entry graph and alignment0. It tests a complete second region beyond the simultaneous V1-sized reference; no full-root viewport or increased height is claimed. One30-second case only, no Hz/alignment/control repeats. Require the green far-right rail visibly outside the full cyan reference, then cleanup and V1 restoration. Owner is disconnected; no vehicle operations occurred.
+
 # Current task — actual drawing extent, not alignment
 
 Read [boundary consumer trace](HUD-BOUNDARY-CONSUMERS-2026-11-20.md). The prior right-alignment kit is not admitted as the next larger-canvas test. Newly traced ExternalDisplay fields feed temperature/on-board-computer data, not an established viewport. Actual receiver clip control or a larger windshield-bound pixel surface remains unresolved. User is disconnected; V1 untouched. Last live state: owner confirmed V1 updating after final restart; no final machine readback after that repeat. No Hz tests or repeat arrangement trips.
