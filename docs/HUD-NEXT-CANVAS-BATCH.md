@@ -1,4 +1,6 @@
-# Next canvas batch: retained test and larger-area admission
+# Next canvas batch: destination picture and retained extent probe
+
+New executable batch: [destination-picture attachment](DESTINATION-SURFACE-TEST-2026-11-20.md), backed by three actual factory messages and native graph/serializer proof. `--surface-batch` includes destination_picture then wide_tail_64. Physical expansion remains unverified; do not describe this as an unlocked root canvas. The root-boundary admission requirements below still apply to any claimed root setter.
 
 Current owner direction: keep the narrow-tail test as an optional item, prepare as much as possible offline, and do not request another trip for an alignment/clipping repeat. No Hz tests. V1 remains intact.
 

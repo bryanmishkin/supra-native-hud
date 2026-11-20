@@ -9,9 +9,10 @@ from verify_current_v1_test_baseline import verify
 CASES=('control','two_icons_one_entry','one_icon_two_entries')
 BOUNDARY_CASES=('right_boundary_ruler',)
 EXTENT_CASES=('wide_tail_64',)
-ALL_CASES=CASES+BOUNDARY_CASES+EXTENT_CASES
+SURFACE_CASES=('destination_picture','wide_tail_64')
+ALL_CASES=CASES+BOUNDARY_CASES+EXTENT_CASES+('destination_picture',)
 TOOLS=Path(__file__).resolve().parent
-SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py','road_boundary_ruler.py','road_extent_probe.py')
+SOURCES=('manage_road_list_session.py','run_road_list_expansion.py','road_list_expansion_trial.py','ric_road_list.py','prepare_road_list_expansion.py','road_boundary_ruler.py','road_extent_probe.py','destination_surface_plan.py','run_destination_surface.py','ric_destination_high.py','ric_branch_high.py','ric_resource.py','ric_rle32.py','ric_graph.py','ric_shared_trial.py','ric_owned_session.py','ric_live_trial.py','ric_lifecycle.py','run_hud_selection_session.py','verify_current_v1_test_baseline.py','../docs/V1-BASELINE.json','../docs/V1-CURRENT-RECOVERY.json')
 
 def audit(root):
     state=json.loads((root/'state.json').read_text());missing=[]
@@ -28,7 +29,7 @@ class Session(BaseSession):
         for name,sha in kit['source_sha256'].items():
             if digest(TOOLS/name)!=sha:raise ValueError('Prepared source changed; rebuild kit: '+name)
         self.cases=tuple(kit['cases'])
-        if self.cases not in (CASES,BOUNDARY_CASES,EXTENT_CASES):raise ValueError('Unsupported batch')
+        if self.cases not in (CASES,BOUNDARY_CASES,EXTENT_CASES,SURFACE_CASES):raise ValueError('Unsupported batch')
         super().__init__(a)
     def pause(self):
         if self.state.get('paused'):raise ValueError('Already paused')
@@ -37,7 +38,7 @@ class Session(BaseSession):
         if not stopped:
             (self.root/'stop-v1.txt').write_bytes(self.remote(V1+'/supra-resident-qnx --stop '+RAM,35))
         self.quiet();self.snapshot('paused');self.state['paused']=True;self.commit()
-        print('V1 is stopped; confirm clear displays before control.')
+        print('V1 is stopped; confirm clear displays before the prepared test.')
     def case(self):
         a=self.a;c=a.case
         if not c or c in self.state:raise ValueError('New named case required; never overwrite attempts')
@@ -47,10 +48,13 @@ class Session(BaseSession):
             prior=self.state.get(self.cases[index-1],{})
             if not prior.get('passed') or not prior.get('observation',{}).get('clear'):raise ValueError('Prior case/visual cleanup incomplete')
             control=self.state.get('control',{}).get('observation',{})
-            if not control.get('windshield_images',0):raise ValueError('Working windshield control not confirmed')
+            if 'control' in self.cases and not control.get('windshield_images',0):raise ValueError('Working windshield control not confirmed')
         self.quiet();verify(self.root/'pre')
         row=dict(started=time.time(),passed=False);self.state[c]=row;self.commit()
         cmd=[sys.executable,str(TOOLS/'run_road_list_expansion.py'),'--case',c,'--create-reply',str(self.root/'create-response.bin'),'--support-profile',str(self.root/'supra-profile.bin'),'--output',str(self.root/c),'--execute','--ssh-socket',a.ssh_socket,'--head','169.254.199.119','--parked-overlays-closed-displays-clear']
+        if c=='destination_picture':
+            cmd[1]=str(TOOLS/'run_destination_surface.py')
+            cmd.extend(['--factory-witness',str(self.root/'destination-factory-witness.json')])
         try:
             child=subprocess.Popen(cmd);row['pid']=child.pid;self.commit()
             try:code=child.wait(timeout=180)
@@ -85,16 +89,23 @@ class Session(BaseSession):
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('command',choices=['prepare','pause','case','observe','finalize','audit'])
     p.add_argument('--output',type=Path,required=True);p.add_argument('--create-reply',type=Path);p.add_argument('--support-profile',type=Path)
-    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=ALL_CASES);p.add_argument('--boundary-only',action='store_true');p.add_argument('--extent-only',action='store_true')
+    p.add_argument('--execute',action='store_true');p.add_argument('--ssh-socket');p.add_argument('--case',choices=ALL_CASES);p.add_argument('--boundary-only',action='store_true');p.add_argument('--extent-only',action='store_true');p.add_argument('--surface-batch',action='store_true');p.add_argument('--factory-witness',type=Path)
     p.add_argument('--displays-clear',action='store_true');p.add_argument('--guidance-closed',action='store_true');p.add_argument('--v1-visible',action='store_true')
     p.add_argument('--windshield-images',type=int,choices=[0,1,2]);p.add_argument('--cluster-images',type=int,choices=[0,1,2]);p.add_argument('--arrangement',choices=['none','single','side-by-side','stacked','overlap','clipped','other']);p.add_argument('--note',default='')
     a=p.parse_args()
     if a.command=='prepare':
         if not(a.create_reply and a.support_profile):p.error('Create reply and accepted support profile required')
         reply=a.create_reply.read_bytes();profile=a.support_profile.read_bytes();config=limits(reply)
-        if a.boundary_only and a.extent_only:p.error('Choose exactly one batch')
-        selected=EXTENT_CASES if a.extent_only else BOUNDARY_CASES if a.boundary_only else CASES
-        plans={c:profile_commands(profile,c)for c in selected};a.output.mkdir(parents=True,exist_ok=False)
+        if sum((a.boundary_only,a.extent_only,a.surface_batch))>1:p.error('Choose exactly one batch')
+        if a.surface_batch and not a.factory_witness:p.error('Surface batch requires exact retained factory witness')
+        selected=SURFACE_CASES if a.surface_batch else EXTENT_CASES if a.extent_only else BOUNDARY_CASES if a.boundary_only else CASES
+        plans={c:profile_commands(profile,c)for c in selected if c!='destination_picture'}
+        if a.surface_batch:
+            from destination_surface_plan import compile_plan
+            destination=compile_plan(profile,reply,a.factory_witness.read_bytes())
+            plans['destination_picture']=(destination['setup'],destination['cleanup'])
+        a.output.mkdir(parents=True,exist_ok=False)
+        if a.surface_batch:(a.output/'destination-factory-witness.json').write_bytes(a.factory_witness.read_bytes())
         (a.output/'create-response.bin').write_bytes(reply);(a.output/'supra-profile.bin').write_bytes(profile)
         for c,(start,stop)in plans.items():save(a.output/(c+'-plan.json'),dict(setup=[(m,b.hex())for m,b in start],cleanup=[(m,b.hex())for m,b in stop]))
         save(a.output/'kit.json',dict(sha256={f.name:digest(f)for f in a.output.iterdir()},source_sha256={n:digest(TOOLS/n)for n in SOURCES},cases=list(selected),visible_seconds=30,limits=config,no_hz_tests=True,v1_writes=False))

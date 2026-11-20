@@ -1,3 +1,7 @@
+# Latest prepared batch — distinct destination-picture attachment
+
+Read [the destination surface test](DESTINATION-SURFACE-TEST-2026-11-20.md). Actual factory type49/tag10 messages and captured native code identify a picture input and description linkage. `prepare --surface-batch` now compiles `destination_picture` plus the owner-retained `wide_tail_64`, each30seconds; no prior controls/alignment/Hz cases. Native writer parity and30lost+30rejectedreply positions pass; uncertain withdrawal retains images. This is a newly grounded renderer experiment, **not proof of a larger windshield or an editable root viewport**. Branch/tunnel codecs are offline-only and unscheduled because no matching factory messages were found. V1 untouched; owner remains disconnected. Installed state was last owner-confirmed updating after restart; no new live verification occurred.
+
 # Latest positive traffic comparison
 
 [Exact windshield-versus-cluster comparison](WINDSHIELD-POSITIVE-CONTRAST-2026-11-20.md): 89 actual requests per two-image run; 88 methods/bodies identical, including both pixel uploads. Only request013/B006 method14/model40 entry grouping differs. One entry/two icons: cluster only. Two entries/one icon each: both displays, second HUD image clipped. This constrains receiver RoadInfo layout, not local MapCanvas bounds. No vehicle or V1 changes.

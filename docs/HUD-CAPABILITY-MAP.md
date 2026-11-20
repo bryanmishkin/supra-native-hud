@@ -1,5 +1,7 @@
 # Whole-windshield capability map for V2
 
+Latest20November: [destination-picture model49](DESTINATION-SURFACE-TEST-2026-11-20.md) is now an executable bounded attachment experiment, grounded in actual factory graph traffic and native serialization. It has no measured physical extent yet. The optional64-column RoadInfo tail remains separate. V1 was last owner-confirmed updating after the final restart; historical stopped-state notes below are superseded. No new vehicle contact.
+
 Updated20 November2026: see [causal binding review](HUD-BINDING-CAUSAL-REVIEW-2026-11-20.md) for latest native and packet proofs. V1 restoration was deferred by the owner after the20November session; installed files unchanged, running state not verified.
 
 19 November 2026. Scope is the entire HUD rendering system, not only B00E. This is an evidence map, not a claim that every renderer has been recovered. Installed V1 is unchanged. No Hz tests belong in the next canvas session.
