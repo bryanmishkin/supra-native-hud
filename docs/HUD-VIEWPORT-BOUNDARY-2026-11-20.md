@@ -1,4 +1,6 @@
-# Windshield boundary trace and right-alignment experiment
+# Historical boundary trace and unexecuted alignment experiment
+
+**Superseded for next-session planning:** [consumer tracing and extent-test requirements](HUD-BOUNDARY-CONSUMERS-2026-11-20.md). The alignment case below is not the requested larger-canvas test; do not schedule it on that premise.
 
 V1 is unchanged. This work is offline. It does not establish access to the whole HUD compositor or a larger usable height. The next experiment is a placement/clipping contrast, not a promise of an expanded viewport.
 

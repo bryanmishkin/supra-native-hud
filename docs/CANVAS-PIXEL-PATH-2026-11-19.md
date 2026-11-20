@@ -54,3 +54,7 @@ Additional exported HMI proxy vtables were followed to their concrete dispatcher
 These results prevent treating promising names as additional canvases. The two4095-bounded fields are not labeled width/height without a traced consumer. They also do not disprove a downstream drawing interface. The captured main-root implementation and arbitrary-coordinate drawing contract remain unresolved; no root sender is fabricated here.
 
 Private evidence bundle: `hud-surface-audit-2026-11-19`, containing bounded disassembly, factory-block execution output, hashed image kit and source snapshot. No OEM binary bytes are committed to Git.
+
+## 20 November consumer correction
+
+[Follow-up consumer tracing](HUD-BOUNDARY-CONSUMERS-2026-11-20.md) identifies ExternalDisplay +0x7c as temperature and +0x7a as on-board-computer data. The 4095 wire bounds are not evidence of canvas dimensions. The historical B00E content-field live attempts did not display custom pixels; do not interpret the offline geometry matrix above as a working larger surface.

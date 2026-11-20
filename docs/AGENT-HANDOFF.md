@@ -1,3 +1,7 @@
+# Current task — actual drawing extent, not alignment
+
+Read [boundary consumer trace](HUD-BOUNDARY-CONSUMERS-2026-11-20.md). The prior right-alignment kit is not admitted as the next larger-canvas test. Newly traced ExternalDisplay fields feed temperature/on-board-computer data, not an established viewport. Actual receiver clip control or a larger windshield-bound pixel surface remains unresolved. User is disconnected; V1 untouched. Last live state: owner confirmed V1 updating after final restart; no final machine readback after that repeat. No Hz tests or repeat arrangement trips.
+
 # Latest offline boundary trace
 
 Read [viewport boundary trace](HUD-VIEWPORT-BOUNDARY-2026-11-20.md). Native execution identifies model40 alignment 0=Left, 1=Right; all prior image-layout tests used Left. A boundary-only right-aligned ruler is implemented with the same owned slots and cleanup. This is an untested placement/clipping contrast, not proof of a larger viewport. No Hz/control repeats, no V1 changes. The per-image 150×36 limit is not a measured receiver viewport. User is disconnected; no vehicle commands were run.
