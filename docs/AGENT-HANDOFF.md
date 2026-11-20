@@ -2,6 +2,8 @@
 
 Read [the latest photo/native evidence](HUD-FULL-VIEWPORT-2026-11-20.md) first. Destination and narrow-tail tests are COMPLETE; do not repeat as the next batch. The owner requests a taller/full canvas. Native mode/adjustment contract now executes offline and the two saved height SETs match its scalar arguments. No receiver clip setter or larger windshield attachment is yet proven. V1 installed files unchanged; owner explicitly deferred runtime restore at session end. No Hz tests.
 
+Read [the complete resolution request trace](HUD-RESOLUTION-RECEIVER-TRACE-2026-11-20.md): its receiving producer handler ignores dimensions, and native execution confirms the Ethernet coding gate skips its legacy MOST setup. Do not use that diagnostic or its display enums as a windshield resize test.
+
 ## Historical handoff entries below
 
 ## Latest live result — 2026-11-20 destination/narrow-tail

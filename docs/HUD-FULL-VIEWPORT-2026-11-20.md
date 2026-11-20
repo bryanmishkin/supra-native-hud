@@ -45,3 +45,7 @@ The unresolved attachment is between receiver-owned layout/clip and a custom ima
 A useful next test must supply a traced windshield-bound image target or actual receiver clip setter, exact withdrawal/inverse operation, and a marker visibly above/below the strip as well as a retained strip reference. Changing image arrangement or displaying a factory symbol below it does not qualify. No live command or binary is produced from an unproven mode enum.
 
 Continue from the receiver's layout/clip implementation or a destination-bound image attachment, using the [capability map](HUD-CAPABILITY-MAP.md) and [batch admission contract](HUD-NEXT-CANVAS-BATCH.md). Do not infer a framebuffer API from the height controls. Private evidence includes original photos and hashes, native disassembly, executable adjustment results and packet-to-scalar comparisons.
+
+## Resolution-control follow-through
+
+[Complete request and receiving-handler trace](HUD-RESOLUTION-RECEIVER-TRACE-2026-11-20.md) now follows the dimension-bearing request to native execution. The dimensions are ignored there; the Ethernet coding branch skips legacy MOST setup. This is not a live resize candidate.
