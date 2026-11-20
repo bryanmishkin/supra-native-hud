@@ -1,3 +1,7 @@
+# Batched car session — 20 November
+
+[Targeted session runner and exact checklist](HUD-SELECTION-SESSION-2026-11-20.md) packages both 30-second receiver-selection cases, per-case recording, cleanup gates, and resumable V1 restoration verification. No Hz tests. Larger windshield delivery remains experimental; do not call this a proven fix.
+
 # Current receiver-selection experiment
 
 [Prepared paired selection test](HUD-SELECTION-TEST-2026-11-19.md) adds explicitly gated HUD-event acceptance and a native-verified distance-only contrast. It does not establish the receiver trigger or a working larger windshield canvas. V1 unchanged; no automatic car session requested.
