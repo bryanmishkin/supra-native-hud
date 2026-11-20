@@ -71,3 +71,7 @@ The next trace identifies `CDevCarHUDRueKo` and two signed−10..10 adjustment s
 ## Latest captured-data audit
 
 See [the 46-recording deep dive](HUD-PACKET-DEEP-DIVE-2026-11-19.md). Failed PiP recordings contain offers but no DisplaySink subscription/selection exchange; all retained factory selections are Kombi 460×237/1. Eleven surface-1056 snapshots are unbound and unchanged while factory windshield graphics appear. Failed B00E requests contain valid image bytes and match native serialization, so another dimension-prefix/field-size guess is not an established fix. V1 restoration was owner-confirmed after a diagnosed persistent lockout was archived; installed binaries remained unchanged.
+
+## Full-viewport follow-up after photo review
+
+[Photo reconciliation and native mode/adjustment execution](HUD-FULL-VIEWPORT-2026-11-20.md) supersede pending-test wording above: destination/narrow-tail tests are complete, not a new batch. The full-height custom pixel target remains unproven. No live mode sweep is admitted.

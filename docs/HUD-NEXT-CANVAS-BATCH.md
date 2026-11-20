@@ -1,14 +1,6 @@
-# Next canvas batch: destination picture and retained extent probe
+# Next canvas batch: full-viewport investigation
 
-New executable batch: [destination-picture attachment](DESTINATION-SURFACE-TEST-2026-11-20.md), backed by three actual factory messages and native graph/serializer proof. `--surface-batch` includes destination_picture then wide_tail_64. Physical expansion remains unverified; do not describe this as an unlocked root canvas. The root-boundary admission requirements below still apply to any claimed root setter.
-
-Current owner direction: keep the narrow-tail test as an optional item, prepare as much as possible offline, and do not request another trip for an alignment/clipping repeat. No Hz tests. V1 remains intact.
-
-## Ready optional test
-
-`wide_tail_64`, documented in [the extent-test procedure](HUD-WIDE-EXTENT-TEST-2026-11-20.md), is executable and fault-tested. It keeps the simultaneous 150x36 reference and changes only the second image to 64x36. Require the complete second border and green far edge spatially outside the first image. This measures available width through the existing road-list layout. It is **not** the larger root canvas and is not sufficient reason for another trip by itself.
-
-Keep its 30-second observation window. Keep its resource-presence admission, exact accepted profile, journal-before-send, seven withdrawals, resource-absence check, visual clearance and V1 restoration checks. Do not append old controls, alignment sweeps, distance pairs or Hz tests automatically.
+**The destination-picture and narrow-tail tests have now run. Do not schedule them again.** Read [the photo reconciliation and executed mode/adjustment contract](HUD-FULL-VIEWPORT-2026-11-20.md). The narrower second panel displayed completely, but no larger height or root viewport was obtained. No qualifying larger-canvas candidate is admitted yet. V1 installed files remain intact; owner deferred runtime restoration at the last session. No Hz tests.
 
 ## Larger-area test must change the actual destination or parent bounds
 

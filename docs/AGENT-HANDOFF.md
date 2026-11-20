@@ -1,3 +1,9 @@
+# Current task — full HUD viewport after completed strip tests
+
+Read [the latest photo/native evidence](HUD-FULL-VIEWPORT-2026-11-20.md) first. Destination and narrow-tail tests are COMPLETE; do not repeat as the next batch. The owner requests a taller/full canvas. Native mode/adjustment contract now executes offline and the two saved height SETs match its scalar arguments. No receiver clip setter or larger windshield attachment is yet proven. V1 installed files unchanged; owner explicitly deferred runtime restore at session end. No Hz tests.
+
+## Historical handoff entries below
+
 ## Latest live result — 2026-11-20 destination/narrow-tail
 
 See [live results](DESTINATION-SURFACE-LIVE-2026-11-20.md). Complete 64×36 second panel and green far edge confirmed on both displays; no larger-height/root viewport proven. Destination test showed factory finish flag and 400ft plus reference 1, not the custom cross. Both tests removed and both zero-drop recordings saved. Owner explicitly deferred V1 restoration to leave: installed V1 unchanged, runtime paused; do not claim restored.
