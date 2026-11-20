@@ -42,6 +42,18 @@ Consequently, genuine HUD sink negotiation alone is insufficient: the correct wi
 
 The decoded `hud_2d` asset contains factory test-bitmap records with serialized 408×132 values and height-frame corners. These are asset fields, not an exposed custom-image API. Its RoadName leaf records contain 1×1 values; they must not be confused with the bound runtime RoadName objects used by the road renderer. The visibility helper dereferences the object's node pointer at `+0xc`, while the width/height copy reads the object itself at `+0x3c/+0x40`. Exact property binding remains to be decoded.
 
+## Receiver image fitting and actual failed-ruler decode
+
+A further14 native cases execute the receiver itself: six image-fit cases and eight RLE decoding cases, including the exact36×36 ruler request that failed visually on19November. All expected pixels match the receiver decoder output. The decoder at processVA `0x2d303c` only has its allocator intercepted. This supersedes the earlier head-unit-only decoder evidence for this older receiver version; it does not establish installed008 compatibility or visible attachment.
+
+The HUD list external-image path at `0x246672` reads the target node's Candera Rectangle dynamic property through ARM getter `0x1213d0`, takes its width/height at property offsets `+8/+0xc`, looks up the cached image at `0x2b21fe`, and invokes `0x25740c`. That function uploads the image and calls the fitter. At `0x257060`, native code computes `min(1, target_width/image_width, target_height/image_height)` and applies uniform scaling. A277×160 image with a150×36 bound rectangle becomes62.325×36; with a277×160 rectangle it retains full size. These rectangles are synthetic inputs, not measured installed widget geometry. The vector constructor and final renderer scale setter are intercepted; the scale decisions execute natively.
+
+The `CopyBitmapImage` diagnostic “Image dimension mismatch” at `0x2afef4` checks whether the dimension-vector count is2. It is not itself a width/height clipping comparison. The cache insertion at `0x2b1ab0` separately limits encoded payload length to `0x14000` bytes and stores source dimensions. Enlarging that payload capacity would not enlarge the target rectangle.
+
+The receiver row-copy path at `0x2b0536` routes columns0/4 through bitmap copying and columns1/2/3 through text copying. This supplies receiver-side context for the failed Entertainment text substitutions. It does not explain away the separately failed Carousel icon replacement, and is not admission for another menu test.
+
+Private native checks of high-guidance availability additionally execute `0x2b54b2`: detailed types3/7/10/13/49 read picture references at offsets0x10/0x38/0x14/0x70/0x14 respectively. Presence means reference≠0xffffffff; it does not validate the referenced image or select a display. Twelve synthetic cases pass. These are receiving in-memory offsets, not wire offsets and not a newly admitted branch/tunnel test.
+
 ## Larger renderer evidence
 
 The older receiver's production HUD initializer at file `0xfde1c` selects display index 1, enables warping, and configures **480×240, 18-bit** output. Executed arguments also contain a refresh configuration; no refresh-rate car test was performed or proposed. This production path is not proof of an accessible arbitrary-image API, and its dimensions are not automatically those of installed version 008.
@@ -60,6 +72,12 @@ The separate visibility verifier uses the same arguments:
 
 ```sh
 python tools/verify_receiver_pip_visibility.py --image /absolute/path/5ffc-49800000.bin --output /absolute/path/pip-visibility.json
+```
+
+The image decoder/geometry verifier also accepts an optional private captured failed-ruler request:
+
+```sh
+python tools/verify_receiver_image_geometry.py --image /absolute/path/5ffc-49800000.bin --output /absolute/path/image-geometry.json --request /absolute/path/012-request.bin
 ```
 
 Requires Unicorn. The verifier rejects any image whose SHA256 differs before using offsets. It has no network or vehicle operations.

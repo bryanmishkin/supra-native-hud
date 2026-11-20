@@ -1,6 +1,6 @@
 # Whole-windshield capability map for V2
 
-Latest 20 November: same-family SWFL 00005ffc **004_000_003** has now been extracted and its native receiver paths executed offline. This is older than installed **008_000_000**. It defines a separate **277×160 HUD PiP destination**, and rejects HUD metadata when its active destination is the cluster. Road-image bounds come from receiver scene nodes. See [receiver proof](SUPRA-RECEIVER-PIXEL-GATES-2026-11-20.md).
+Latest 20 November: same-family SWFL 00005ffc **004_000_003** has now been extracted and its native receiver paths executed offline. This is older than installed **008_000_000**. It defines a separate **277×160 HUD PiP destination**, and rejects HUD metadata when its active destination is the cluster. Road-image bounds come from bound runtime RoadName objects, not directly from serialized scene-leaf dimensions. See [receiver proof](SUPRA-RECEIVER-PIXEL-GATES-2026-11-20.md).
 
 Destination-picture and narrow-tail tests are complete; neither established a taller custom canvas. V1 installed files are unchanged. Owner deferred runtime restoration at the latest session end; do not claim it is currently running. No repeat strip or Hz tests.
 
