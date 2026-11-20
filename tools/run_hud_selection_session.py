@@ -139,7 +139,7 @@ class Session:
         interface=self.remote('ifconfig vlan73').decode(errors='replace')
         if not re.search(r'\binet\s+160\.48\.199\.119\b',interface) or not re.search(r'<[^>]*\bUP\b',interface):
             raise ValueError('Internal interface not verified')
-        run='/tmp/supra-pip-corrected-'+uuid.uuid4().hex
+        run='/tmp/supra-pip-corrected-'+uuid.uuid4().hex[:16]
         rec=dict(remote=run,started_epoch=time.time(),passed=False)
         self.state[c]=rec; self.commit()
         cap=None; forward=None; made=False
@@ -197,7 +197,7 @@ class Session:
                     rpath=self.root/c/'result.json'
                     r=json.loads(rpath.read_text()) if rpath.exists() else {}
                     if cleanup_ok(r):
-                        self.remote('rm -f '+run+'/marker '+run+'/capture '+run+'/go '+run+'/stop; rmdir '+run+' && test ! -e '+run)
+                        self.remote('rm -f '+run+'/marker '+run+'/capture '+run+'/go '+run+'/stop; rm -r '+run+' && test ! -e '+run)
                         rec['remote_removed']=True
                     else: rec['remote_removed']=False
                 except Exception as e: rec['cleanup_error']=str(e)
@@ -267,6 +267,7 @@ def main():
     s=Session(a)
     if a.command=='observe':
         if not a.case or a.case not in s.state or not a.location: p.error('Attempted case and location required')
+        if 'capture_valid' not in s.state[a.case]: p.error('Wait for case recording to finish before recording observation')
         s.state[a.case]['observation']=dict(location=a.location,displays_clear=a.displays_clear,note=a.note,epoch=time.time()); s.commit()
     elif a.command=='case':
         if not a.case: p.error('--case required')

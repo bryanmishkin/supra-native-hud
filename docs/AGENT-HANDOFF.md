@@ -1,3 +1,7 @@
+# Latest live result — distance contrast remains cluster-only
+
+[20 November receiver-selection result](HUD-SELECTION-LIVE-2026-11-20.md): both full30-second cases selected cluster1; custom rectangle in cluster, factory arrow windshield. Both image removals and zero-drop recordings passed. Do not repeat this threshold-only pair as a new fix. V1 installation unchanged; see result for final restoration status.
+
 # Batched car session — 20 November
 
 [Targeted session runner and exact checklist](HUD-SELECTION-SESSION-2026-11-20.md) packages both 30-second receiver-selection cases, per-case recording, cleanup gates, and resumable V1 restoration verification. No Hz tests. Larger windshield delivery remains experimental; do not call this a proven fix.
