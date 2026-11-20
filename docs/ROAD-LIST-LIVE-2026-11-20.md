@@ -21,3 +21,7 @@ After the three cases, V1 returned after the owner restart and passed all15file 
 ## Final owner-confirmed restoration and disconnect
 
 Owner confirmed both test images gone, restarted iDrive, and confirmed V1 visible and updating, then disconnected and went inside. Final post-closeup machine verification was not completed: SSH was unavailable and ENET was removed. Do not represent the earlier full verification as a readback after this last restart. All four test windows passed protocol cleanup, and owner confirmed final visible clearance. No additional car trip is requested just to repeat that check.
+
+## Close-up photo evidence
+
+IMG_1998.JPG shows the complete cyan image1border and only the left portion of amber image2. Its top and bottom edges stop at a common vertical boundary through numeral2; the right border is absent. The cutoff is inside the photograph. This supports horizontal clipping rather than failed bitmap upload, but does not distinguish a receiver clip rectangle from the HUD optical viewing boundary. Roughly half of the second marker is visible; no calibrated width or new full-canvas dimension is established. Original photo and checksum are preserved privately.
