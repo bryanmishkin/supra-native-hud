@@ -29,3 +29,7 @@ IMG_1998.JPG shows the complete cyan image1border and only the left portion of a
 ## Gauge-cluster photo evidence
 
 IMG_1984.jpg shows complete cyan 1 and amber 2 markers side-by-side, including both right borders. Thus the second marker asset can render in full on the cluster; its truncation in the windshield photo is not intrinsic to the marker artwork. This does not by itself distinguish a windshield layout/clip limit from an optical viewing limit. Both two-image trials produced cluster images, so this photograph is not assigned to a specific trial without timestamp correlation. Original and SHA-256 are preserved privately. V1 files remain unchanged.
+
+## Single-image control photograph
+
+Owner identifies IMG_1981.JPG as the single-number windshield test and confirms the marker also appeared on the gauge cluster. The photograph shows a complete cyan border and numeral 1. This is the single-image control, not evidence of a numbered image during the two-images-in-one-entry test. Together with IMG_1984.jpg (complete cluster pair) and IMG_1998.JPG (windshield pair with second marker truncated), it provides visual references for the distinct layout outcomes. Different camera positions/magnifications prevent direct photograph-pixel comparisons of usable width.
