@@ -14,6 +14,15 @@ class ContractTests(unittest.TestCase):
             row=producer_contract(self.a);row[key]=value
             with self.subTest(key=key),self.assertRaises(ValueError):
                 validate_producer(b'SINK_NEGOTIATED_CLUSTER\nPIP_BINDING '+json.dumps(row).encode(),self.a)
+    def test_candidate_requires_matching_hud_confirmation(self):
+        self.a['allow_hud_candidate']=True
+        row=producer_contract(self.a);row['selection']=0
+        line=b'PIP_BINDING '+json.dumps(row).encode()+b'\n'
+        validate_producer(b'SINK_NEGOTIATED_HUD_CANDIDATE\n'+line,self.a)
+        with self.assertRaises(ValueError):validate_producer(b'SINK_NEGOTIATED_CLUSTER\n'+line,self.a)
+    def test_default_rejects_candidate_schema(self):
+        row=producer_contract(self.a);row['schema']=4
+        with self.assertRaises(ValueError):validate_producer(b'SINK_NEGOTIATED_CLUSTER\nPIP_BINDING '+json.dumps(row).encode(),self.a)
     def test_rejects_duplicate_contract(self):
         line=b'PIP_BINDING '+json.dumps(producer_contract(self.a)).encode()+b'\n'
         with self.assertRaises(ValueError):validate_producer(b'SINK_NEGOTIATED_CLUSTER\n'+line+line,self.a)

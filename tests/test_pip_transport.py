@@ -21,7 +21,7 @@ class Transport(unittest.TestCase):
     def setUp(self):
         self.tcp=socket.socket();self.tcp.bind(('127.0.0.1',0));self.tcp.listen();self.tcp.settimeout(3)
         self.udp=socket.socket(type=socket.SOCK_DGRAM);self.udp.bind(('127.0.0.1',0));self.udp.settimeout(4)
-        self.proc=subprocess.Popen([str(self.exe),str(self.tcp.getsockname()[1]),str(self.udp.getsockname()[1]),'5'],stdout=subprocess.PIPE,text=True)
+        self.proc=subprocess.Popen([str(self.exe),str(self.tcp.getsockname()[1]),str(self.udp.getsockname()[1]),'5']+getattr(self,'extra_args',[]),stdout=subprocess.PIPE,text=True)
         self.conn,self.addr=self.tcp.accept();self.conn.settimeout(2)
         self.sub,self.sender=self.udp.recvfrom(2048)
         row=discovery(self.sub);self.assertEqual((row['ip'],row['port']),self.addr)
@@ -78,6 +78,11 @@ class Transport(unittest.TestCase):
         self.udp.sendto(acknowledgment(self.sub),self.sender);self.conn.sendall(event(0))
         self.assertEqual(self.receive_exact(18),b'');self.unsubscribe()
         self.assertNotIn('NEGOTIATED_CLUSTER',self.proc.communicate(timeout=2)[0])
+    def test_reference_hud_tuple_requires_opt_in(self):
+        if getattr(self,'extra_args',[]):self.skipTest('default-mode guard')
+        self.udp.sendto(acknowledgment(self.sub),self.sender)
+        packet=bytearray(event(0));struct.pack_into('>HH',packet,24,277,160)
+        self.conn.sendall(packet);self.assertEqual(self.receive_exact(18),b'');self.unsubscribe()
     def test_spoofed_ack_cannot_grant_lease(self):
         with socket.socket(type=socket.SOCK_DGRAM) as other:other.sendto(acknowledgment(self.sub),self.sender)
         self.conn.sendall(event());self.conn.settimeout(.15)
@@ -123,5 +128,28 @@ class Transport(unittest.TestCase):
         except ConnectionResetError:pass # Closing a socket with unread partial data may reset it.
         self.unsubscribe()
         self.assertNotIn('NEGOTIATED_CLUSTER',self.proc.communicate(timeout=2)[0])
+
+class HudCandidateTransport(Transport):
+    extra_args=['hud-candidate']
+    def test_cluster_hud_cluster_switch_echoes_each_selection(self):
+        self.udp.sendto(acknowledgment(self.sub),self.sender)
+        for destination,width,height in [(1,460,237),(0,277,160),(1,460,237)]:
+            packet=bytearray(event(destination));struct.pack_into('>HH',packet,24,width,height)
+            self.conn.sendall(packet)
+            self.assertEqual(self.receive_exact(18),completion(destination))
+        self.conn.shutdown(socket.SHUT_RDWR);self.unsubscribe()
+        out,_=self.proc.communicate(timeout=2)
+        self.assertIn('NEGOTIATED_HUD_CANDIDATE',out)
+    def test_hud_candidate_waits_for_valid_lease(self):
+        packet=bytearray(event(0));struct.pack_into('>HH',packet,24,277,160)
+        self.conn.sendall(packet);self.conn.settimeout(.1)
+        with self.assertRaises(socket.timeout):self.conn.recv(18)
+        self.udp.sendto(acknowledgment(self.sub),self.sender);self.conn.settimeout(2)
+        self.assertEqual(self.receive_exact(18),completion(0))
+        self.conn.shutdown(socket.SHUT_RDWR);self.unsubscribe()
+    def test_unrecognized_hud_geometry_rejected(self):
+        self.udp.sendto(acknowledgment(self.sub),self.sender)
+        packet=bytearray(event(0));struct.pack_into('>HH',packet,24,278,160)
+        self.conn.sendall(packet);self.assertEqual(self.receive_exact(18),b'');self.unsubscribe()
 
 if __name__=='__main__':unittest.main()

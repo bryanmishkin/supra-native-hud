@@ -17,7 +17,8 @@ namespace supra_pip {
 class DisplaySink {
     int tcp_, udp_;
     sockaddr_in peer_, local_;
-    unsigned sequence_, used_;
+    unsigned sequence_, used_, destination_;
+    bool allow_hud_;
     uint8_t input_[64];
     double end_, renew_, lease_;
     bool subscribed_, selected_, failed_, pending_, attempted_;
@@ -101,9 +102,16 @@ class DisplaySink {
                 // No selection or lease change from a keepalive cookie.
             } else {
                 selected_=false;
-                const uint8_t tail[17]={1,1,2,0,0x3f,0xf0,0,0,0,0,0,0,1,0xcc,0,0xed,1};
+                const uint8_t prefix[12]={1,1,2,0,0x3f,0xf0,0,0,0,0,0,0};
                 if(size!=29 || get16(input_)!=0xb009 || get16(input_+2)!=0x8001 ||
-                   get16(input_+8)!=0 || memcmp(input_+12,tail,sizeof(tail))) return false;
+                   get16(input_+8)!=0 || memcmp(input_+12,prefix,sizeof(prefix))) return false;
+                const unsigned width=get16(input_+24),height=get16(input_+26),destination=input_[28];
+                const bool cluster=destination==1 && width==460 && height==237;
+                // Candidate HUD geometry comes from the captured style and G30 reference,
+                // NOT a measured Supra HUD lease. Explicit offline-tested opt-in only.
+                const bool hud=allow_hud_ && destination==0 && width==277 && height==160;
+                if(!cluster && !hud) return false;
+                destination_=destination;
                 if(pending_) return false;
                 pending_=true; // UDP ACK and TCP event can arrive in either order.
             }
@@ -112,7 +120,7 @@ class DisplaySink {
         return used_<sizeof(input_);
     }
 public:
-    DisplaySink():tcp_(-1),udp_(-1),sequence_(1),used_(0),end_(0),renew_(0),lease_(0),
+    explicit DisplaySink(bool allow_hud=false):tcp_(-1),udp_(-1),sequence_(1),used_(0),destination_(1),allow_hud_(allow_hud),end_(0),renew_(0),lease_(0),
         subscribed_(false),selected_(false),failed_(false),pending_(false),attempted_(false) { memset(&peer_,0,sizeof(peer_));memset(&local_,0,sizeof(local_)); }
     ~DisplaySink() { close(); }
     // No default addresses; no SO_REUSE*, factory port reuse, or address setup.
@@ -156,7 +164,8 @@ public:
         if((p[0].revents&POLLIN) && !receive_ack()) return fail();
         if((p[1].revents&POLLIN) && !receive_selection()) return fail();
         if(pending_ && lease_>now()) {
-            const uint8_t done[18]={0xb0,9,0,1,0,0,0,10,0,1,0,0,1,1,1,0,1,0};
+            uint8_t done[18]={0xb0,9,0,1,0,0,0,10,0,1,0,0,1,1,1,0,1,0};
+            done[16]=uint8_t(destination_); // Echo the received selection; never request a destination.
             double deadline=now()+0.25;
             if(deadline>lease_) deadline=lease_;
             if(deadline>end_) deadline=end_;
@@ -165,7 +174,9 @@ public:
         }
         return true;
     }
-    bool negotiated_cluster() const { double t=now();return selected_ && !failed_ && t>=0 && t<lease_ && t<end_; }
+    bool negotiated() const { double t=now();return selected_ && !failed_ && t>=0 && t<lease_ && t<end_; }
+    bool negotiated_cluster() const { return negotiated() && destination_==1; }
+    bool negotiated_hud() const { return negotiated() && destination_==0; }
     bool close() {
         selected_=false;pending_=false;bool released=true;
         if(subscribed_ && udp_>=0) released=subscribe(0);

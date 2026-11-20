@@ -7,18 +7,23 @@ import argparse,hashlib,json,select,socket,struct,subprocess,time
 from pathlib import Path
 from pip_trial import allocation,measured_support,descriptor,steps,withdrawal,Session
 from ric_live_trial import TcpExchange
+from b006_distance import replace_distance
 from verify_current_v1_test_baseline import verify as verify_v1
 
 
-def plan(create,profile,style):
+def plan(create,profile,style,distance=461):
     if style not in ('day','night'):raise ValueError('Explicit owned day/night profile required')
     a=measured_support(profile,allocation(create))
-    a.update(width=277,height=160,guidance_type=8402,style=style)
+    if distance not in (461,69):raise ValueError('Only measured-distance control and below-fourth-threshold contrast allowed')
+    method,body=a['support_start'][1]
+    if method!=10:raise ValueError('Expected distance support model')
+    a['support_start'][1]=(method,replace_distance(bytes.fromhex(body),distance).hex())
+    a.update(width=277,height=160,guidance_type=8402,style=style,distance=distance)
     return a
 
 
 def producer_contract(a):
-    return dict(schema=3,description_id=a['models'][15],resource_id=a['resource_id'],
+    return dict(schema=4 if a.get("allow_hud_candidate") else 3,description_id=a['models'][15],resource_id=a['resource_id'],
         backing=[800,480],content=[277,160],depth=0,packing=0,screen_format=8,
         metadata_id_be=struct.pack('>I',a['models'][15]).hex(),guidance_type=8402,
         style=a['style'],destination_flag=0,selection=1)
@@ -26,9 +31,14 @@ def producer_contract(a):
 
 def validate_producer(output,a):
     rows=[x[len(b'PIP_BINDING '):] for x in output.splitlines() if x.startswith(b'PIP_BINDING ')]
-    if len(rows)!=1 or json.loads(rows[0])!=producer_contract(a):
+    if len(rows)!=1:raise ValueError("Expected one producer contract")
+    observed=json.loads(rows[0]);expected=producer_contract(a)
+    if a.get("allow_hud_candidate") and observed.get("selection") in (0,1):
+        expected["selection"]=observed["selection"]
+    if observed!=expected:
         raise ValueError('Corrected producer contract mismatch')
-    if b'SINK_NEGOTIATED_CLUSTER\n' not in output:
+    confirmation=b'SINK_NEGOTIATED_HUD_CANDIDATE\n' if observed['selection']==0 else b'SINK_NEGOTIATED_CLUSTER\n'
+    if confirmation not in output:
         raise ValueError('No owned sink negotiation confirmation')
 
 
@@ -128,8 +138,10 @@ def main():
     p.add_argument('--create-response',type=Path,required=True)
     p.add_argument('--support-profile',type=Path,required=True)
     p.add_argument('--style',choices=['day','night'],required=True)
+    p.add_argument('--distance',type=int,choices=[461,69],default=461,help='Controlled receiver-stage experiment; not a proven HUD selection trigger')
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--execute',action='store_true')
+    p.add_argument('--observe-hud-selection',action='store_true',help='Experimental received HUD tuple support; does not request or guarantee HUD destination')
     p.add_argument('--v1-pre',type=Path)
     p.add_argument('--v1-paused-and-displays-clear',action='store_true')
     p.add_argument('--guidance-stopped',action='store_true')
@@ -138,7 +150,8 @@ def main():
     p.add_argument('--go-argv',type=Path)
     p.add_argument('--stop-argv',type=Path)
     args=p.parse_args()
-    a=plan(args.create_response.read_bytes(),args.support_profile.read_bytes(),args.style)
+    a=plan(args.create_response.read_bytes(),args.support_profile.read_bytes(),args.style,args.distance)
+    a['allow_hud_candidate']=args.observe_hud_selection
     args.output.mkdir(parents=True,exist_ok=False)
     (args.output/'plan.json').write_text(json.dumps(dict(allocation=a,producer_contract=producer_contract(a),
         descriptor=descriptor(a).hex(),steps=[(m,b.hex()) for m,b in steps(a)],

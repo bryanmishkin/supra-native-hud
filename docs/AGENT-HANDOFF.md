@@ -1,3 +1,7 @@
+# Current receiver-selection experiment
+
+[Prepared paired selection test](HUD-SELECTION-TEST-2026-11-19.md) adds explicitly gated HUD-event acceptance and a native-verified distance-only contrast. It does not establish the receiver trigger or a working larger windshield canvas. V1 unchanged; no automatic car session requested.
+
 # Latest offline destination proof
 
 See [HUD selection and binding](HUD-SELECTION-BINDING-2026-11-19.md): native destination and completion execution, 82-capture comparison, and exact limits. Cluster pixels verified; no larger windshield test yet. V1 unchanged.
