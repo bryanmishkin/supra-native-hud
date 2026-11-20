@@ -1,3 +1,7 @@
+# Latest positive traffic comparison
+
+[Exact windshield-versus-cluster comparison](WINDSHIELD-POSITIVE-CONTRAST-2026-11-20.md): 89 actual requests per two-image run; 88 methods/bodies identical, including both pixel uploads. Only request013/B006 method14/model40 entry grouping differs. One entry/two icons: cluster only. Two entries/one icon each: both displays, second HUD image clipped. This constrains receiver RoadInfo layout, not local MapCanvas bounds. No vehicle or V1 changes.
+
 # Current direction — preserve optional extent test; trace root destination
 
 Owner permits retaining `wide_tail_64` in the next batch but requires the actual larger windshield surface, not another clipping-only trip. Read [next-batch admission](HUD-NEXT-CANVAS-BATCH.md) and [new UDP/native service coverage](HUD-ROOT-TRANSPORT-2026-11-20.md). Offline audit covers52 unique captures and125624 UDP datagrams. [MapCanvas bounds](MAPCANVAS-BOUNDARY-TRACE-2026-11-20.md) now trace a real x/y/width/height call through NavigationBasic to NGraphicsSystem::CWindow; five clamp and three window-write native cases pass, but its windshield destination is not established. No live calls or V1 changes. Root-canvas readiness is not established by the optional extent test. No Hz tests.
