@@ -1,3 +1,7 @@
+# Latest live result — two entries reach windshield with clipping
+
+Read [20November live layout results](ROAD-LIST-LIVE-2026-11-20.md). One-image control reached both displays; two icons in one entry appeared only in cluster; separate entries appeared side-by-side in both, with image2clipped. Close-up repeat passed cleanup. Owner confirmed final restart and V1 updating, then disconnected. Machine verification passed before the repeat; final post-repeat readback was not completed. V1 installed files unchanged. Preserve this distinction.
+
 # New executable expansion test — supported multi-image road lists
 
 [Native-verified two-image batch](ROAD-LIST-EXPANSION-TEST-2026-11-20.md) tests multiple resources/entries through the working V1 windshield route. Receiver advertises10entries/10icons; saved traffic used one. Both new payloads match actual native serialization; lifecycle fault checks pass. This measures physical placement, not a proven larger canvas. No PiP or Hz tests.
