@@ -34,7 +34,7 @@ class Session(BaseSession):
     def pause(self):
         if self.state.get('paused'):raise ValueError('Already paused')
         self.files('pre');self.snapshot('before')
-        stopped=self.remote('if test -e '+RAM+'/resident.status; then cat '+RAM+'/resident.status; else printf MISSING; fi').strip()==b'STOPPED'
+        stopped=self.remote('if test -e '+RAM+'/resident.status; then cat '+RAM+'/resident.status; else echo MISSING; fi').strip()==b'STOPPED'
         if not stopped:
             (self.root/'stop-v1.txt').write_bytes(self.remote(V1+'/supra-resident-qnx --stop '+RAM,35))
         self.quiet();self.snapshot('paused');self.state['paused']=True;self.commit()

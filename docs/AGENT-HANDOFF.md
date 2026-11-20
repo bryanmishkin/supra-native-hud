@@ -1,3 +1,7 @@
+## Latest live result — 2026-11-20 destination/narrow-tail
+
+See [live results](DESTINATION-SURFACE-LIVE-2026-11-20.md). Complete 64×36 second panel and green far edge confirmed on both displays; no larger-height/root viewport proven. Destination test showed factory finish flag and 400ft plus reference 1, not the custom cross. Both tests removed and both zero-drop recordings saved. Owner explicitly deferred V1 restoration to leave: installed V1 unchanged, runtime paused; do not claim restored.
+
 # Latest prepared batch — distinct destination-picture attachment
 
 Read [the destination surface test](DESTINATION-SURFACE-TEST-2026-11-20.md). Actual factory type49/tag10 messages and captured native code identify a picture input and description linkage. `prepare --surface-batch` now compiles `destination_picture` plus the owner-retained `wide_tail_64`, each30seconds; no prior controls/alignment/Hz cases. Native writer parity and30lost+30rejectedreply positions pass; uncertain withdrawal retains images. This is a newly grounded renderer experiment, **not proof of a larger windshield or an editable root viewport**. Branch/tunnel codecs are offline-only and unscheduled because no matching factory messages were found. V1 untouched; owner remains disconnected. Installed state was last owner-confirmed updating after restart; no new live verification occurred.
