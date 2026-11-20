@@ -1,3 +1,7 @@
+# Current direction — preserve optional extent test; trace root destination
+
+Owner permits retaining `wide_tail_64` in the next batch but requires the actual larger windshield surface, not another clipping-only trip. Read [next-batch admission](HUD-NEXT-CANVAS-BATCH.md) and [new UDP/native service coverage](HUD-ROOT-TRANSPORT-2026-11-20.md). Offline audit covers52 unique captures and125624 UDP datagrams. [MapCanvas bounds](MAPCANVAS-BOUNDARY-TRACE-2026-11-20.md) now trace a real x/y/width/height call through NavigationBasic to NGraphicsSystem::CWindow; five clamp and three window-write native cases pass, but its windshield destination is not established. No live calls or V1 changes. Root-canvas readiness is not established by the optional extent test. No Hz tests.
+
 # New bounded extent candidate
 
 [wide_tail_64](HUD-WIDE-EXTENT-TEST-2026-11-20.md) changes the second resource from150x36 to64x36 while preserving the accepted two-entry graph and alignment0. It tests a complete second region beyond the simultaneous V1-sized reference; no full-root viewport or increased height is claimed. One30-second case only, no Hz/alignment/control repeats. Require the green far-right rail visibly outside the full cyan reference, then cleanup and V1 restoration. Owner is disconnected; no vehicle operations occurred.
