@@ -26,10 +26,11 @@ for v in range(256):
 assert len(rows)==25
 payload=bytes([0,17,34,51,1]);u.mem_write(PAY,payload);u.reg_write(UC_ARM_REG_R0,OBJ);u.reg_write(UC_ARM_REG_R1,PAY);u.reg_write(UC_ARM_REG_LR,STOP|1);u.emu_start(0x296bce|1,STOP,count=100)
 assert bytes(u.mem_read(OBJ+0x18,6))==payload+b'\1'
-u.mem_write(OBJ+0x28,struct.pack('<II',N1,N2));u.mem_write(N1+0x36,b'\1');u.mem_write(N2+0x36,b'\1');u.reg_write(UC_ARM_REG_R5,OBJ);u.emu_start(0x296ec0|1,0x296ece,count=100)
+u.mem_write(OBJ+0x28,struct.pack('<II',N1,N2));u.mem_write(N1+0x36,b'\1');u.mem_write(N2+0x36,b'\1');u.mem_write(OBJ+0x1c,b'\2');u.reg_write(UC_ARM_REG_R5,OBJ);u.emu_start(0x296c12|1,0x296ece,count=100)
+assert u.reg_read(UC_ARM_REG_PC)==0x296ece
 assert u.mem_read(N1+0x36,1)==b'\0' and u.mem_read(N2+0x36,1)==b'\0'
 scene=args.scene.read_bytes()
 bounds={hex(o):list(struct.unpack_from('<ff',scene,o+0x30)) for o in [0x658,0x6f0]}
 assert all(v==[408.,132.] for v in bounds.values())
-result={'image_sha256':hashlib.sha256(b).hexdigest(),'data_sha256':hashlib.sha256(d).hexdigest(),'bounds':bounds,'control_record':{'bytes':['selector','red','green','blue','enable'],'copied':list(u.mem_read(OBJ+0x18,6))},'asset_selectors':rows,'disabled_node_flags':[0,0],'native_blocks':['296efc..296f78','296edc','296bce','296ec0..296ece'],'intercepts':0,'limits':'Older 004 firmware; asset selector lookup, record copy and disable slice executed. Full rendering and transport not executed. No arbitrary bitmap upload binding established.'}
+result={'image_sha256':hashlib.sha256(b).hexdigest(),'data_sha256':hashlib.sha256(d).hexdigest(),'bounds':bounds,'control_record':{'bytes':['selector','red','green','blue','enable'],'copied':list(u.mem_read(OBJ+0x18,6))},'asset_selectors':rows,'disabled_node_flags':[0,0],'native_blocks':['296efc..296f78','296edc','296bce','296c12(enable=2)..296ece'],'intercepts':0,'limits':'Older 004 firmware; asset selector lookup, record copy and actual enable=2 branch to disable executed. Full rendering and transport not executed. No arbitrary bitmap upload binding established.'}
 args.output.write_text(json.dumps(result,indent=2)+'\n');print('256 selector cases, record copy and withdrawal passed; saved',args.output)

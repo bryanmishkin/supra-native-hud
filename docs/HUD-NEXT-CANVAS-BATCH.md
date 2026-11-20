@@ -1,6 +1,6 @@
 # Next canvas batch: full-viewport investigation
 
-**The destination-picture and narrow-tail tests have now run. Do not schedule them again.** Read [the photo reconciliation and executed mode/adjustment contract](HUD-FULL-VIEWPORT-2026-11-20.md). The narrower second panel displayed completely, but no larger height or root viewport was obtained. No qualifying larger-canvas candidate is admitted yet. V1 installed files remain intact; owner deferred runtime restoration at the last session. No Hz tests.
+**The destination-picture and narrow-tail tests have now run. Do not schedule them again.** Read [the photo reconciliation and executed mode/adjustment contract](HUD-FULL-VIEWPORT-2026-11-20.md). The narrower second panel displayed completely, but no larger height or root viewport was obtained. The new [diagnostic surface batch](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) is prepared to test external activation and height of the408×132 HUD test surface. Arbitrary uploaded-image access is not established. V1 installed files remain intact; owner deferred runtime restoration at the last session. No Hz tests.
 
 ## Larger-area test must change the actual destination or parent bounds
 
@@ -27,3 +27,7 @@ Retain separate machine and visual outcomes. Do not erase a failed test, repeat 
 ## Receiver scene/control evidence
 
 The [scene/control trace](RECEIVER-SCENE-CONTROL-2026-11-20.md) establishes a separate 408×132 HUD test surface and verifies its internal input route offline. Its RGB/factory-pattern controls do not yet establish arbitrary bitmap attachment or an external activation endpoint. Keep it distinct from the road strip and from an admitted car test.
+
+## Newly prepared activation batch
+
+The [A102 diagnostic surface batch](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) supersedes the external-endpoint uncertainty above. Native registration, parser, dispatch, start and stop are verified in004 firmware. Two30-second tests (dim RGB and factory grid/circles) are prepared, with installed008 identity pins, acknowledged stop preflight, live V1-stopped guard and bounded cleanup retries. This is a distinct surface-activation experiment; it does not satisfy the arbitrary custom-canvas success criterion merely by displaying a factory pattern. No strip/Hz repeats.

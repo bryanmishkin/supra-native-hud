@@ -44,8 +44,12 @@ Internal receive-record **0x16e** has a five-byte value and a sixth status byte.
 
 Upstream, 0x13bc4c dispatches records with a seven-byte `BA BE` header. Header creation is at 0x13ba20. The parser 0x13bc8a is module 0x14's callback in table 0x489a04; the enclosing input parser 0x13939a receives 64-byte frames with a checksum check at 0x138f8a. This path reaches low-level device handle initialization at 0x1390fe and transfer routines 0x13b06a/0x13a78e. **No Ethernet address/port or diagnostic request has been established for it. Do not transmit these internal records over ENET by guessing an endpoint.**
 
-## Car-test admission remains separate
+## Historical admission status before auxiliary tracing
 
 The useful new finding is an actual larger windshield-bound surface and its internal control contract. Arbitrary custom bitmap attachment, externally reachable activation, parent visibility restoration and compatibility with installed 008 remain unproved. A factory pattern or full-area RGB fill alone does not satisfy the requested larger custom canvas. No repeat strip/Hz test or speculative live runner was added.
 
 Reproduce the four public tools with `--help`; receiver binaries and scene inputs remain in the private evidence archive. Reports distinguish actual native execution, synthetic setup, decoded assets, and visual observations. See [the next canvas admission contract](HUD-NEXT-CANVAS-BATCH.md).
+
+## External diagnostic activation resolved subsequently
+
+The [A102 diagnostic trace and prepared tests](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) now establish the external routine registration, native request parser, asynchronous descriptor and five-byte writer in the auxiliary component. The earlier lack of an endpoint is superseded by that evidence. Two bounded full-surface activation tests are prepared. Arbitrary uploaded-image attachment and installed008 behavior remain separate, unverified questions. The renderer verifier now follows enable2 into the disable branch, rather than entering the disable slice directly.
