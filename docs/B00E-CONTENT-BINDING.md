@@ -1,5 +1,7 @@
 # B00E bitmap-producing content cells
 
+> Superseded test readiness: the second/third Carousel fields and Entertainment content fields described below were subsequently tested and did not show custom pixels. See CANVAS-BINDING-LIVE-2026-11-19.md and HUD-BINDING-CAUSAL-REVIEW-2026-11-20.md. Preserve the producer trace, but do not repeat these as untested candidates.
+
 Offline firmware trace, 19 November 2026. V1 unchanged. This follows the square-only Carousel experiment and the successful exact factory-content control. It establishes a different producer-to-field path; receiver acceptance and visible image placement still require proof.
 
 Captured HmiMain3D SHA-256: `fe770d1957fdfcd250d1f8cf7fba0e9a7c25e8c053e59f04f3274055fedda935`.

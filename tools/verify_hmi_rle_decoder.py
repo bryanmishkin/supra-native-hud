@@ -25,6 +25,12 @@ for n in [1,127,128,255]:
 for count in [127,128,255]:
  raw=b"".join(bytes([i%256,(i*3)%256,(i*7)%256,255]) for i in range(count))
  cases.append(("literal-"+str(count),encode_bgra(raw),count))
+# Distinct channel bytes and runs crossing a conceptual 8-pixel scanline.
+for name,raw in [
+ ('solid-8x8',bytes([0x12,0x34,0x56,0xff])*64),
+ ('scanline-crossing-8x4',bytes([0x12,0x34,0x56,0xff])*13+bytes([0x90,0x70,0x50,0xff])*19),
+ ('alternating-8x8',(bytes([0x12,0x34,0x56,0xff])+bytes([0x90,0x70,0x50,0xff]))*32),
+]: cases.append((name,encode_bgra(raw),len(raw)//4))
 results=[]
 for name,data,n in cases:
  c=cpu_for(p,sha);fp=BASE+0xf000;obj=BASE+0x1000;inp=BASE+0x2000;out=BASE+0x6000

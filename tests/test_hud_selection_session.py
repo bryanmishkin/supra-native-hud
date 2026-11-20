@@ -2,12 +2,20 @@ import json
 import struct
 import sys
 import tempfile
+import subprocess
 import unittest
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'tools'))
 from run_hud_selection_session import audit, capture_valid, cleanup_ok, advancing, last_frame, save, output_empty
 
 class SessionGates(unittest.TestCase):
+    def test_known_negative_pair_rejected_before_session_or_network(self):
+        runner=Path(__file__).resolve().parents[1]/'tools/run_hud_selection_session.py'
+        for command in ('pause','case'):
+            result=subprocess.run([sys.executable,str(runner),command,'--output','/nonexistent-session','--execute'],capture_output=True,text=True)
+            self.assertEqual(result.returncode,2)
+            self.assertIn('Retired distance pair',result.stderr)
+            self.assertNotIn('Traceback',result.stderr)
     def recording(self):
         data=struct.pack('<IHHIIII',0xa1b2c3d4,2,4,0,0,65535,1)+struct.pack('<IIII',0,0,1,1)+b'x'
         summary=dict(reason='duration',elapsed_s=120,packets=1,pcap_bytes=len(data),drops=0,interface_drops=0)

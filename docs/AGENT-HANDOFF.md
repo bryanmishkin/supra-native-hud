@@ -1,3 +1,13 @@
+# New executable expansion test — supported multi-image road lists
+
+[Native-verified two-image batch](ROAD-LIST-EXPANSION-TEST-2026-11-20.md) tests multiple resources/entries through the working V1 windshield route. Receiver advertises10entries/10icons; saved traffic used one. Both new payloads match actual native serialization; lifecycle fault checks pass. This measures physical placement, not a proven larger canvas. No PiP or Hz tests.
+
+# Current offline work — 20 November
+
+Owner is inside and disconnected. V1 remains installed unchanged but was cooperatively stopped; restoration was explicitly deferred. Do not claim it is running or needs reinstalling.
+
+Read [causal binding review](HUD-BINDING-CAUSAL-REVIEW-2026-11-20.md). The distance pair is a known negative control, now explicitly gated against accidental repetition. Historical readiness statements below do not admit another car session. No Hz tests.
+
 # Latest live result — distance contrast remains cluster-only
 
 [20 November receiver-selection result](HUD-SELECTION-LIVE-2026-11-20.md): both full30-second cases selected cluster1; custom rectangle in cluster, factory arrow windshield. Both image removals and zero-drop recordings passed. Do not repeat this threshold-only pair as a new fix. V1 installation unchanged; see result for final restoration status.

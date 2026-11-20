@@ -1,5 +1,7 @@
 # Whole-windshield capability map for V2
 
+Updated20 November2026: see [causal binding review](HUD-BINDING-CAUSAL-REVIEW-2026-11-20.md) for latest native and packet proofs. V1 restoration was deferred by the owner after the20November session; installed files unchanged, running state not verified.
+
 19 November 2026. Scope is the entire HUD rendering system, not only B00E. This is an evidence map, not a claim that every renderer has been recovered. Installed V1 is unchanged. No Hz tests belong in the next canvas session.
 
 ## Ownership and composition
@@ -30,7 +32,7 @@ B006/B00E terminate at the measured cluster endpoint; their visibility in the wi
 | Warning/door B011 | 81×81 PNG retrieval travels cluster→HU | No upload canvas from that exchange | Asset retrieval is separate from warning composition and placement |
 | Speed/speed-limit | Factory display and named input proxies present | No image injection path established | Input values are not evidence of a head-unit pixel stream |
 | Height/alignment outline | Broad factory outline observed and recorded | No custom binding | Outline is not proof of accessible dimensions or an app-owned surface |
-| B009/PiP | Factory selection 460×237/1 and completion captured | Prior custom PiP attempts produced only arrows, not marker pixels | Pixel-to-receiver job/session binding unresolved; not a working larger surface |
+| B009/PiP | Native handshake and custom pixel transport verified; receiver selection460×237/1 | Custom277×160 marker visible in gauge cluster, factory arrow in windshield; repeated20November | Cluster attachment works. HUD selection0 and custom windshield attachment remain unproven |
 | HU Screen/LayerManager | Local windows, native buffers, output-driver artifacts captured | Local rendering is technically distinct | Local window size does not establish windshield resolution or destination |
 
 ## Main HUD control trace added in this pass

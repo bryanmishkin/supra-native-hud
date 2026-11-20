@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Resumable, RAM-only paired canvas session. prepare/audit are entirely offline.
 
+Known-negative distance pair: new pause/case runs additionally require
+--repeat-known-negative-control. This is not a larger-HUD fix.
 Live phases require --execute and an existing verified SSH master. No SSH
 activation, reboot, persistent-file writes, lockout clearing, or Hz tests.
 """
@@ -261,7 +263,11 @@ def main():
     p.add_argument('--guidance-closed',action='store_true'); p.add_argument('--v1-visible',action='store_true')
     p.add_argument('--location',choices=['windshield','cluster','both','factory-symbol-only','none'])
     p.add_argument('--note',default='')
+    p.add_argument('--repeat-known-negative-control',action='store_true',
+                   help='Explicitly repeat the cluster-only 20 November control; not a new HUD fix')
     a=p.parse_args()
+    if a.command in ('pause','case') and not a.repeat_known_negative_control:
+        p.error('Retired distance pair: both cases rendered cluster-only. New live runs require --repeat-known-negative-control; restoration and audit remain available.')
     if a.command=='prepare': prepare(a); return
     if a.command=='audit': print(json.dumps(audit(a.output),indent=2)); return
     s=Session(a)
