@@ -4,6 +4,8 @@ Read [the latest photo/native evidence](HUD-FULL-VIEWPORT-2026-11-20.md) first. 
 
 Read [the complete resolution request trace](HUD-RESOLUTION-RECEIVER-TRACE-2026-11-20.md): its receiving producer handler ignores dimensions, and native execution confirms the Ethernet coding gate skips its legacy MOST setup. Do not use that diagnostic or its display enums as a windshield resize test.
 
+Additional offline consumer evidence: [HMI RIC receiving backend](HMI-RIC-RECEIVING-BACKEND.md) resolves model50 image-target names and actual local roadbook clipping; these belong to head-unit surfaces, not demonstrated windshield bounds. [Complete maneuver-control union](HUD-MANEUVER-CONTROL-2026-11-20.md) includes the formerly omitted tag5 fallback and native-tested15-byte encoding. Do not treat target0 as a HUD request. The old HighCCP conversion uncertainty is explicitly superseded by the existing absent-ID proof. V1 remains untouched; no new larger-canvas test is admitted from these findings.
+
 ## Historical handoff entries below
 
 ## Latest live result — 2026-11-20 destination/narrow-tail
