@@ -20,7 +20,8 @@ from verify_current_v1_test_baseline import verify as verify_v1
 
 ECU=0x60
 STOP=bytes.fromhex('3102a102')
-CASES={'rgb':bytes.fromhex('3101a10200102030'), 'grid':bytes.fromhex('3101a1025c000000')}
+CASES={'rgb':bytes.fromhex('3101a10200102030'), 'grid':bytes.fromhex('3101a1025c000000'),
+       'measure':bytes.fromhex('3101a1025d000000')}
 IDENTITY_HASHES={'22f197':'9dc9443dd68d889b70cab73b6713e1a5e244525e1df41fc2e08ba7bac4830809','22f101':'4406c00b629b281dba5556e98dee448fafbf368a51e8556f99063efb03259af4'}
 ALLOWED={STOP,*CASES.values(),*(bytes.fromhex(k) for k in IDENTITY_HASHES)}
 

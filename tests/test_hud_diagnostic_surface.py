@@ -7,7 +7,7 @@ sys.path.insert(0,str(TOOLS))
 import run_hud_diagnostic_surface as m
 
 class DiagnosticSurfaceTests(unittest.TestCase):
-    def run_case(self,outcomes,interrupt=False):
+    def run_case(self,outcomes,interrupt=False,case='rgb'):
         calls=[];events=[]
         def exchange(req):
             calls.append(req)
@@ -17,12 +17,21 @@ class DiagnosticSurfaceTests(unittest.TestCase):
         def watch(seconds):
             self.assertEqual(seconds,30)
             if interrupt:raise KeyboardInterrupt()
-        try:m.trial(exchange,'rgb',lambda event,**kw:events.append((event,kw)),watch)
+        try:m.trial(exchange,case,lambda event,**kw:events.append((event,kw)),watch)
         except BaseException as e:return calls,events,e
         return calls,events,None
     def test_success(self):
         calls,events,error=self.run_case([])
         self.assertIsNone(error);self.assertEqual(calls,[m.STOP,m.CASES['rgb'],m.STOP])
+    def test_all_prepared_cases_and_lost_start_cleanup(self):
+        for case in m.CASES:
+            with self.subTest(case=case):
+                calls,events,error=self.run_case([],case=case)
+                self.assertIsNone(error)
+                self.assertEqual(calls,[m.STOP,m.CASES[case],m.STOP])
+                calls,events,error=self.run_case([bytes.fromhex('7102a102'),TimeoutError()],case=case)
+                self.assertIsInstance(error,TimeoutError)
+                self.assertEqual(calls,[m.STOP,m.CASES[case],m.STOP])
     def test_preflight_lost_no_start(self):
         calls,events,error=self.run_case([TimeoutError()])
         self.assertIsInstance(error,TimeoutError);self.assertEqual(calls,[m.STOP])

@@ -1,6 +1,6 @@
 # New car batch: activate the 408×132 windshield test surface
 
-Two bounded experiments are ready for the reference car: a dim RGB surface and the factory grid/circles pattern. These activate `hud_TestBmp`, not V1's road-icon strip. No car connection occurred during preparation. Installed V1 files are untouched; the owner deferred runtime restoration at the last session.
+Three bounded experiments are prepared: a dim RGB surface, the factory grid/circles pattern, and a conditional five-row measurement pattern. Run the third only after a taller region and successful cleanup are observed. These activate `hud_TestBmp`, not V1's road-icon strip. No car connection occurred during preparation. Installed V1 files are untouched; the owner deferred runtime restoration at the last session.
 
 **What this batch can establish:** whether the installed receiver exposes the traced larger HUD test surface through diagnostic routine A102, and whether it visibly occupies greater height than V1. **What it cannot establish:** arbitrary uploaded-image access, an enlarged road-icon viewport, or persistent application use of that area. Do not call a factory pattern a completed custom-canvas unlock.
 
@@ -29,6 +29,7 @@ The native A102 handler requires operating-state byte at0x3fb8 >=7 for **both st
 |---|---|---|---|
 | Dim RGB | `31 01 A1 02 00 10 20 30` | `71 01 A1 02` | selector0, RGB16/32/48, enable1 |
 | Grid/circles | `31 01 A1 02 5C 00 00 00` | `71 01 A1 02` | selector0x5c, factory grid/circles, enable1 |
+| Measurement | `31 01 A1 02 5D 00 00 00` | `71 01 A1 02` | selector0x5d, five-row/thirteen-column measurement pattern, enable1 |
 | Stop | `31 02 A1 02` | `71 02 A1 02` | `[0,0,0,0,2]`, disabling both HUD test nodes |
 
 Selector0 uses a solid brush. Selector0x5c resolves to `Imports#hud#hud_TestBmp#0x5c_m15_grid_and_circles`. No uploaded IDs or V1 bitmap resources are touched. The renderer verifier now executes the **actual enable2 branch** at0x296c12 through0x296ec0 to0x296ece, confirming both visibility flags clear.
@@ -42,7 +43,8 @@ The installed receiver is **008.000.000**, while the offline executable is **004
 3. Run RGB first. The runner checks live V1 stopped state through the established SSH master, reads the pinned receiver identity, requires stop ACK, then announces **WATCH NOW** after start ACK and holds30seconds. It always attempts stop after a start attempt, including a lost start reply or interruption.
 4. Require stop ACK **and visually normal displays** before running grid. If RGB fails or remains visible, do not run grid. A full-area color that shows only the old strip is a failed extent result; do not repeat it.
 5. Run grid once for30seconds. Photograph top/bottom/left/right pattern extent in that same framing. Record windshield and cluster separately; cluster-only output is not windshield success. Optical eye-box clipping is separate from software dimensions.
-6. Require final stop ACK and both displays normal. Take a new15-file capture and verify it against the pre-capture. Restore V1 with the established normal restart only if requested; record whether restored or intentionally left paused. Do not report runtime restoration from file hashes.
+6. If RGB and grid show a taller windshield region and both cleanups pass, run `--case measure` once for30seconds using the same arguments and a new output directory. Compare against the private `0x5d_measure_1_5x13.png` reference: top and bottom marker rows, left and right outer markers, and the center cross. Record missing rows/edges and changes in spacing. Do not run this merely to repeat an already-clipped strip.
+7. Require final stop ACK and both displays normal. Take a new15-file capture and verify it against the pre-capture. Restore V1 with the established normal restart only if requested; record whether restored or intentionally left paused. Do not report runtime restoration from file hashes.
 
 From the repository root, set the following to the **current session's verified** values. No network discovery or guessed default addresses are built into this runner:
 
@@ -73,8 +75,12 @@ Every output directory must be new. The runner records raw HSFZ frames and times
 
 ## Offline checks and limits
 
-Seven native cases pass: RGB start, grid start, stop, start and stop below the state threshold, malformed start length and unsupported subfunction3. The code executes firmware data initialization, real registration lookup, parser, dispatch, record copy, application handler and response completion. Only OS critical-section enter/exit and event notification are stubbed; asynchronous scheduling is advanced manually. Session and operating state are synthetic. No security or application condition is patched. HSFZ and physical display behavior are not emulated by that verifier.
+Eight native cases pass: RGB start, grid start, measurement start, stop, start and stop below the state threshold, malformed start length and unsupported subfunction3. The code executes firmware data initialization, real registration lookup, parser, dispatch, record copy, application handler and response completion. Only OS critical-section enter/exit and event notification are stubbed; asynchronous scheduling is advanced manually. Session and operating state are synthetic. No security or application condition is patched. HSFZ and physical display behavior are not emulated by that verifier.
 
 Host regression checks cover normal completion, stop rejection before start, lost/rejected/mismatched start replies, interruption, failed cleanup retries, successful retry, request allowlist and no sockets in default mode. The existing renderer verifier pins scene bounds and all256 selector inputs; the enable2 withdrawal branch passes without instruction substitution.
 
 Uploaded-image research remains separate: this widget accepts RGB or named factory assets, with no uploaded resource-ID argument in its verified control record. This batch will establish external reachability and usable physical extent, giving a real larger destination to investigate without repeating the strip tests.
+
+## Exact reference assets
+
+The expanded research archive includes all26 factory TestBmp references, associated by executing the receiver’s actual package-name tree search. Selector0x5d is `Imports#hud#hud_TestBmp#0x5d_measure_1_5x13`. References are408×132 RGBA assets, not photos or guessed illustrations. See [expanded research](HUD-EXPANDED-RESEARCH-2026-11-20.md) for provenance and limits. Eleven host runner tests include successful and lost-start-reply cleanup for all three prepared cases.

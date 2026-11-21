@@ -18,7 +18,7 @@ def verify(image):
     b=image.read_bytes()
     assert hashlib.sha256(b).hexdigest()==IMAGE_SHA, 'Firmware hash mismatch'
     cases=[]
-    for sub,args,state in [(1,[0,16,32,48],7),(1,[92,0,0,0],7),(2,[],7),(1,[0,16,32,48],6),(2,[],6),(1,[0,16,32],7),(3,[],7)]:
+    for sub,args,state in [(1,[0,16,32,48],7),(1,[92,0,0,0],7),(1,[93,0,0,0],7),(2,[],7),(1,[0,16,32,48],6),(2,[],6),(1,[0,16,32],7),(3,[],7)]:
         u=Uc(UC_ARCH_ARM,UC_MODE_THUMB)
         for a,n in [(0,0x40000),(0x1000000,0x180000),(0x1a00000,0x100000),(0x3000000,0x10000),(0xb0600000,0x100000)]:u.mem_map(a,n)
         u.mem_write(0x1000000,b);u.reg_write(UC_ARM_REG_SP,0x300f000);u.reg_write(UC_ARM_REG_R0,0x1000184)
@@ -69,4 +69,4 @@ def verify(image):
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--image',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
-    result=verify(a.image);a.output.write_text(json.dumps(result,indent=2)+'\n');print('Seven native request/cleanup/negative cases passed:',a.output)
+    result=verify(a.image);a.output.write_text(json.dumps(result,indent=2)+'\n');print(len(result['cases']),'native request/cleanup/negative cases passed:',a.output)

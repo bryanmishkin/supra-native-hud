@@ -1,6 +1,6 @@
 # Current prepared car batch — 408×132 diagnostic surface
 
-Read [HUD diagnostic surface test](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) first. A102 external registration and start/stop path now execute offline in auxiliary004 firmware. Two new30-second cases are prepared: dim RGB and factory grid/circles. Installed008 compatibility remains a live hypothesis; require pinned identity, V1 stopped and exact stop ACK before activation. Do not repeat strip/Hz cases. Uploaded arbitrary-image access remains unproved. V1 files unchanged; owner deferred runtime restoration at the last session. No vehicle contacted during this preparation.
+Read [HUD diagnostic surface test](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) first. A102 external registration and start/stop path now execute offline in auxiliary004 firmware. Three30-second cases are prepared: dim RGB, factory grid/circles and conditional five-row measurement (0x5d). See [expanded offline research](HUD-EXPANDED-RESEARCH-2026-11-20.md) for exact asset references, additional native checks and excluded routes. Installed008 compatibility remains a live hypothesis; require pinned identity, V1 stopped and exact stop ACK before activation. Do not repeat strip/Hz cases. Uploaded arbitrary-image access remains unproved. V1 files unchanged; owner deferred runtime restoration at the last session. No vehicle contacted during this preparation.
 
 # Current receiver-code evidence — 20 November 2026
 
