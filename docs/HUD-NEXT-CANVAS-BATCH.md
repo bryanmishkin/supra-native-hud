@@ -31,3 +31,7 @@ The [scene/control trace](RECEIVER-SCENE-CONTROL-2026-11-20.md) establishes a se
 ## Newly prepared activation batch
 
 The [A102 diagnostic surface batch](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) supersedes the external-endpoint uncertainty above. Native registration, parser, dispatch, start and stop are verified in004 firmware. Two30-second tests (dim RGB and factory grid/circles) are prepared, with installed008 identity pins, acknowledged stop preflight, live V1-stopped guard and bounded cleanup retries. This is a distinct surface-activation experiment; it does not satisfy the arbitrary custom-canvas success criterion merely by displaying a factory pattern. No strip/Hz repeats.
+
+## 20 November uploaded-image offline preparation
+
+See [408 × 132 uploaded-image checks](HUD-UPLOADED-IMAGE-PATH-2026-11-20.md): full-size marker, native cache/decoder verification, 254 selector runs, 122 built-in ID translations and nine geometry cases. No external custom-image binding is claimed; existing diagnostic-surface activation tests remain the executable next batch. V1 unchanged.

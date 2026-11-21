@@ -204,3 +204,7 @@ See [the session results](CANVAS-HZ-RESULTS-2026-11-19.md). B006 cross and IU we
 ## 20 November: named scene bounds and larger test surface
 
 [Receiver scene/control trace](RECEIVER-SCENE-CONTROL-2026-11-20.md) ties the road labels to 230×36, the PiP visibility actions to cluster nodes, and a distinct HUD test surface to 408×132. Native replay proves internal record 0x16e reaches local widget event 0xac unchanged. The surface uses RGB or factory assets; external activation and arbitrary uploaded imagery are not established. Four offline tools added. No car-test admission, V1 change, or vehicle connection. Continue at the external input/attachment boundary; do not repeat strips or send internal records to a guessed ENET endpoint.
+
+## 20 November uploaded-image offline preparation
+
+See [408 × 132 uploaded-image checks](HUD-UPLOADED-IMAGE-PATH-2026-11-20.md): full-size marker, native cache/decoder verification, 254 selector runs, 122 built-in ID translations and nine geometry cases. No external custom-image binding is claimed; existing diagnostic-surface activation tests remain the executable next batch. V1 unchanged.

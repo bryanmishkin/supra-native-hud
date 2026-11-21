@@ -36,6 +36,9 @@ def ret(u):
 
 cases=[]
 for name, dims, target, expected in [
+    ('full-surface-one-to-one', (408,132), (408,132), 1),
+    ('full-surface-old-strip', (408,132), (150,36), 36/132),
+    ('full-surface-width-only', (408,132), (150,132), 150/408),
     ('unchanged-small', (36,36), (128,128), 1),
     ('height-limited', (277,160), (150,36), 36/160),
     ('width-limited', (300,36), (150,36), .5),
