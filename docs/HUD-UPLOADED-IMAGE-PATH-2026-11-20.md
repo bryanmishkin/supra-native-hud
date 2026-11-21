@@ -41,3 +41,13 @@ The asset loader remains an independent lead, not a ready test. Asset-load dispa
 The previously prepared [diagnostic-surface tests](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) remain the executable larger-surface activation probes: dim RGB and factory grid/circles, each bounded to 30 seconds with explicit stop handling. Neither is an uploaded custom-image test. No strip, Hz or alignment rerun has been added.
 
 The new marker remains offline-only (`live_drawing_allowed: false`, no resource ID/endpoint) until external destination binding, owned allocation/removal, current-version compatibility and recovery are demonstrated. Preserve V1 and keep its stopped/running state separate from file preservation: the owner deferred runtime restoration after the previous car session.
+
+## Follow-through: concrete named-asset provider
+
+The ARM DefaultAssetProvider constructor at 0x2e88c0 installs vtable 0xaacc04 at object+0x1c. Its slot+0x6c is 0x2e85b4; slot+0x74 is 0x2e85bc, matching the full-size widget's call convention. The application constructor calls singleton getter 0x2e9afc and stores its result at application+0x40 (0x1ab71c..0x1ab726). This identifies a concrete provider implementation, not a live observation of the widget's manager pointer on installed008.
+
+The getter delegates to 0x2f7f78 using a typed-provider subobject at +0x7c. That code performs a named-tree lookup (0x2efb80 → 0x2edfe0) at provider+0x80. The matching name returns the cached bitmap. The subsequent `(name, 0)` operation removes the cache node, returns the bitmap pointer, and does not destroy that bitmap. Its cache-miss path calls asset resolution at 0x2e42e0 and builder 0x2ebc50; these are further tracing targets, not Ethernet commands.
+
+`tools/verify_hud_asset_provider.py --image <004-main> --output <report.json>` now executes the actual getter, string lookup, singleton getter and tree removal. A synthetic one-node cache is returned and removed, and the opaque bitmap bytes remain intact. Only mutex operations and node deallocation are intercepted; singleton initialization flags are preset. No actual bitmap construction, cache-miss resolution, rendering or externally reachable insertion is claimed. The synthetic cache experiment does not grant a way to write this tree from the car's Ethernet interface.
+
+The next car batch remains two distinct, unrun full-surface activation tests. Both are ready with the existing runner and cleanup procedure. Their exact purpose and observations are in [the next-trip card](HUD-NEXT-TRIP-CARD-2026-11-20.md). This trip is not a request to repeat the uploaded strip marker.

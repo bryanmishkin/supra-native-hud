@@ -35,3 +35,5 @@ The [A102 diagnostic surface batch](HUD-DIAGNOSTIC-SURFACE-TEST-2026-11-20.md) s
 ## 20 November uploaded-image offline preparation
 
 See [408 × 132 uploaded-image checks](HUD-UPLOADED-IMAGE-PATH-2026-11-20.md): full-size marker, native cache/decoder verification, 254 selector runs, 122 built-in ID translations and nine geometry cases. No external custom-image binding is claimed; existing diagnostic-surface activation tests remain the executable next batch. V1 unchanged.
+
+The [next-trip card](HUD-NEXT-TRIP-CARD-2026-11-20.md) defines the two ready, unrun A102 tests and exact observations. Native DefaultAssetProvider named lookup/removal now verified offline; this is not an Ethernet insertion bridge.
